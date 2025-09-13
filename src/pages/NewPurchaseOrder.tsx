@@ -43,6 +43,11 @@ type LineItem = {
   product_sku?: string;
   qty_ordered: number;
   unit_cost: number;
+  errors?: {
+    product_id?: string;
+    qty_ordered?: string;
+    unit_cost?: string;
+  };
 };
 
 const fetchSuppliers = async (): Promise<Supplier[]> => {
@@ -206,19 +211,72 @@ const NewPurchaseOrder = () => {
 
   const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
     setLineItems(
-      lineItems.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+      lineItems.map(item => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value };
+          
+          // If updating qty_ordered or unit_cost, coerce to number and validate
+          if (field === "qty_ordered" || field === "unit_cost") {
+            updatedItem[field] = Number(value) || (field === "qty_ordered" ? 1 : 0);
+          }
+          
+          // Validate the item and update errors
+          if (field !== "errors") {
+            updatedItem.errors = validateLineItem(updatedItem);
+          }
+          
+          return updatedItem;
+        }
+        return item;
+      })
     );
+  };
+
+  const validateLineItem = (item: LineItem): LineItem["errors"] => {
+    const errors: LineItem["errors"] = {};
+    
+    if (!item.product_id) {
+      errors.product_id = "Product is required";
+    }
+    
+    const qty = Number(item.qty_ordered);
+    if (!qty || qty < 1) {
+      errors.qty_ordered = "Quantity must be at least 1";
+    }
+    
+    const cost = Number(item.unit_cost);
+    if (cost < 0) {
+      errors.unit_cost = "Unit cost cannot be negative";
+    }
+    
+    return Object.keys(errors).length > 0 ? errors : undefined;
+  };
+
+  const isLineItemValid = (item: LineItem): boolean => {
+    return !!(item.product_id && Number(item.qty_ordered) >= 1 && Number(item.unit_cost) >= 0);
   };
 
   const onProductChange = (itemId: string, productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
+      const currentItem = lineItems.find(item => item.id === itemId);
+      const shouldPrefillCost = !currentItem?.unit_cost || currentItem.unit_cost === 0;
+      
       updateLineItem(itemId, "product_id", productId);
       updateLineItem(itemId, "product_name", product.name);
       updateLineItem(itemId, "product_sku", product.sku);
-      updateLineItem(itemId, "unit_cost", product.cost || 0);
+      
+      if (shouldPrefillCost && product.cost) {
+        updateLineItem(itemId, "unit_cost", product.cost);
+      }
+      
+      // Clear product error if one exists
+      const item = lineItems.find(i => i.id === itemId);
+      if (item?.errors?.product_id) {
+        const newErrors = { ...item.errors };
+        delete newErrors.product_id;
+        updateLineItem(itemId, "errors", Object.keys(newErrors).length > 0 ? newErrors : undefined);
+      }
     }
   };
 
@@ -234,12 +292,15 @@ const NewPurchaseOrder = () => {
       return;
     }
 
-    const validLineItems = lineItems.filter(item => 
-      item.product_id && item.qty_ordered > 0 && item.unit_cost >= 0
-    );
+    const validLineItems = lineItems.filter(isLineItemValid);
 
     if (validLineItems.length === 0) {
-      toast.error("Please add at least one valid line item");
+      // Validate all items to show errors
+      setLineItems(lineItems.map(item => ({
+        ...item,
+        errors: validateLineItem(item)
+      })));
+      toast.error("Please fix the errors in the line items");
       return;
     }
 
@@ -391,7 +452,7 @@ const NewPurchaseOrder = () => {
                       value={item.product_id}
                       onValueChange={(value) => onProductChange(item.id, value)}
                     >
-                      <SelectTrigger className="min-h-[44px]">
+                      <SelectTrigger className={`min-h-[44px] ${item.errors?.product_id ? 'border-destructive' : ''}`}>
                         <SelectValue placeholder="Select product" />
                       </SelectTrigger>
                       <SelectContent>
@@ -402,6 +463,9 @@ const NewPurchaseOrder = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {item.errors?.product_id && (
+                      <p className="text-sm text-destructive">{item.errors.product_id}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -411,10 +475,13 @@ const NewPurchaseOrder = () => {
                       min="1"
                       value={item.qty_ordered}
                       onChange={(e) =>
-                        updateLineItem(item.id, "qty_ordered", parseInt(e.target.value) || 1)
+                        updateLineItem(item.id, "qty_ordered", e.target.value)
                       }
-                      className="min-h-[44px]"
+                      className={`min-h-[44px] ${item.errors?.qty_ordered ? 'border-destructive' : ''}`}
                     />
+                    {item.errors?.qty_ordered && (
+                      <p className="text-sm text-destructive">{item.errors.qty_ordered}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -425,10 +492,13 @@ const NewPurchaseOrder = () => {
                       min="0"
                       value={item.unit_cost}
                       onChange={(e) =>
-                        updateLineItem(item.id, "unit_cost", parseFloat(e.target.value) || 0)
+                        updateLineItem(item.id, "unit_cost", e.target.value)
                       }
-                      className="min-h-[44px]"
+                      className={`min-h-[44px] ${item.errors?.unit_cost ? 'border-destructive' : ''}`}
                     />
+                    {item.errors?.unit_cost && (
+                      <p className="text-sm text-destructive">{item.errors.unit_cost}</p>
+                    )}
                   </div>
                 </div>
 
