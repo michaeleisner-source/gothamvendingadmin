@@ -26,9 +26,9 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
-type Location = {
+type Prospect = {
   id: string;
-  name: string;
+  business_name: string;
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -40,31 +40,31 @@ type Location = {
 const statusOptions = ["NEW", "CONTACTED", "FOLLOW-UP", "CLOSED"];
 
 const Locations = () => {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    business_name: "",
     contact_name: "",
     contact_email: "",
     status: "NEW",
   });
   const { toast } = useToast();
 
-  const fetchLocations = async () => {
+  const fetchProspects = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("locations")
+        .from("prospects")
         .select("*")
-        .order("name", { ascending: true });
+        .order("business_name", { ascending: true });
 
       if (error) throw error;
-      setLocations(data || []);
+      setProspects(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: `Failed to load locations: ${error.message}`,
+        description: `Failed to load prospects: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -73,16 +73,16 @@ const Locations = () => {
   };
 
   useEffect(() => {
-    fetchLocations();
+    fetchProspects();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    if (!formData.business_name.trim()) {
       toast({
         title: "Error", 
-        description: "Name is required",
+        description: "Business name is required",
         variant: "destructive",
       });
       return;
@@ -91,9 +91,9 @@ const Locations = () => {
     try {
       setSaving(true);
       const { error } = await supabase
-        .from("locations")
+        .from("prospects")
         .insert([{
-          name: formData.name.trim(),
+          business_name: formData.business_name.trim(),
           contact_name: formData.contact_name.trim() || null,
           contact_email: formData.contact_email.trim() || null,
           status: formData.status,
@@ -103,23 +103,23 @@ const Locations = () => {
 
       toast({
         title: "Success",
-        description: "Location created successfully",
+        description: "Prospect created successfully",
       });
 
       // Reset form
       setFormData({
-        name: "",
+        business_name: "",
         contact_name: "",
         contact_email: "",
         status: "NEW",
       });
 
-      // Refresh locations
-      fetchLocations();
+      // Refresh prospects
+      fetchProspects();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: `Failed to create location: ${error.message}`,
+        description: `Failed to create prospect: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -130,23 +130,23 @@ const Locations = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Locations</h1>
+        <h1 className="text-2xl font-bold">Prospects</h1>
         
-        {/* Create New Location Form */}
+        {/* Create New Prospect Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Add New Location</CardTitle>
+            <CardTitle>Add New Prospect</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="business_name">Business Name *</Label>
                   <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter location name"
+                    id="business_name"
+                    value={formData.business_name}
+                    onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
+                    placeholder="Enter business name"
                     required
                   />
                 </div>
@@ -193,57 +193,57 @@ const Locations = () => {
               </div>
               
               <Button type="submit" disabled={saving} className="w-full md:w-auto">
-                {saving ? "Creating..." : "Create Location"}
+                {saving ? "Creating..." : "Create Prospect"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Locations Table */}
+        {/* Prospects Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Locations</CardTitle>
+            <CardTitle>All Prospects</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex justify-center py-8">
-                <div className="text-sm text-muted-foreground">Loading locations...</div>
+                <div className="text-sm text-muted-foreground">Loading prospects...</div>
               </div>
-            ) : locations.length === 0 ? (
+            ) : prospects.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">No locations found.</p>
-                <p className="text-xs text-muted-foreground mt-1">Create your first location using the form above.</p>
+                <p className="text-sm text-muted-foreground">No prospects found.</p>
+                <p className="text-xs text-muted-foreground mt-1">Create your first prospect using the form above.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
+                      <TableHead>Business Name</TableHead>
                       <TableHead>Contact Name</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {locations.map((location) => (
-                      <TableRow key={location.id}>
+                    {prospects.map((prospect) => (
+                      <TableRow key={prospect.id}>
                         <TableCell className="font-medium">
-                          {location.name}
+                          {prospect.business_name}
                         </TableCell>
                         <TableCell>
-                          {location.contact_name || "-"}
+                          {prospect.contact_name || "-"}
                         </TableCell>
                         <TableCell>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            location.status === "NEW" 
+                            prospect.status === "NEW" 
                               ? "bg-blue-100 text-blue-800"
-                              : location.status === "CONTACTED"
+                              : prospect.status === "CONTACTED"
                               ? "bg-yellow-100 text-yellow-800" 
-                              : location.status === "FOLLOW-UP"
+                              : prospect.status === "FOLLOW-UP"
                               ? "bg-orange-100 text-orange-800"
                               : "bg-green-100 text-green-800"
                           }`}>
-                            {location.status}
+                            {prospect.status}
                           </span>
                         </TableCell>
                       </TableRow>
