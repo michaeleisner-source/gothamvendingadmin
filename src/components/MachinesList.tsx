@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -9,6 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Machine = {
   id: string;
@@ -44,6 +55,12 @@ const getStatusVariant = (status: string | null) => {
 };
 
 export const MachinesList = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    status: "",
+  });
+
   const {
     data: machines,
     isLoading,
@@ -52,6 +69,16 @@ export const MachinesList = () => {
     queryKey: ["machines"],
     queryFn: fetchMachines,
   });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Form submission logic will be added later
+    console.log("Form submitted:", formData);
+  };
+
+  const updateFormData = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   if (isLoading) {
     return (
@@ -73,8 +100,64 @@ export const MachinesList = () => {
 
   if (!machines || machines.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">No machines found</div>
+      <div className="container mx-auto py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Machines</h1>
+          <p className="text-muted-foreground">
+            Manage and monitor your machine inventory
+          </p>
+        </div>
+        
+        <div className="mb-6 rounded-md border p-6">
+          <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => updateFormData("name", e.target.value)}
+                  placeholder="Enter machine name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => updateFormData("location", e.target.value)}
+                  placeholder="Enter location"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ONLINE">ONLINE</SelectItem>
+                    <SelectItem value="OFFLINE">OFFLINE</SelectItem>
+                    <SelectItem value="SERVICE">SERVICE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button type="submit">Add Machine</Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="flex items-center justify-center p-8">
+          <div className="text-muted-foreground">No machines found</div>
+        </div>
       </div>
     );
   }
@@ -86,6 +169,53 @@ export const MachinesList = () => {
         <p className="text-muted-foreground">
           Manage and monitor your machine inventory
         </p>
+      </div>
+      
+      <div className="mb-6 rounded-md border p-6">
+        <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => updateFormData("name", e.target.value)}
+                placeholder="Enter machine name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                type="text"
+                value={formData.location}
+                onChange={(e) => updateFormData("location", e.target.value)}
+                placeholder="Enter location"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ONLINE">ONLINE</SelectItem>
+                  <SelectItem value="OFFLINE">OFFLINE</SelectItem>
+                  <SelectItem value="SERVICE">SERVICE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button type="submit">Add Machine</Button>
+          </div>
+        </form>
       </div>
       
       <div className="rounded-md border">
