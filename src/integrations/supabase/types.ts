@@ -71,6 +71,77 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_order_items: {
+        Row: {
+          id: string
+          po_id: string
+          product_id: string
+          qty_ordered: number
+          unit_cost: number
+        }
+        Insert: {
+          id?: string
+          po_id: string
+          product_id: string
+          qty_ordered: number
+          unit_cost: number
+        }
+        Update: {
+          id?: string
+          po_id?: string
+          product_id?: string
+          qty_ordered?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          status: string | null
+          supplier_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          supplier_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           contact: string | null
