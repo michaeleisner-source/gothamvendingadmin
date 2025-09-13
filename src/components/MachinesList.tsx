@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 type Machine = {
   id: string;
@@ -41,6 +42,24 @@ const fetchMachines = async (): Promise<Machine[]> => {
   return data || [];
 };
 
+const insertMachine = async (machine: { name: string; location: string; status: string }) => {
+  const { data, error } = await (supabase as any)
+    .from("machines")
+    .insert({
+      name: machine.name,
+      location: machine.location || null,
+      status: machine.status || "ONLINE",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 const getStatusVariant = (status: string | null) => {
   switch (status?.toUpperCase()) {
     case "ONLINE":
@@ -55,6 +74,7 @@ const getStatusVariant = (status: string | null) => {
 };
 
 export const MachinesList = () => {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
     location: "",
@@ -70,10 +90,31 @@ export const MachinesList = () => {
     queryFn: fetchMachines,
   });
 
+  const addMachineMutation = useMutation({
+    mutationFn: insertMachine,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["machines"] });
+      setFormData({ name: "", location: "", status: "" });
+      toast.success("Machine added successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Error adding machine: ${error.message}`);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Form submission logic will be added later
-    console.log("Form submitted:", formData);
+    
+    if (!formData.name.trim()) {
+      toast.error("Machine name is required");
+      return;
+    }
+
+    addMachineMutation.mutate({
+      name: formData.name.trim(),
+      location: formData.location.trim(),
+      status: formData.status || "ONLINE",
+    });
   };
 
   const updateFormData = (field: string, value: string) => {
@@ -149,9 +190,11 @@ export const MachinesList = () => {
               </div>
             </div>
             
-            <div className="flex justify-end">
-              <Button type="submit">Add Machine</Button>
-            </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={addMachineMutation.isPending}>
+              {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
+            </Button>
+          </div>
           </form>
         </div>
 
@@ -212,9 +255,11 @@ export const MachinesList = () => {
             </div>
           </div>
           
-          <div className="flex justify-end">
-            <Button type="submit">Add Machine</Button>
-          </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={addMachineMutation.isPending}>
+                {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
+              </Button>
+            </div>
         </form>
       </div>
       
