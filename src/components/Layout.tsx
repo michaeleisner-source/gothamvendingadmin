@@ -22,6 +22,7 @@ const navItems = [
   { name: "Picklists", path: "/picklists" },
   { name: "Tickets", path: "/tickets" },
   { name: "Reports", path: "/reports" },
+  { name: "Account", path: "/account" },
 ];
 
 interface LayoutProps {

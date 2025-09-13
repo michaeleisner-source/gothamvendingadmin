@@ -19,6 +19,8 @@ import Picklists from "./pages/Picklists";
 import Tickets from "./pages/Tickets";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,8 @@ const App = () => (
             <Route path="/picklists" element={<Picklists />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
