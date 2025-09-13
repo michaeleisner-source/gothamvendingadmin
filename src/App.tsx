@@ -3,8 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Layout } from "@/components/Layout";
 import AuthGate from "@/components/AuthGate";
+import AppHeader from "@/components/AppHeader";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
@@ -32,30 +32,32 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AppHeader />
         <AuthGate>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomeDashboard />} />
-              <Route path="/machines" element={<Machines />} />
-              <Route path="/machines/:id" element={<MachineDetail />} />
-              <Route path="/prospects" element={<Prospects />} />
-              <Route path="/locations" element={<Locations />} />
-              <Route path="/locations/:id" element={<LocationDetail />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/purchase-orders" element={<PurchaseOrders />} />
-              <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
-              <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
-              <Route path="/delivery-routes" element={<DeliveryRoutes />} />
-              <Route path="/picklists" element={<Picklists />} />
-              <Route path="/tickets" element={<Tickets />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/account" element={<Account />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/auth" element={<Auth />} />
+
+            {/* Protected routes */}
+            <Route path="/" element={<HomeDashboard />} />
+            <Route path="/prospects" element={<Prospects />} />
+            <Route path="/locations" element={<Locations />} />
+            <Route path="/locations/:id" element={<LocationDetail />} />
+            <Route path="/machines" element={<Machines />} />
+            <Route path="/machines/:id" element={<MachineDetail />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/purchase-orders" element={<PurchaseOrders />} />
+            <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
+            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+            <Route path="/delivery-routes" element={<DeliveryRoutes />} />
+            <Route path="/picklists" element={<Picklists />} />
+            <Route path="/tickets" element={<Tickets />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/account" element={<Account />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </AuthGate>
       </BrowserRouter>
     </TooltipProvider>
