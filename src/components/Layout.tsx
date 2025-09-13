@@ -53,7 +53,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <SheetContent side="left" className="w-80 p-0">
               <SheetHeader className="border-b p-6">
                 <SheetTitle className="text-left text-xl font-bold">
-                  Vendly
+                  Gotham Vending
                 </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col p-4">
@@ -75,7 +75,7 @@ export const Layout = ({ children }: LayoutProps) => {
             </SheetContent>
           </Sheet>
           
-          <h1 className="text-xl font-bold">Vendly</h1>
+          <h1 className="text-xl font-bold">Gotham Vending</h1>
         </div>
       </header>
 
