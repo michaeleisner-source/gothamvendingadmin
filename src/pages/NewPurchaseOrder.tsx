@@ -267,7 +267,7 @@ const NewPurchaseOrder = () => {
       updateLineItem(itemId, "product_sku", product.sku);
       
       if (shouldPrefillCost && product.cost) {
-        updateLineItem(itemId, "unit_cost", product.cost);
+        updateLineItem(itemId, "unit_cost", Number(product.cost));
       }
       
       // Clear product error if one exists
@@ -277,6 +277,11 @@ const NewPurchaseOrder = () => {
         delete newErrors.product_id;
         updateLineItem(itemId, "errors", Object.keys(newErrors).length > 0 ? newErrors : undefined);
       }
+    } else if (!productId) {
+      // Clear product selection
+      updateLineItem(itemId, "product_id", "");
+      updateLineItem(itemId, "product_name", undefined);
+      updateLineItem(itemId, "product_sku", undefined);
     }
   };
 
@@ -448,21 +453,23 @@ const NewPurchaseOrder = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Product *</Label>
-                    <Select
+                    <select
                       value={item.product_id}
-                      onValueChange={(value) => onProductChange(item.id, value)}
+                      onChange={(e) => onProductChange(item.id, e.target.value)}
+                      className={`w-full min-h-[44px] px-3 py-2 border rounded-md bg-background ${item.errors?.product_id ? 'border-destructive' : 'border-input'}`}
                     >
-                      <SelectTrigger className={`min-h-[44px] ${item.errors?.product_id ? 'border-destructive' : ''}`}>
-                        <SelectValue placeholder="Select product" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((product) => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name} ({product.sku})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <option value="">Select product</option>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name} ({product.sku})
+                        </option>
+                      ))}
+                    </select>
+                    {products.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        No products found. Add products at /products.
+                      </p>
+                    )}
                     {item.errors?.product_id && (
                       <p className="text-sm text-destructive">{item.errors.product_id}</p>
                     )}
