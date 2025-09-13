@@ -13,6 +13,7 @@ import Products from "./pages/Products";
 import Machines from "./pages/Machines";
 import Prospects from "./pages/Prospects";
 import Locations from "./pages/Locations";
+import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
 import Picklists from "./pages/Picklists";
 import Tickets from "./pages/Tickets";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/machines" element={<Machines />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/locations" element={<Locations />} />
+            <Route path="/locations/:id" element={<LocationDetail />} />
             <Route path="/products" element={<Products />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
