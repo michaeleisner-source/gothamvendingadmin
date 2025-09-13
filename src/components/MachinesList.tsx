@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -275,7 +276,14 @@ export const MachinesList = () => {
           <TableBody>
             {machines.map((machine) => (
               <TableRow key={machine.id}>
-                <TableCell className="font-medium">{machine.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link 
+                    to={`/machines/${machine.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {machine.name}
+                  </Link>
+                </TableCell>
                 <TableCell>{machine.location || "Not specified"}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(machine.status)}>
