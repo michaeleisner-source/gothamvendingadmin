@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, Trash2, ArrowLeft, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 type Supplier = {
@@ -57,6 +65,23 @@ const fetchProducts = async (): Promise<Product[]> => {
   return data || [];
 };
 
+const createSupplier = async (supplierData: {
+  name: string;
+  contact: string;
+}) => {
+  const { data, error } = await (supabase as any)
+    .from("suppliers")
+    .insert({
+      name: supplierData.name,
+      contact: supplierData.contact || null,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
 const createPurchaseOrder = async (poData: {
   supplier_id: string;
   lineItems: LineItem[];
@@ -92,7 +117,13 @@ const createPurchaseOrder = async (poData: {
 
 const NewPurchaseOrder = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedSupplier, setSelectedSupplier] = useState("");
+  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+  const [supplierFormData, setSupplierFormData] = useState({
+    name: "",
+    contact: "",
+  });
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
       id: crypto.randomUUID(),
@@ -112,6 +143,20 @@ const NewPurchaseOrder = () => {
     queryFn: fetchProducts,
   });
 
+  const createSupplierMutation = useMutation({
+    mutationFn: createSupplier,
+    onSuccess: (newSupplier) => {
+      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      setSelectedSupplier(newSupplier.id);
+      setIsSupplierModalOpen(false);
+      setSupplierFormData({ name: "", contact: "" });
+      toast.success("Supplier created successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Error creating supplier: ${error.message}`);
+    },
+  });
+
   const createPOMutation = useMutation({
     mutationFn: createPurchaseOrder,
     onSuccess: (po) => {
@@ -122,6 +167,24 @@ const NewPurchaseOrder = () => {
       toast.error(`Error creating purchase order: ${error.message}`);
     },
   });
+
+  const handleSupplierSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!supplierFormData.name.trim()) {
+      toast.error("Supplier name is required");
+      return;
+    }
+
+    createSupplierMutation.mutate({
+      name: supplierFormData.name.trim(),
+      contact: supplierFormData.contact.trim(),
+    });
+  };
+
+  const updateSupplierFormData = (field: string, value: string) => {
+    setSupplierFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const addLineItem = () => {
     setLineItems([
@@ -209,18 +272,85 @@ const NewPurchaseOrder = () => {
           <CardContent>
             <div className="space-y-2">
               <Label htmlFor="supplier">Supplier *</Label>
-              <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
-                <SelectTrigger className="min-h-[44px]">
-                  <SelectValue placeholder="Select a supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+                  <SelectTrigger className="min-h-[44px] flex-1">
+                    <SelectValue placeholder="Select a supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Dialog open={isSupplierModalOpen} onOpenChange={setIsSupplierModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="min-h-[44px] min-w-[44px] shrink-0"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add New Supplier</DialogTitle>
+                      <DialogDescription>
+                        Create a new supplier to add to your purchase order.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSupplierSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="supplier-name">Name *</Label>
+                        <Input
+                          id="supplier-name"
+                          type="text"
+                          value={supplierFormData.name}
+                          onChange={(e) => updateSupplierFormData("name", e.target.value)}
+                          placeholder="Enter supplier name"
+                          className="min-h-[44px]"
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="supplier-contact">Contact</Label>
+                        <Input
+                          id="supplier-contact"
+                          type="text"
+                          value={supplierFormData.contact}
+                          onChange={(e) => updateSupplierFormData("contact", e.target.value)}
+                          placeholder="Enter contact information"
+                          className="min-h-[44px]"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsSupplierModalOpen(false)}
+                          className="min-h-[44px] flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={createSupplierMutation.isPending}
+                          className="min-h-[44px] flex-1"
+                        >
+                          {createSupplierMutation.isPending ? "Creating..." : "Create Supplier"}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </CardContent>
         </Card>
