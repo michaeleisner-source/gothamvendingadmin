@@ -46,20 +46,18 @@ const insertProduct = async (product: {
   cost: string;
   price: string;
 }) => {
-  const { data, error } = await (supabase as any)
-    .from("products")
-    .insert({
+  const { data, error } = await supabase.rpc('upsert_product', {
+    p: {
       sku: product.sku,
       name: product.name,
       category: product.category || null,
-      cost: product.cost ? parseFloat(product.cost) : null,
-      price: product.price ? parseFloat(product.price) : null,
-    })
-    .select()
-    .single();
+      cost: product.cost || null,
+      price: product.price || null,
+    }
+  });
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -89,10 +87,14 @@ const Products = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setFormData({ sku: "", name: "", category: "", cost: "", price: "" });
-      toast.success("Product added successfully!");
+      toast.success("Product saved successfully!");
     },
-    onError: (error: Error) => {
-      toast.error(`Error adding product: ${error.message}`);
+    onError: (error: any) => {
+      if (error?.code === '23505') {
+        toast.error("A product with this SKU already exists. Please use a different SKU.");
+      } else {
+        toast.error(error?.message || "Error saving product");
+      }
     },
   });
 
