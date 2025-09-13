@@ -208,6 +208,32 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          id: string
+          name: string
+          org_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          org_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string | null
@@ -495,6 +521,10 @@ export type Database = {
         Args: { p_prospect_id: string }
         Returns: string
       }
+      create_po_with_items: {
+        Args: { p_items: Json; p_supplier_id: string }
+        Returns: string
+      }
       current_org: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -502,6 +532,39 @@ export type Database = {
       is_org_member: {
         Args: { row_org: string }
         Returns: boolean
+      }
+      list_products: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string }
+        Returns: {
+          category: string | null
+          cost: number | null
+          created_at: string
+          id: string
+          name: string
+          org_id: string | null
+          price: number | null
+          sku: string
+          updated_at: string
+        }[]
+      }
+      list_suppliers: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string }
+        Returns: {
+          contact: string | null
+          created_at: string
+          id: string
+          name: string
+          org_id: string | null
+          updated_at: string
+        }[]
+      }
+      upsert_product: {
+        Args: { p: Json }
+        Returns: string
+      }
+      upsert_supplier: {
+        Args: { p: Json }
+        Returns: string
       }
     }
     Enums: {
