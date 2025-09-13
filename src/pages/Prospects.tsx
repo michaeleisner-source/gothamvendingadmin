@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,7 @@ type Prospect = {
 const statusOptions = ["NEW", "CONTACTED", "FOLLOW-UP", "CLOSED", "CONVERTED"];
 
 const Prospects = () => {
+  const navigate = useNavigate();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [locationTypes, setLocationTypes] = useState<LocationType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +70,7 @@ const Prospects = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
   const [savingType, setSavingType] = useState(false);
+  const [converting, setConverting] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     business_name: "",
     contact_name: "",
@@ -242,6 +245,37 @@ const Prospects = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleConvertToLocation = async (prospectId: string) => {
+    try {
+      setConverting(prospectId);
+      
+      const { data: newLocationId, error } = await supabase
+        .rpc('convert_prospect_to_location', { p_prospect_id: prospectId });
+
+      if (error) throw error;
+
+      if (newLocationId) {
+        toast({
+          title: "Success",
+          description: "Converted to Location",
+        });
+        
+        // Navigate to the new location page
+        navigate(`/locations/${newLocationId}`);
+      } else {
+        throw new Error("No location ID returned from conversion");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to convert prospect: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setConverting(null);
+    }
   };
 
   return (
@@ -500,6 +534,7 @@ const Prospects = () => {
                       <TableHead>Daily Est</TableHead>
                       <TableHead>Monthly Est</TableHead>
                       <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -537,6 +572,16 @@ const Prospects = () => {
                         </TableCell>
                         <TableCell>
                           {formatDate(prospect.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleConvertToLocation(prospect.id)}
+                            disabled={prospect.status === 'CONVERTED' || converting === prospect.id}
+                          >
+                            {converting === prospect.id ? "Converting..." : "Convert to Location"}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
