@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type PurchaseOrder = {
   id: string;
@@ -90,9 +91,11 @@ const PurchaseOrders = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Purchase Orders</h1>
-        <Button className="min-h-[44px] flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New PO
+        <Button asChild className="min-h-[44px] flex items-center gap-2">
+          <Link to="/purchase-orders/new">
+            <Plus className="h-4 w-4" />
+            New PO
+          </Link>
         </Button>
       </div>
 
@@ -122,17 +125,29 @@ const PurchaseOrders = () => {
                 </TableHeader>
                 <TableBody>
                   {purchaseOrders.map((po) => (
-                    <TableRow key={po.id}>
+                    <TableRow key={po.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono font-medium">
-                        {getShortId(po.id)}
+                        <Link to={`/purchase-orders/${po.id}`} className="hover:underline">
+                          {getShortId(po.id)}
+                        </Link>
                       </TableCell>
-                      <TableCell>{po.supplier?.name || "Unknown Supplier"}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(po.status) as any}>
-                          {po.status || "OPEN"}
-                        </Badge>
+                        <Link to={`/purchase-orders/${po.id}`}>
+                          {po.supplier?.name || "Unknown Supplier"}
+                        </Link>
                       </TableCell>
-                      <TableCell>{formatDate(po.created_at)}</TableCell>
+                      <TableCell>
+                        <Link to={`/purchase-orders/${po.id}`}>
+                          <Badge variant={getStatusVariant(po.status) as any}>
+                            {po.status || "OPEN"}
+                          </Badge>
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link to={`/purchase-orders/${po.id}`}>
+                          {formatDate(po.created_at)}
+                        </Link>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
