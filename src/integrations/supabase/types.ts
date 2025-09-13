@@ -622,6 +622,64 @@ export type Database = {
           },
         ]
       }
+      sales: {
+        Row: {
+          id: string
+          machine_id: string
+          occurred_at: string
+          org_id: string
+          product_id: string
+          qty: number
+          source: string | null
+          unit_cost_cents: number | null
+          unit_price_cents: number
+        }
+        Insert: {
+          id?: string
+          machine_id: string
+          occurred_at?: string
+          org_id: string
+          product_id: string
+          qty: number
+          source?: string | null
+          unit_cost_cents?: number | null
+          unit_price_cents: number
+        }
+        Update: {
+          id?: string
+          machine_id?: string
+          occurred_at?: string
+          org_id?: string
+          product_id?: string
+          qty?: number
+          source?: string | null
+          unit_cost_cents?: number | null
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       slot_assignments: {
         Row: {
           id: string
@@ -711,6 +769,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _normalize_range: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          end_at: string
+          start_at: string
+        }[]
+      }
       bootstrap_org_for_me: {
         Args: { p_org_name?: string }
         Returns: string
@@ -768,6 +833,27 @@ export type Database = {
           updated_at: string
         }[]
       }
+      record_sale: {
+        Args: {
+          p_machine_id: string
+          p_occurred_at?: string
+          p_product_id: string
+          p_qty: number
+          p_source?: string
+          p_unit_cost_cents?: number
+          p_unit_price_cents: number
+        }
+        Returns: string
+      }
+      report_financial_kpis: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          cost_cents: number
+          gross_revenue_cents: number
+          net_profit_cents: number
+          profit_pct: number
+        }[]
+      }
       report_low_stock: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -778,6 +864,38 @@ export type Database = {
           product_name: string
           restock_threshold: number
           slot_label: string
+        }[]
+      }
+      report_orders_per_day: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          day: string
+          orders: number
+        }[]
+      }
+      report_products_sold_per_day: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          day: string
+          qty_sold: number
+        }[]
+      }
+      report_products_sold_per_month: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          month: string
+          qty_sold: number
+        }[]
+      }
+      report_profit_per_machine: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          cost_cents: number
+          gross_revenue_cents: number
+          machine_id: string
+          machine_name: string
+          net_profit_cents: number
+          profit_pct: number
         }[]
       }
       report_purchase_orders: {
@@ -794,6 +912,29 @@ export type Database = {
       report_restock_history: {
         Args: { p_days?: number; p_machine_id: string }
         Returns: Json
+      }
+      report_revenue_per_machine: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          cost_cents: number
+          gross_revenue_cents: number
+          machine_id: string
+          machine_name: string
+          net_profit_cents: number
+          orders: number
+          profit_pct: number
+          qty_sold: number
+        }[]
+      }
+      report_revenue_per_product: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          gross_revenue_cents: number
+          orders: number
+          product_id: string
+          product_name: string
+          qty_sold: number
+        }[]
       }
       save_restock_session: {
         Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
