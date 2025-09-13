@@ -133,6 +133,50 @@ export type Database = {
           },
         ]
       }
+      memberships: {
+        Row: {
+          org_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          org_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          org_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
@@ -165,6 +209,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          org_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          org_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prospects: {
         Row: {
@@ -331,9 +404,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_org_for_me: {
+        Args: { p_org_name?: string }
+        Returns: string
+      }
       convert_prospect_to_location: {
         Args: { p_prospect_id: string }
         Returns: string
+      }
+      current_org: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_org_member: {
+        Args: { row_org: string }
+        Returns: boolean
       }
     }
     Enums: {
