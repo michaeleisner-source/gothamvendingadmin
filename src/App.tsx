@@ -11,6 +11,7 @@ import PurchaseOrders from "./pages/PurchaseOrders";
 import Suppliers from "./pages/Suppliers";
 import Products from "./pages/Products";
 import Machines from "./pages/Machines";
+import Locations from "./pages/Locations";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
 import Picklists from "./pages/Picklists";
 import Tickets from "./pages/Tickets";
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomeDashboard />} />
             <Route path="/machines" element={<Machines />} />
+            <Route path="/locations" element={<Locations />} />
             <Route path="/products" element={<Products />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
