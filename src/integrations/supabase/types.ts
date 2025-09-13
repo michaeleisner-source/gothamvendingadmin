@@ -14,11 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      location_types: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          from_prospect_id: string | null
+          id: string
+          location_type_id: string | null
+          name: string
+          postal_code: string | null
+          state: string | null
+          traffic_daily_est: number | null
+          traffic_monthly_est: number | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          from_prospect_id?: string | null
+          id?: string
+          location_type_id?: string | null
+          name: string
+          postal_code?: string | null
+          state?: string | null
+          traffic_daily_est?: number | null
+          traffic_monthly_est?: number | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          from_prospect_id?: string | null
+          id?: string
+          location_type_id?: string | null
+          name?: string
+          postal_code?: string | null
+          state?: string | null
+          traffic_daily_est?: number | null
+          traffic_monthly_est?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_from_prospect_id_fkey"
+            columns: ["from_prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "locations_location_type_id_fkey"
+            columns: ["location_type_id"]
+            isOneToOne: false
+            referencedRelation: "location_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machines: {
         Row: {
           created_at: string | null
           id: string
           location: string | null
+          location_id: string | null
           name: string
           status: string | null
         }
@@ -26,6 +111,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           location?: string | null
+          location_id?: string | null
           name: string
           status?: string | null
         }
@@ -33,10 +119,19 @@ export type Database = {
           created_at?: string | null
           id?: string
           location?: string | null
+          location_id?: string | null
           name?: string
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "machines_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -73,36 +168,68 @@ export type Database = {
       }
       prospects: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
           business_name: string
+          city: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string | null
           id: string
+          location_type_id: string | null
           notes: string | null
+          postal_code: string | null
+          state: string | null
           status: string | null
+          traffic_daily_est: number | null
+          traffic_monthly_est: number | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
           business_name: string
+          city?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
           id?: string
+          location_type_id?: string | null
           notes?: string | null
+          postal_code?: string | null
+          state?: string | null
           status?: string | null
+          traffic_daily_est?: number | null
+          traffic_monthly_est?: number | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
           business_name?: string
+          city?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
           id?: string
+          location_type_id?: string | null
           notes?: string | null
+          postal_code?: string | null
+          state?: string | null
           status?: string | null
+          traffic_daily_est?: number | null
+          traffic_monthly_est?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prospects_location_type_id_fkey"
+            columns: ["location_type_id"]
+            isOneToOne: false
+            referencedRelation: "location_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_order_items: {
         Row: {
@@ -204,7 +331,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      convert_prospect_to_location: {
+        Args: { p_prospect_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
