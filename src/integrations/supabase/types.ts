@@ -518,6 +518,110 @@ export type Database = {
           },
         ]
       }
+      restock_lines: {
+        Row: {
+          added_qty: number | null
+          id: string
+          new_qty: number | null
+          org_id: string
+          prev_qty: number | null
+          product_id: string
+          session_id: string
+          slot_id: string
+        }
+        Insert: {
+          added_qty?: number | null
+          id?: string
+          new_qty?: number | null
+          org_id: string
+          prev_qty?: number | null
+          product_id: string
+          session_id: string
+          slot_id: string
+        }
+        Update: {
+          added_qty?: number | null
+          id?: string
+          new_qty?: number | null
+          org_id?: string
+          prev_qty?: number | null
+          product_id?: string
+          session_id?: string
+          slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_lines_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restock_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restock_lines_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "restock_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restock_lines_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "machine_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restock_sessions: {
+        Row: {
+          completed_at: string | null
+          id: string
+          machine_id: string
+          note: string | null
+          org_id: string
+          started_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          machine_id: string
+          note?: string | null
+          org_id: string
+          started_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          machine_id?: string
+          note?: string | null
+          org_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_sessions_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restock_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       slot_assignments: {
         Row: {
           id: string
@@ -655,6 +759,14 @@ export type Database = {
           org_id: string | null
           updated_at: string
         }[]
+      }
+      save_restock_session: {
+        Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
+        Returns: number
+      }
+      start_restock_session: {
+        Args: { p_machine_id: string; p_note?: string }
+        Returns: string
       }
       upsert_product: {
         Args: { p: Json }
