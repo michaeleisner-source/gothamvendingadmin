@@ -39,7 +39,7 @@ type Prospect = {
 
 const statusOptions = ["NEW", "CONTACTED", "FOLLOW-UP", "CLOSED"];
 
-const Locations = () => {
+const Prospects = () => {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -259,4 +259,4 @@ const Locations = () => {
   );
 };
 
-export default Locations;
+export default Prospects;
