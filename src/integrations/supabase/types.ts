@@ -119,6 +119,51 @@ export type Database = {
           },
         ]
       }
+      machine_slots: {
+        Row: {
+          capacity: number | null
+          col: number
+          id: string
+          label: string
+          machine_id: string
+          org_id: string
+          row: number
+        }
+        Insert: {
+          capacity?: number | null
+          col: number
+          id?: string
+          label: string
+          machine_id: string
+          org_id: string
+          row: number
+        }
+        Update: {
+          capacity?: number | null
+          col?: number
+          id?: string
+          label?: string
+          machine_id?: string
+          org_id?: string
+          row?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_slots_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_slots_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machines: {
         Row: {
           created_at: string | null
@@ -473,6 +518,55 @@ export type Database = {
           },
         ]
       }
+      slot_assignments: {
+        Row: {
+          id: string
+          max_qty: number | null
+          org_id: string
+          product_id: string
+          restock_threshold: number | null
+          slot_id: string
+        }
+        Insert: {
+          id?: string
+          max_qty?: number | null
+          org_id: string
+          product_id: string
+          restock_threshold?: number | null
+          slot_id: string
+        }
+        Update: {
+          id?: string
+          max_qty?: number | null
+          org_id?: string
+          product_id?: string
+          restock_threshold?: number | null
+          slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_assignments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_assignments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_assignments_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: true
+            referencedRelation: "machine_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           contact: string | null
@@ -529,6 +623,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_machine_slots: {
+        Args: { p_cols: number; p_machine_id: string; p_rows: number }
+        Returns: number
+      }
       is_org_member: {
         Args: { row_org: string }
         Returns: boolean
@@ -561,6 +659,10 @@ export type Database = {
       upsert_product: {
         Args: { p: Json }
         Returns: string
+      }
+      upsert_slot_assignments: {
+        Args: { p_assignments: Json; p_machine_id: string }
+        Returns: number
       }
       upsert_supplier: {
         Args: { p: Json }
