@@ -1,551 +1,252 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Plus, Trash2, ArrowLeft, UserPlus } from "lucide-react";
-import { toast } from "sonner";
 
-type Supplier = {
-  id: string;
-  name: string;
-};
+type Supplier = { id: string; name: string; contact?: string | null };
+type Product = { id: string; name: string; sku: string; cost: number };
+type LineItem = { product_id?: string; qty_ordered: number; unit_cost: number };
 
-type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  cost: number | null;
-};
-
-type LineItem = {
-  id: string;
-  product_id: string;
-  product_name?: string;
-  product_sku?: string;
-  qty_ordered: number;
-  unit_cost: number;
-  errors?: {
-    product_id?: string;
-    qty_ordered?: string;
-    unit_cost?: string;
-  };
-};
-
-const fetchSuppliers = async (): Promise<Supplier[]> => {
-  const { data, error } = await (supabase as any)
-    .from("suppliers")
-    .select("id, name")
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data || [];
-};
-
-const fetchProducts = async (): Promise<Product[]> => {
-  const { data, error } = await (supabase as any)
-    .from("products")
-    .select("id, name, sku, cost")
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data || [];
-};
-
-const createSupplier = async (supplierData: {
-  name: string;
-  contact: string;
-}) => {
-  const { data, error } = await (supabase as any)
-    .from("suppliers")
-    .insert({
-      name: supplierData.name,
-      contact: supplierData.contact || null,
-    })
-    .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data;
-};
-
-const createPurchaseOrder = async (poData: {
-  supplier_id: string;
-  lineItems: LineItem[];
-}) => {
-  // Insert purchase order
-  const { data: po, error: poError } = await (supabase as any)
-    .from("purchase_orders")
-    .insert({
-      supplier_id: poData.supplier_id,
-      status: "OPEN",
-    })
-    .select()
-    .single();
-
-  if (poError) throw new Error(poError.message);
-
-  // Insert line items
-  const itemsData = poData.lineItems.map(item => ({
-    po_id: po.id,
-    product_id: item.product_id,
-    qty_ordered: item.qty_ordered,
-    unit_cost: item.unit_cost,
-  }));
-
-  const { error: itemsError } = await (supabase as any)
-    .from("purchase_order_items")
-    .insert(itemsData);
-
-  if (itemsError) throw new Error(itemsError.message);
-
-  return po;
-};
-
-const NewPurchaseOrder = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [selectedSupplier, setSelectedSupplier] = useState("");
-  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
-  const [supplierFormData, setSupplierFormData] = useState({
-    name: "",
-    contact: "",
-  });
+export default function NewPurchaseOrderPage() {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [supplierId, setSupplierId] = useState<string>("");
+  const [notes, setNotes] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    {
-      id: crypto.randomUUID(),
-      product_id: "",
-      qty_ordered: 1,
-      unit_cost: 0,
-    },
+    { product_id: undefined, qty_ordered: 1, unit_cost: 0 },
   ]);
+  const [error, setError] = useState<string>("");
 
-  const { data: suppliers = [] } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: fetchSuppliers,
-  });
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      const [{ data: sData, error: sErr }, { data: pData, error: pErr }] = await Promise.all([
+        supabase.from("suppliers").select("id,name,contact").order("name", { ascending: true }),
+        supabase.from("products").select("id,name,sku,cost").order("name", { ascending: true }),
+      ]);
+      if (!mounted) return;
+      if (sErr) setError(`Failed to load suppliers: ${sErr.message}`);
+      if (pErr) setError(prev => prev ? prev + " | " + pErr.message : pErr.message);
+      setSuppliers(sData || []);
+      setProducts((pData || []).map(p => ({ ...p, cost: Number(p.cost) || 0 })));
+      setLoading(false);
+    })();
+    return () => { mounted = false; };
+  }, []);
 
-  const { data: products = [] } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
+  const total = useMemo(
+    () => lineItems.reduce((sum, li) => sum + (Number(li.qty_ordered) || 0) * (Number(li.unit_cost) || 0), 0),
+    [lineItems]
+  );
 
-  const createSupplierMutation = useMutation({
-    mutationFn: createSupplier,
-    onSuccess: (newSupplier) => {
-      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      setSelectedSupplier(newSupplier.id);
-      setIsSupplierModalOpen(false);
-      setSupplierFormData({ name: "", contact: "" });
-      toast.success("Supplier created successfully!");
-    },
-    onError: (error: Error) => {
-      toast.error(`Error creating supplier: ${error.message}`);
-    },
-  });
+  function addLine() {
+    setLineItems(prev => [...prev, { product_id: undefined, qty_ordered: 1, unit_cost: 0 }]);
+  }
 
-  const createPOMutation = useMutation({
-    mutationFn: createPurchaseOrder,
-    onSuccess: (po) => {
-      toast.success("Purchase order created successfully!");
-      navigate(`/purchase-orders/${po.id}`);
-    },
-    onError: (error: Error) => {
-      toast.error(`Error creating purchase order: ${error.message}`);
-    },
-  });
+  function removeLine(index: number) {
+    setLineItems(prev => prev.filter((_, i) => i !== index));
+  }
 
-  const handleSupplierSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!supplierFormData.name.trim()) {
-      toast.error("Supplier name is required");
+  function updateLine(index: number, patch: Partial<LineItem>) {
+    setLineItems(prev => {
+      const next = [...prev];
+      const current = { ...next[index], ...patch };
+      // Coerce numeric fields
+      current.qty_ordered = Number(current.qty_ordered) || 0;
+      current.unit_cost = Number(current.unit_cost) || 0;
+      next[index] = current;
+      return next;
+    });
+  }
+
+  function onChangeProduct(index: number, productId: string) {
+    const p = products.find(x => x.id === productId);
+    setLineItems(prev => {
+      const next = [...prev];
+      const li = { ...next[index] };
+      li.product_id = productId || undefined;
+      if (!li.unit_cost || li.unit_cost === 0) {
+        li.unit_cost = p ? Number(p.cost) || 0 : 0;
+      }
+      if (!li.qty_ordered || li.qty_ordered < 1) li.qty_ordered = 1;
+      next[index] = li;
+      return next;
+    });
+  }
+
+  async function handleSave() {
+    setError("");
+    // Basic validation
+    if (!supplierId) {
+      setError("Please select a supplier.");
       return;
     }
-
-    createSupplierMutation.mutate({
-      name: supplierFormData.name.trim(),
-      contact: supplierFormData.contact.trim(),
-    });
-  };
-
-  const updateSupplierFormData = (field: string, value: string) => {
-    setSupplierFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addLineItem = () => {
-    setLineItems([
-      ...lineItems,
-      {
-        id: crypto.randomUUID(),
-        product_id: "",
-        qty_ordered: 1,
-        unit_cost: 0,
-      },
-    ]);
-  };
-
-  const removeLineItem = (id: string) => {
-    if (lineItems.length > 1) {
-      setLineItems(lineItems.filter(item => item.id !== id));
-    }
-  };
-
-  const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
-    setLineItems(
-      lineItems.map(item => {
-        if (item.id === id) {
-          const updatedItem = { ...item, [field]: value };
-          
-          // If updating qty_ordered or unit_cost, coerce to number and validate
-          if (field === "qty_ordered" || field === "unit_cost") {
-            updatedItem[field] = Number(value) || (field === "qty_ordered" ? 1 : 0);
-          }
-          
-          // Validate the item and update errors
-          if (field !== "errors") {
-            updatedItem.errors = validateLineItem(updatedItem);
-          }
-          
-          return updatedItem;
-        }
-        return item;
-      })
+    const validLines = lineItems.filter(
+      li => li.product_id && Number(li.qty_ordered) >= 1 && Number(li.unit_cost) >= 0
     );
-  };
-
-  const validateLineItem = (item: LineItem): LineItem["errors"] => {
-    const errors: LineItem["errors"] = {};
-    
-    if (!item.product_id) {
-      errors.product_id = "Product is required";
-    }
-    
-    const qty = Number(item.qty_ordered);
-    if (!qty || qty < 1) {
-      errors.qty_ordered = "Quantity must be at least 1";
-    }
-    
-    const cost = Number(item.unit_cost);
-    if (cost < 0) {
-      errors.unit_cost = "Unit cost cannot be negative";
-    }
-    
-    return Object.keys(errors).length > 0 ? errors : undefined;
-  };
-
-  const isLineItemValid = (item: LineItem): boolean => {
-    return !!(item.product_id && Number(item.qty_ordered) >= 1 && Number(item.unit_cost) >= 0);
-  };
-
-  const onProductChange = (itemId: string, productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      const currentItem = lineItems.find(item => item.id === itemId);
-      const shouldPrefillCost = !currentItem?.unit_cost || currentItem.unit_cost === 0;
-      
-      updateLineItem(itemId, "product_id", productId);
-      updateLineItem(itemId, "product_name", product.name);
-      updateLineItem(itemId, "product_sku", product.sku);
-      
-      if (shouldPrefillCost && product.cost) {
-        updateLineItem(itemId, "unit_cost", Number(product.cost));
-      }
-      
-      // Clear product error if one exists
-      const item = lineItems.find(i => i.id === itemId);
-      if (item?.errors?.product_id) {
-        const newErrors = { ...item.errors };
-        delete newErrors.product_id;
-        updateLineItem(itemId, "errors", Object.keys(newErrors).length > 0 ? newErrors : undefined);
-      }
-    } else if (!productId) {
-      // Clear product selection
-      updateLineItem(itemId, "product_id", "");
-      updateLineItem(itemId, "product_name", undefined);
-      updateLineItem(itemId, "product_sku", undefined);
-    }
-  };
-
-  const calculateTotal = () => {
-    return lineItems.reduce((total, item) => {
-      return total + (item.qty_ordered * item.unit_cost);
-    }, 0);
-  };
-
-  const handleSave = () => {
-    if (!selectedSupplier) {
-      toast.error("Please select a supplier");
+    if (validLines.length === 0) {
+      setError("Add at least one valid line (product, qty ≥ 1, cost ≥ 0).");
       return;
     }
 
-    const validLineItems = lineItems.filter(isLineItemValid);
+    setSaving(true);
+    try {
+      // 1) Insert PO header
+      const { data: po, error: poErr } = await supabase
+        .from("purchase_orders")
+        .insert([{ supplier_id: supplierId, status: "OPEN", notes }])
+        .select()
+        .single();
+      if (poErr) throw poErr;
 
-    if (validLineItems.length === 0) {
-      // Validate all items to show errors
-      setLineItems(lineItems.map(item => ({
-        ...item,
-        errors: validateLineItem(item)
-      })));
-      toast.error("Please fix the errors in the line items");
-      return;
+      // 2) Insert PO lines
+      const linesPayload = validLines.map(li => ({
+        po_id: po.id,
+        product_id: li.product_id!,
+        qty_ordered: Number(li.qty_ordered),
+        unit_cost: Number(li.unit_cost),
+      }));
+      const { error: itemsErr } = await supabase.from("purchase_order_items").insert(linesPayload);
+      if (itemsErr) throw itemsErr;
+
+      // 3) Navigate to PO details
+      window.location.href = `/purchase-orders/${po.id}`;
+    } catch (e: any) {
+      setError(e?.message || "Failed to save purchase order.");
+    } finally {
+      setSaving(false);
     }
-
-    createPOMutation.mutate({
-      supplier_id: selectedSupplier,
-      lineItems: validLineItems,
-    });
-  };
+  }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/purchase-orders")}
-          className="h-10 w-10"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">New Purchase Order</h1>
-      </div>
+    <div className="p-4 max-w-screen-md mx-auto">
+      <h1 className="text-2xl font-bold mb-3">New Purchase Order</h1>
 
-      <div className="space-y-6">
-        {/* Supplier Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Supplier Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="supplier">Supplier *</Label>
-              <div className="flex gap-2">
-                <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
-                  <SelectTrigger className="min-h-[44px] flex-1">
-                    <SelectValue placeholder="Select a supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Dialog open={isSupplierModalOpen} onOpenChange={setIsSupplierModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="min-h-[44px] min-w-[44px] shrink-0"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Add New Supplier</DialogTitle>
-                      <DialogDescription>
-                        Create a new supplier to add to your purchase order.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSupplierSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="supplier-name">Name *</Label>
-                        <Input
-                          id="supplier-name"
-                          type="text"
-                          value={supplierFormData.name}
-                          onChange={(e) => updateSupplierFormData("name", e.target.value)}
-                          placeholder="Enter supplier name"
-                          className="min-h-[44px]"
-                          autoFocus
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="supplier-contact">Contact</Label>
-                        <Input
-                          id="supplier-contact"
-                          type="text"
-                          value={supplierFormData.contact}
-                          onChange={(e) => updateSupplierFormData("contact", e.target.value)}
-                          placeholder="Enter contact information"
-                          className="min-h-[44px]"
-                        />
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsSupplierModalOpen(false)}
-                          className="min-h-[44px] flex-1"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={createSupplierMutation.isPending}
-                          className="min-h-[44px] flex-1"
-                        >
-                          {createSupplierMutation.isPending ? "Creating..." : "Create Supplier"}
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {error && (
+        <div className="mb-3 rounded bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>
+      )}
 
-        {/* Line Items */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Line Items</CardTitle>
-            <Button
-              onClick={addLineItem}
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Line
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {lineItems.map((item, index) => (
-              <div key={item.id} className="border rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Line {index + 1}</span>
-                  {lineItems.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeLineItem(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Product *</Label>
-                    <select
-                      value={item.product_id}
-                      onChange={(e) => onProductChange(item.id, e.target.value)}
-                      className={`w-full min-h-[44px] px-3 py-2 border rounded-md bg-background ${item.errors?.product_id ? 'border-destructive' : 'border-input'}`}
-                    >
-                      <option value="">Select product</option>
-                      {products.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.name} ({product.sku})
-                        </option>
-                      ))}
-                    </select>
-                    {products.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        No products found. Add products at /products.
-                      </p>
-                    )}
-                    {item.errors?.product_id && (
-                      <p className="text-sm text-destructive">{item.errors.product_id}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Qty Ordered *</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.qty_ordered}
-                      onChange={(e) =>
-                        updateLineItem(item.id, "qty_ordered", e.target.value)
-                      }
-                      className={`min-h-[44px] ${item.errors?.qty_ordered ? 'border-destructive' : ''}`}
-                    />
-                    {item.errors?.qty_ordered && (
-                      <p className="text-sm text-destructive">{item.errors.qty_ordered}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Unit Cost *</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={item.unit_cost}
-                      onChange={(e) =>
-                        updateLineItem(item.id, "unit_cost", e.target.value)
-                      }
-                      className={`min-h-[44px] ${item.errors?.unit_cost ? 'border-destructive' : ''}`}
-                    />
-                    {item.errors?.unit_cost && (
-                      <p className="text-sm text-destructive">{item.errors.unit_cost}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="text-right text-sm text-muted-foreground">
-                  Line Total: ${(item.qty_ordered * item.unit_cost).toFixed(2)}
-                </div>
-              </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Supplier</label>
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={supplierId}
+            onChange={(e) => setSupplierId(e.target.value)}
+            disabled={loading}
+          >
+            <option value="">Select supplier…</option>
+            {suppliers.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
-          </CardContent>
-        </Card>
+          </select>
+          <div className="text-xs text-gray-500 mt-1">
+            Don't see it? Create suppliers at <a className="underline" href="/suppliers">/suppliers</a>.
+          </div>
+        </div>
 
-        {/* Total and Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="text-xl font-bold">
-                PO Total: ${calculateTotal().toFixed(2)}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/purchase-orders")}
-                  className="min-h-[44px]"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={createPOMutation.isPending}
-                  className="min-h-[44px]"
-                >
-                  {createPOMutation.isPending ? "Saving..." : "Save Purchase Order"}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          <label className="block text-sm font-medium mb-2">Line Items</label>
+          <div className="space-y-3">
+            {lineItems.map((li, idx) => {
+              const invalid = !li.product_id || (li.qty_ordered ?? 0) < 1 || (li.unit_cost ?? -1) < 0;
+              return (
+                <div key={idx} className="rounded-lg border p-3 bg-white">
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Product</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={li.product_id || ""}
+                        onChange={(e) => onChangeProduct(idx, e.target.value)}
+                      >
+                        <option value="">Select product…</option>
+                        {products.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.sku})
+                          </option>
+                        ))}
+                      </select>
+                      {!products.length && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          No products found. Add products at <a className="underline" href="/products">/products</a>.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Qty</label>
+                        <input
+                          type="number"
+                          min={1}
+                          className="w-full border rounded px-3 py-2"
+                          value={li.qty_ordered}
+                          onChange={(e) => updateLine(idx, { qty_ordered: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Unit Cost</label>
+                        <input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          className="w-full border rounded px-3 py-2"
+                          value={li.unit_cost}
+                          onChange={(e) => updateLine(idx, { unit_cost: Number(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className={`text-sm ${invalid ? "text-red-600" : "text-gray-500"}`}>
+                        {invalid ? "Line invalid: choose product, qty ≥ 1, cost ≥ 0" : "Looks good"}
+                      </span>
+                      {lineItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeLine(idx)}
+                          className="text-red-600 text-sm underline"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={addLine}
+            className="mt-2 w-full border rounded-lg py-2 font-medium"
+          >
+            + Add line
+          </button>
+        </div>
+
+        <div className="rounded-lg border p-3 bg-white flex items-center justify-between">
+          <span className="text-sm text-gray-600">PO Total</span>
+          <span className="text-lg font-semibold">${total.toFixed(2)}</span>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || loading}
+            className="flex-1 rounded-lg bg-black text-white py-3 font-semibold disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save Purchase Order"}
+          </button>
+          <a href="/purchase-orders" className="flex-1 rounded-lg border py-3 text-center font-semibold">
+            Cancel
+          </a>
+        </div>
       </div>
     </div>
   );
-};
-
-export default NewPurchaseOrder;
+}
