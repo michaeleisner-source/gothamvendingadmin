@@ -739,6 +739,10 @@ export type Database = {
         Args: { row_org: string }
         Returns: boolean
       }
+      is_org_owner: {
+        Args: { target_org_id: string }
+        Returns: boolean
+      }
       list_products: {
         Args: { p_limit?: number; p_offset?: number; p_search?: string }
         Returns: {
