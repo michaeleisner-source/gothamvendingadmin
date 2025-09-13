@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const PUBLIC_PATHS = new Set<string>([
   "/auth",
-  "/reset-password", // add this if/when you build it
-  "/",
+  "/reset-password", // keep only truly public routes here
+  // do NOT include "/" here or everything becomes public
 ]);
 
 export default function AuthGate({ children }: { children: ReactNode }) {
