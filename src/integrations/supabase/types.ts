@@ -727,6 +727,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      dashboard_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       generate_machine_slots: {
         Args: { p_cols: number; p_machine_id: string; p_rows: number }
         Returns: number
@@ -759,6 +763,33 @@ export type Database = {
           org_id: string | null
           updated_at: string
         }[]
+      }
+      report_low_stock: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_qty: number
+          machine_id: string
+          machine_name: string
+          product_id: string
+          product_name: string
+          restock_threshold: number
+          slot_label: string
+        }[]
+      }
+      report_purchase_orders: {
+        Args: { p_days?: number; p_status?: string }
+        Returns: {
+          created_at: string
+          po_id: string
+          status: string
+          supplier_id: string
+          supplier_name: string
+          total_amount: number
+        }[]
+      }
+      report_restock_history: {
+        Args: { p_days?: number; p_machine_id: string }
+        Returns: Json
       }
       save_restock_session: {
         Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
