@@ -13,6 +13,7 @@ import {
 const navItems = [
   { name: "Dashboard", path: "/" },
   { name: "Machines", path: "/machines" },
+  { name: "Products", path: "/products" },
   { name: "Delivery Routes", path: "/delivery-routes" },
   { name: "Picklists", path: "/picklists" },
   { name: "Tickets", path: "/tickets" },
