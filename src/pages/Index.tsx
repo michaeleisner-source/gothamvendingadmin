@@ -1,9 +1,8 @@
-import { MachinesList } from "@/components/MachinesList";
-
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <MachinesList />
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <p className="text-muted-foreground">Welcome to Vendly. Use the menu to navigate to different sections.</p>
     </div>
   );
 };
