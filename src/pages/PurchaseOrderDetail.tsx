@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Edit, FileText, CheckCircle, XCircle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type PurchaseOrderDetail = {
   id: string;
@@ -65,6 +85,8 @@ const fetchPurchaseOrderDetail = async (id: string): Promise<PurchaseOrderDetail
 const PurchaseOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [newStatus, setNewStatus] = useState<string>("");
 
   const {
     data: purchaseOrder,
@@ -75,6 +97,95 @@ const PurchaseOrderDetail = () => {
     queryFn: () => fetchPurchaseOrderDetail(id!),
     enabled: !!id,
   });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from("purchase_orders")
+        .update({ status: status.toUpperCase() })
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-order", id] });
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      toast.success("Purchase order status updated successfully!");
+      setNewStatus("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error updating purchase order status");
+    },
+  });
+
+  const handleStatusUpdate = (status: string) => {
+    if (!id) return;
+    updateStatusMutation.mutate({ id, status });
+  };
+
+  const canEdit = () => {
+    const currentStatus = purchaseOrder?.status?.toUpperCase();
+    return currentStatus === "OPEN" || currentStatus === "DRAFT";
+  };
+
+  const getAvailableActions = () => {
+    const currentStatus = purchaseOrder?.status?.toUpperCase();
+    const actions = [];
+
+    switch (currentStatus) {
+      case "OPEN":
+      case "DRAFT":
+        actions.push(
+          { label: "Submit PO", status: "SUBMITTED", variant: "default", icon: CheckCircle },
+          { label: "Cancel PO", status: "CANCELLED", variant: "destructive", icon: XCircle }
+        );
+        break;
+      case "SUBMITTED":
+        actions.push(
+          { label: "Mark as Received", status: "RECEIVED", variant: "default", icon: CheckCircle },
+          { label: "Cancel PO", status: "CANCELLED", variant: "destructive", icon: XCircle }
+        );
+        break;
+      case "RECEIVED":
+        // No actions available for received orders
+        break;
+      case "CANCELLED":
+        actions.push(
+          { label: "Reopen PO", status: "OPEN", variant: "outline", icon: Edit }
+        );
+        break;
+    }
+
+    return actions;
+  };
+
+  const exportPO = () => {
+    if (!purchaseOrder) return;
+    
+    const data = {
+      po_number: getShortId(purchaseOrder.id),
+      supplier: purchaseOrder.supplier.name,
+      contact: purchaseOrder.supplier.contact,
+      status: purchaseOrder.status,
+      created: new Date(purchaseOrder.created_at).toLocaleDateString(),
+      total: calculateTotal(),
+      items: purchaseOrder.purchase_order_items.map(item => ({
+        product: item.product.name,
+        sku: item.product.sku,
+        qty: item.qty_ordered,
+        unit_cost: item.unit_cost,
+        total: item.qty_ordered * item.unit_cost
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PO-${getShortId(purchaseOrder.id)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const getStatusVariant = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -157,16 +268,73 @@ const PurchaseOrderDetail = () => {
         <h1 className="text-2xl font-bold">
           Purchase Order #{getShortId(purchaseOrder!.id)}
         </h1>
+        <div className="ml-auto flex gap-2">
+          <Button onClick={exportPO} variant="outline" size="sm">
+            <FileText className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          {canEdit() && (
+            <Button variant="outline" size="sm">
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-6">
+        {/* Actions Section */}
+        {getAvailableActions().length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {getAvailableActions().map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <AlertDialog key={action.status}>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant={action.variant as any} 
+                          size="sm"
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <Icon className="w-4 h-4 mr-2" />
+                          {action.label}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to {action.label.toLowerCase()}? 
+                            This will change the status to "{action.status}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleStatusUpdate(action.status)}>
+                            {action.label}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* PO Header Information */}
         <Card>
           <CardHeader>
             <CardTitle>Order Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Supplier</Label>
                 <p className="text-lg font-medium">{purchaseOrder!.supplier.name}</p>
@@ -177,20 +345,40 @@ const PurchaseOrderDetail = () => {
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                 <div className="mt-1">
-                  <Badge variant={getStatusVariant(purchaseOrder!.status) as any}>
+                  <Badge variant={getStatusVariant(purchaseOrder!.status) as any} className="text-sm">
                     {purchaseOrder!.status}
                   </Badge>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {purchaseOrder!.status === "OPEN" && "Ready for review and submission"}
+                  {purchaseOrder!.status === "SUBMITTED" && "Awaiting supplier confirmation"}
+                  {purchaseOrder!.status === "RECEIVED" && "Items have been received"}
+                  {purchaseOrder!.status === "CANCELLED" && "Order has been cancelled"}
+                </p>
               </div>
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Created</Label>
                 <p className="text-lg">
                   {new Date(purchaseOrder!.created_at).toLocaleDateString()}
                 </p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(purchaseOrder!.created_at).toLocaleTimeString()}
+                </p>
               </div>
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Total</Label>
-                <p className="text-lg font-bold">${calculateTotal().toFixed(2)}</p>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t">
+              <div className="flex justify-between items-center">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Order Total</Label>
+                  <p className="text-2xl font-bold text-primary">${calculateTotal().toFixed(2)}</p>
+                </div>
+                <div className="text-right">
+                  <Label className="text-sm font-medium text-muted-foreground">Items</Label>
+                  <p className="text-lg font-medium">
+                    {purchaseOrder!.purchase_order_items.reduce((sum, item) => sum + item.qty_ordered, 0)} units
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -199,7 +387,9 @@ const PurchaseOrderDetail = () => {
         {/* Line Items */}
         <Card>
           <CardHeader>
-            <CardTitle>Line Items</CardTitle>
+            <CardTitle>
+              Line Items ({purchaseOrder!.purchase_order_items.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -208,16 +398,16 @@ const PurchaseOrderDetail = () => {
                   <TableRow>
                     <TableHead>Product</TableHead>
                     <TableHead>SKU</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Qty Ordered</TableHead>
                     <TableHead className="text-right">Unit Cost</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Line Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {purchaseOrder!.purchase_order_items.map((item) => (
+                  {purchaseOrder!.purchase_order_items.map((item, index) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.product.name}</TableCell>
-                      <TableCell>{item.product.sku}</TableCell>
+                      <TableCell className="font-mono text-sm">{item.product.sku}</TableCell>
                       <TableCell className="text-right">{item.qty_ordered}</TableCell>
                       <TableCell className="text-right">${item.unit_cost.toFixed(2)}</TableCell>
                       <TableCell className="text-right font-medium">
@@ -228,15 +418,36 @@ const PurchaseOrderDetail = () => {
                 </TableBody>
               </Table>
             </div>
+            
+            {/* Summary */}
             <div className="border-t pt-4 mt-4">
-              <div className="flex justify-end">
-                <div className="text-xl font-bold">
-                  Total: ${calculateTotal().toFixed(2)}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal:</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Total:</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Notes Section */}
+        {purchaseOrder!.notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {purchaseOrder!.notes}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
