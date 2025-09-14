@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Route, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useDemo } from "@/lib/demo";
 import {
   Factory, LayoutDashboard, Clipboard, Building2, MapPinned, Settings2, ClipboardList, ClipboardCheck,
@@ -11,8 +11,10 @@ import {
 /* ---------------------------- shared utils ---------------------------- */
 const centsToDollars = (c?: number | null) => (Number.isFinite(Number(c)) ? Number(c) / 100 : 0);
 const dollars = (n: number) => n.toLocaleString(undefined, { style: "currency", currency: "USD" });
-const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 const daysAgo = (d?: string | null) => (d ? Math.floor((Date.now() - new Date(d).getTime()) / 86400000) : null);
+
+// Helper for tickets table (since it doesn't exist in schema yet)
+const ticketsTable = () => (supabase as any).from("tickets");
 
 /* =====================================================================
    PART A — LEAN SIDEBAR (flow clarity)
@@ -20,14 +22,7 @@ const daysAgo = (d?: string | null) => (d ? Math.floor((Date.now() - new Date(d)
 export function SidebarLean() {
   const { isDemo } = useDemo();
   const [open, setOpen] = useState<Record<string, boolean>>({
-    pipeline: true,
-    sites: true,
-    machines: true,
-    stock: true,
-    ops: true,
-    finance: true,
-    reports: true,
-    admin: true,
+    pipeline: true, sites: true, machines: true, stock: true, ops: true, finance: true, reports: true, admin: true,
   });
   const toggle = (k: string) => setOpen(s => ({ ...s, [k]: !s[k] }));
 
@@ -48,7 +43,6 @@ export function SidebarLean() {
 
         <Group label="Sites & Contracts" icon={Building2} open={open.sites} onClick={() => toggle("sites")}>
           <Item to="/locations" icon={Building2}>Locations</Item>
-          {/* future: /contracts */}
         </Group>
 
         <Group label="Machines" icon={Settings2} open={open.machines} onClick={() => toggle("machines")}>
@@ -99,28 +93,14 @@ export function SidebarLean() {
         </Group>
       </nav>
 
-      <div className="px-4 py-3 border-t border-sidebar-border text-xs text-muted-foreground">v3.0 · Lean Flow</div>
+      <div className="px-4 py-3 border-t border-sidebar-border text-xs text-muted-foreground">v3.1 · Lean Flow (schema-aware)</div>
     </aside>
   );
 }
-
 function Section({ children }: { children: React.ReactNode }) {
   return <div className="px-2 pt-2 pb-1 text-[11px] uppercase tracking-wider text-muted-foreground">{children}</div>;
 }
-
-function Group({ 
-  label, 
-  icon: Icon, 
-  open, 
-  onClick, 
-  children 
-}: { 
-  label: string; 
-  icon: React.ComponentType<{ className?: string }>; 
-  open: boolean; 
-  onClick: () => void; 
-  children: React.ReactNode;
-}) {
+function Group({ label, icon: Icon, open, onClick, children }: any) {
   return (
     <div className="mt-3">
       <button className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-sidebar-accent" onClick={onClick} aria-expanded={open}>
@@ -133,16 +113,7 @@ function Group({
     </div>
   );
 }
-
-function Item({ 
-  to, 
-  icon: Icon, 
-  children 
-}: { 
-  to: string; 
-  icon: React.ComponentType<{ className?: string }>; 
-  children: React.ReactNode;
-}) {
+function Item({ to, icon: Icon, children }: any) {
   return (
     <NavLink to={to} className={({ isActive }) =>
       `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-sidebar-accent ${isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""}`}>
@@ -150,8 +121,7 @@ function Item({
     </NavLink>
   );
 }
-
-function Child({ to, children }: { to: string; children: React.ReactNode }) {
+function Child({ to, children }: any) {
   return (
     <NavLink to={to} className={({ isActive }) =>
       `block text-sm px-2 py-1.5 rounded-md hover:bg-sidebar-accent ${isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""}`}>
@@ -159,101 +129,129 @@ function Child({ to, children }: { to: string; children: React.ReactNode }) {
     </NavLink>
   );
 }
-
-// tiny icon alias
-function PercentIcon(props: { className?: string }) { 
-  return (
-    <svg {...props} viewBox="0 0 24 24" className="size-4">
-      <path fill="currentColor" d="M18.5 5.5a2.5 2.5 0 1 1-5.001-.001A2.5 2.5 0 0 1 18.5 5.5m-8 13a2.5 2.5 0 1 1-5.001-.001A2.5 2.5 0 0 1 10.5 18.5M5 19L19 5"/>
-    </svg>
-  );
-}
+function PercentIcon(props:any){ return <svg {...props} viewBox="0 0 24 24" className={"size-4"}><path fill="currentColor" d="M18.5 5.5a2.5 2.5 0 1 1-5.001-.001A2.5 2.5 0 0 1 18.5 5.5m-8 13a2.5 2.5 0 1 1-5.001-.001A2.5 2.5 0 0 1 10.5 18.5M5 19L19 5"/></svg>}
 
 /* =====================================================================
-   PART B — PROSPECTS KANBAN (work the leads, fast)
-   Route: /prospects (drop-in replacement)
-   Table: prospects (if missing, shows SQL)
+   PART B — PROSPECTS KANBAN (auto-maps your schema)
+   Route: /prospects
 ===================================================================== */
-const PROSPECTS_SQL = `-- Prospects table (safe to run once in Supabase)
-create table if not exists public.prospects (
-  id uuid primary key default gen_random_uuid(),
-  name text,                     -- business or contact name
-  contact_email text,
-  contact_phone text,
-  source text,                   -- referral, cold, web, etc.
-  potential_machines int,
-  est_daily_traffic int,
-  stage text check (stage in ('new','contacted','site_visit','proposal','won','lost')) default 'new',
-  notes text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-create index if not exists idx_prospects_stage on public.prospects(stage);
-`;
-
-type Prospect = {
-  id: string; business_name?: string|null; contact_email?: string|null; contact_phone?: string|null;
-  source?: string|null; potential_machines?: number|null; est_daily_traffic?: number|null;
-  stage?: string|null; notes?: string|null; created_at?: string|null;
-};
+type ProspectRow = Record<string, any>;
 
 export function ProspectsBoard() {
   const navigate = useNavigate();
   const [tableOk, setTableOk] = useState<boolean | null>(null);
-  const [rows, setRows] = useState<Prospect[]>([]);
+  const [rows, setRows] = useState<ProspectRow[]>([]);
   const [creating, setCreating] = useState(false);
+
+  // Derive display + write targets from any row we got back
   const stages = ["new","contacted","site_visit","proposal","won","lost"] as const;
 
   useEffect(() => {
     (async () => {
-      const probe = await supabase.from("prospects").select("id").limit(1);
+      // Probe table
+      const probe = await supabase.from("prospects").select("*").limit(1);
       setTableOk(!probe.error);
-      if (!probe.error) {
-        const { data } = await supabase.from("prospects").select("*").order("created_at", { ascending: false }).limit(2000);
-        setRows((data || []) as Prospect[]);
-      }
+      if (probe.error) return;
+
+      // Load all columns (no hardcoded list, stays future-proof)
+      const { data } = await supabase.from("prospects").select("*").order("created_at", { ascending: false }).limit(2000);
+      setRows(data || []);
     })();
   }, []);
 
+  const colMap = useMemo(() => {
+    // Decide which column names to use based on the actual data (first row wins)
+    const sample = rows[0] || {};
+    const pick = (...names: string[]) => names.find(n => n in sample) || names[0]; // fall back to first
+    return {
+      name: pick("business_name", "name", "company_name"),
+      stage: pick("stage", "status"),
+      contact_email: pick("contact_email", "email"),
+      contact_phone: pick("contact_phone", "phone"),
+      potential_machines: pick("potential_machines"),
+      est_daily_traffic: pick("est_daily_traffic"),
+      notes: pick("notes"),
+      created_at: pick("created_at"),
+      source: pick("source"),
+    };
+  }, [rows]);
+
+  function get(r: ProspectRow, k: keyof typeof colMap) {
+    const col = colMap[k] as string; return (col && r[col] != null) ? r[col] : null;
+  }
+
   async function createQuick() {
     setCreating(true);
-    const { data, error } = await supabase.from("prospects").insert({ business_name: "New prospect", stage: "new" }).select("id");
+    // Try inserting using either 'business_name' or 'name'
+    const payloadA: any = { [colMap.name || "business_name"]: "New prospect", [colMap.stage || "stage"]: "new" };
+    let res = await (supabase.from("prospects") as any).insert(payloadA).select("id").single();
+    if (res.error && colMap.name !== "business_name") {
+      // Retry alternate
+      const alt = colMap.name === "name" ? "business_name" : "name";
+      res = await (supabase.from("prospects") as any).insert({ [alt]: "New prospect", [colMap.stage || "stage"]: "new" }).select("id").single();
+    }
     setCreating(false);
-    if (!error && data && data[0]?.id) {
-      navigate(`/prospects?id=${data[0].id}`);
+    if (!res.error && res.data?.id) navigate(`/prospects?id=${res.data.id}`);
+  }
+
+  async function move(id: string, newStage: string) {
+    // Try to update whichever stage column exists; fallback to the other
+    const tryUpdate = async (col: string) =>
+      await supabase.from("prospects").update({ [col]: newStage, updated_at: new Date().toISOString() }).eq("id", id);
+
+    let { error } = await tryUpdate(colMap.stage || "stage");
+    if (error && (colMap.stage === "stage")) { ({ error } = await tryUpdate("status")); }
+    if (!error) {
+      setRows(r => r.map(x => x.id === id ? { ...x, [colMap.stage || "stage"]: newStage, status: newStage } : x));
+    } else {
+      alert(`Could not move prospect: ${error.message}`);
     }
   }
-  async function move(id: string, stage: string) {
-    await supabase.from("prospects").update({ stage, updated_at: new Date().toISOString() }).eq("id", id);
-    setRows(r => r.map(x => x.id === id ? { ...x, stage } : x));
-  }
-  async function convertToLocation(p: Prospect) {
-    // minimal conversion: create a location row with name/notes; adapt to your schema
-    const payload: any = { name: p.business_name || "New Location", notes: `Converted from prospect ${p.id}` };
+
+  async function convertToLocation(p: ProspectRow) {
+    const displayName = p[colMap.name] || "New Location";
+    const payload: any = { name: displayName, notes: `Converted from prospect ${p.id}` };
     const res = await supabase.from("locations").insert(payload).select("id").single();
     if (res.error) { alert(`Failed to create location: ${res.error.message}`); return; }
-    await supabase.from("prospects").update({ stage: "won" }).eq("id", p.id);
+    await move(p.id, "won");
     navigate(`/locations/${res.data.id}`);
   }
 
-  const byStage: Record<string, Prospect[]> = useMemo(() => {
-    const m: Record<string, Prospect[]> = {};
-    stages.forEach(s => m[s] = []);
-    rows.forEach(r => m[r.stage || "new"]?.push(r));
+  const byStage: Record<string, ProspectRow[]> = useMemo(() => {
+    const m: Record<string, ProspectRow[]> = {}; stages.forEach(s => m[s] = []);
+    rows.forEach(r => {
+      const s = (get(r, "stage") as string) || "new";
+      if (m[s]) m[s].push(r);
+      else (m["new"].push(r));
+    });
     return m;
-  }, [rows]);
+  }, [rows, colMap]);
 
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold flex items-center gap-2"><MapPinned className="h-5 w-5"/> Prospects</h1>
-        <button onClick={createQuick} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted" disabled={creating}>
+        <button onClick={createQuick} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
           <Plus className="h-4 w-4"/> New Prospect
         </button>
       </div>
 
       {tableOk === false && (
-        <SQLNotice title="Prospects table missing" sql={PROSPECTS_SQL}/>
+        <SQLNotice title="Prospects table missing" sql={`-- Example schema (safe to run once)
+create table if not exists public.prospects (
+  id uuid primary key default gen_random_uuid(),
+  business_name text, name text,
+  contact_email text, contact_phone text,
+  source text,
+  potential_machines int,
+  est_daily_traffic int,
+  stage text check (stage in ('new','contacted','site_visit','proposal','won','lost')) default 'new',
+  status text,
+  notes text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_prospects_stage on public.prospects(stage);`} />
       )}
 
       <div className="grid lg:grid-cols-6 md:grid-cols-3 gap-3">
@@ -261,22 +259,28 @@ export function ProspectsBoard() {
           <div key={stage} className="rounded-xl border border-border bg-card p-2">
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{stage.replace("_"," ")}</div>
             <div className="space-y-2">
-              {byStage[stage].map(p => (
-                <div key={p.id} className="rounded-lg border border-border bg-card p-2">
-                  <div className="text-sm font-medium">{p.business_name || "—"}</div>
-                  <div className="text-xs text-muted-foreground">{p.source || "—"} · {p.contact_phone || p.contact_email || "no contact"}</div>
-                  <div className="text-xs text-muted-foreground">Potential: {p.potential_machines || 1} machines · Traffic: {p.est_daily_traffic || "?"}</div>
-                  <div className="flex gap-2 mt-2">
-                    <select className="rounded bg-background border border-border text-xs px-2 py-1"
-                      value={p.stage || "new"} onChange={(e) => move(p.id, e.target.value)}>
-                      {stages.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    {stage !== "won" && stage !== "lost" && (
-                      <button onClick={() => convertToLocation(p)} className="text-xs px-2 py-1 rounded border border-border hover:bg-muted">Convert → Location</button>
-                    )}
+              {byStage[stage].map(p => {
+                const displayName = (p[colMap.name] ?? "") || "—";
+                const contact = (p[colMap.contact_phone] || p[colMap.contact_email] || "no contact");
+                const pm = p[colMap.potential_machines] ?? "—";
+                const traffic = p[colMap.est_daily_traffic] ?? "—";
+                return (
+                  <div key={p.id} className="rounded-lg border border-border bg-card p-2">
+                    <div className="text-sm font-medium">{displayName}</div>
+                    <div className="text-xs text-muted-foreground">{p[colMap.source] || "—"} · {contact}</div>
+                    <div className="text-xs text-muted-foreground">Potential: {pm} machines · Traffic: {traffic}</div>
+                    <div className="flex gap-2 mt-2">
+                      <select className="rounded bg-background border border-border text-xs px-2 py-1"
+                        value={(p[colMap.stage] as string) || "new"} onChange={(e) => move(p.id, e.target.value)}>
+                        {stages.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {stage !== "won" && stage !== "lost" && (
+                        <button onClick={() => convertToLocation(p)} className="text-xs px-2 py-1 rounded border border-border hover:bg-muted">Convert → Location</button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {!byStage[stage].length && <div className="text-xs text-muted-foreground">—</div>}
             </div>
           </div>
@@ -285,7 +289,7 @@ export function ProspectsBoard() {
 
       <div className="rounded-xl border border-border p-3">
         <div className="text-sm font-medium flex items-center gap-2"><BarChart4 className="h-4 w-4"/> Funnel snapshot</div>
-        <div className="text-xs text-muted-foreground mt-1">Use stage moves to see real conversion. Export later for deeper analytics.</div>
+        <div className="text-xs text-muted-foreground mt-1">Move cards to see conversion; export later for deep analytics.</div>
       </div>
     </div>
   );
@@ -294,7 +298,6 @@ export function ProspectsBoard() {
 /* =====================================================================
    PART C — SILENT MACHINES (uptime/attention report)
    Route: /reports/silent-machines
-   Needs: machines, sales (if sales missing, page still loads)
 ===================================================================== */
 export function SilentMachinesReport() {
   const [machines, setMachines] = useState<Array<{id:string; name?:string|null}>>([]);
@@ -307,7 +310,6 @@ export function SilentMachinesReport() {
       const m = await supabase.from("machines").select("id, name").order("name",{ascending:true});
       if (!m.error) setMachines(m.data || []);
 
-      // try to get last sale per machine
       const s = await supabase
         .from("sales")
         .select("machine_id, occurred_at")
@@ -317,7 +319,7 @@ export function SilentMachinesReport() {
       if (!s.error) {
         (s.data || []).forEach((row:any) => {
           const mid = row.machine_id;
-          if (mid && !map[mid]) map[mid] = row.occurred_at; // first (latest) occurrence
+          if (mid && !map[mid]) map[mid] = row.occurred_at;
         });
       }
       setLastSale(map);
@@ -335,7 +337,7 @@ export function SilentMachinesReport() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold flex items-center gap-2"><Timer className="h-5 w-5"/> Silent Machines</h1>
-        <div className="text-xs text-muted-foreground">Shows latest recorded sale; if none, machine is treated as silent.</div>
+        <div className="text-xs text-muted-foreground">Based on latest recorded sale; create a ticket if a unit is quiet too long.</div>
       </div>
 
       {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
@@ -374,9 +376,7 @@ export function SilentMachinesReport() {
 }
 
 /* =====================================================================
-   PART D — MACHINE TICKETS PANEL (attach tickets to machine)
-   Route: /machines/:id/tickets
-   Also exposes a /tickets/new form (if you don't already have it)
+   PART D — MACHINE TICKETS PANEL + /tickets/new
 ===================================================================== */
 const TICKETS_SQL = `-- Tickets table (safe to run once)
 create table if not exists public.tickets (
@@ -393,8 +393,7 @@ create table if not exists public.tickets (
   updated_at timestamptz default now(),
   resolved_at timestamptz
 );
-create index if not exists idx_tickets_machine on public.tickets(machine_id);
-`;
+create index if not exists idx_tickets_machine on public.tickets(machine_id);`;
 
 export function MachineTicketsPanel() {
   const { id } = useParams();
@@ -405,11 +404,11 @@ export function MachineTicketsPanel() {
 
   useEffect(() => {
     (async () => {
-      const probe = await (supabase as any).from("tickets").select("id").limit(1);
+      const probe = await ticketsTable().select("id").limit(1);
       setTableOk(!probe.error);
       setLoading(true);
       if (!probe.error) {
-        const { data } = await (supabase as any).from("tickets").select("*").eq("machine_id", id).order("created_at",{ascending:false});
+        const { data } = await ticketsTable().select("*").eq("machine_id", id).order("created_at",{ascending:false});
         setRows(data || []);
       }
       setLoading(false);
@@ -476,7 +475,7 @@ export function NewTicketPage() {
 
   useEffect(() => {
     (async () => {
-      const probe = await (supabase as any).from("tickets").select("id").limit(1);
+      const probe = await ticketsTable().select("id").limit(1);
       setTableOk(!probe.error);
       const m = await supabase.from("machines").select("id,name").order("name",{ascending:true});
       if (!m.error) setMachines(m.data || []);
@@ -486,10 +485,8 @@ export function NewTicketPage() {
   async function save() {
     setErr(null); setOk(null); setSaving(true);
     if (!f.title?.trim()) { setErr("Title required"); setSaving(false); return; }
-    const { error } = await (supabase as any).from("tickets").insert({
-      machine_id: f.machine_id || null,
-      title: f.title, issue: f.issue || null,
-      status: f.status, priority: f.priority
+    const { error } = await ticketsTable().insert({
+      machine_id: f.machine_id || null, title: f.title, issue: f.issue || null, status: f.status, priority: f.priority
     });
     setSaving(false);
     if (error) { setErr(error.message); return; }
@@ -558,8 +555,7 @@ function SQLNotice({ title, sql }: { title: string; sql: string }) {
 }
 
 /* =====================================================================
-   PART E — ROUTES MOUNTER
-   Drop this into your <Routes> to enable pages
+   PART E — ROUTES MOUNTER (unchanged)
 ===================================================================== */
 export function LeanFlowRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{children:React.ReactNode}> }) {
   const Wrap: React.FC<{children:React.ReactNode}> = ({ children }) =>
@@ -567,11 +563,8 @@ export function LeanFlowRoutes({ ProtectedRoute }: { ProtectedRoute?: React.Comp
 
   return (
     <>
-      {/* Replace /prospects with Kanban */}
       <Route path="/prospects" element={<Wrap><ProspectsBoard/></Wrap>} />
-      {/* Reports */}
       <Route path="/reports/silent-machines" element={<Wrap><SilentMachinesReport/></Wrap>} />
-      {/* Machine tickets add-on + ticket form */}
       <Route path="/machines/:id/tickets" element={<Wrap><MachineTicketsPanel/></Wrap>} />
       <Route path="/tickets/new" element={<Wrap><NewTicketPage/></Wrap>} />
     </>
