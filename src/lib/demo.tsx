@@ -42,29 +42,10 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Protected Route - bypasses login when demo is active
+// Protected Route - bypasses login (all routes are now public)
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { isDemo, ready } = useDemo();
-
-  console.log('ProtectedRoute render:', { isDemo, ready });
-
-  if (!ready) {
-    console.log('ProtectedRoute: Loading...');
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (isDemo) {
-    console.log('ProtectedRoute: Demo mode - bypassing auth');
-    return children;
-  }
-  
-  // Fallback to normal auth logic if demo is disabled
-  console.log('ProtectedRoute: Normal auth mode');
-  return <AuthGate>{children}</AuthGate>;
+  // Always return children without authentication check
+  return children;
 }
 
 // Demo Banner - visible indicator + read‑only hint
