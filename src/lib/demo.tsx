@@ -9,10 +9,31 @@ export const useDemo = () => React.useContext(DemoContext);
 
 // Demo Provider
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [isDemo, setIsDemo] = React.useState(true); // Always demo mode for now
-  const [ready, setReady] = React.useState(true); // Always ready
+  const [isDemo, setIsDemo] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
 
-  console.log('DemoProvider: isDemo =', isDemo, 'ready =', ready);
+  React.useEffect(() => {
+    (async () => {
+      const url = new URL(window.location.href);
+      const flag = import.meta.env.VITE_PUBLIC_DEMO === 'true' || url.searchParams.get('demo') === '1';
+      
+      console.log('DemoProvider: Environment check', {
+        VITE_PUBLIC_DEMO: import.meta.env.VITE_PUBLIC_DEMO,
+        queryParam: url.searchParams.get('demo'),
+        demoMode: flag
+      });
+      
+      if (!flag) {
+        console.log('Demo mode disabled, using normal auth');
+        setReady(true);
+        return;
+      }
+      
+      console.log('Demo mode enabled');
+      setIsDemo(true);
+      setReady(true);
+    })();
+  }, []);
 
   return (
     <DemoContext.Provider value={{ isDemo, ready }}>
@@ -37,9 +58,14 @@ export function ProtectedRoute({ children }: { children: JSX.Element }) {
     );
   }
   
-  // Always bypass auth in demo mode (which is always true)
-  console.log('ProtectedRoute: Demo mode - bypassing auth');
-  return children;
+  if (isDemo) {
+    console.log('ProtectedRoute: Demo mode - bypassing auth');
+    return children;
+  }
+  
+  // Fallback to normal auth logic if demo is disabled
+  console.log('ProtectedRoute: Normal auth mode');
+  return <AuthGate>{children}</AuthGate>;
 }
 
 // Demo Banner - visible indicator + read‑only hint
