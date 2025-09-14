@@ -32,6 +32,7 @@ import MachineSetup from "./pages/MachineSetup";
 import SlotPlanner from "./pages/SlotPlanner";
 import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
+import MachineFinance from "./pages/MachineFinance";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/setup" element={<MachineSetup />} />
               <Route path="/slots" element={<SlotPlanner />} />
               <Route path="/reports" element={<ProfitReports />} />
+              <Route path="/machines/finance" element={<MachineFinance />} />
               <Route path="/account" element={<Account />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
