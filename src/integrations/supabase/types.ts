@@ -1247,63 +1247,129 @@ export type Database = {
           },
         ]
       }
+      prospect_activities: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          id: string
+          org_id: string | null
+          prospect_id: string
+          type: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
+          prospect_id: string
+          type?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
+          prospect_id?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_activities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_activities_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           address_line1: string | null
           address_line2: string | null
           business_name: string
           city: string | null
+          company: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          converted_location_id: string | null
           created_at: string | null
           id: string
           location_type_id: string | null
+          name: string | null
+          next_follow_up_at: string | null
           notes: string | null
           org_id: string | null
+          owner_id: string | null
           postal_code: string | null
+          source: string | null
+          stage: string | null
           state: string | null
           status: string | null
           traffic_daily_est: number | null
           traffic_monthly_est: number | null
+          updated_at: string | null
         }
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
           business_name: string
           city?: string | null
+          company?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          converted_location_id?: string | null
           created_at?: string | null
           id?: string
           location_type_id?: string | null
+          name?: string | null
+          next_follow_up_at?: string | null
           notes?: string | null
           org_id?: string | null
+          owner_id?: string | null
           postal_code?: string | null
+          source?: string | null
+          stage?: string | null
           state?: string | null
           status?: string | null
           traffic_daily_est?: number | null
           traffic_monthly_est?: number | null
+          updated_at?: string | null
         }
         Update: {
           address_line1?: string | null
           address_line2?: string | null
           business_name?: string
           city?: string | null
+          company?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          converted_location_id?: string | null
           created_at?: string | null
           id?: string
           location_type_id?: string | null
+          name?: string | null
+          next_follow_up_at?: string | null
           notes?: string | null
           org_id?: string | null
+          owner_id?: string | null
           postal_code?: string | null
+          source?: string | null
+          stage?: string | null
           state?: string | null
           status?: string | null
           traffic_daily_est?: number | null
           traffic_monthly_est?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {

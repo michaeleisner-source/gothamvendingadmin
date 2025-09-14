@@ -14,7 +14,7 @@ import Suppliers from "./pages/Suppliers";
 import Products from "./pages/Products";
 import Machines from "./pages/Machines";
 import MachineDetail from "./pages/MachineDetail";
-import Prospects from "./pages/Prospects";
+import { ProspectsHome, ProspectDetail, PipelineAnalytics } from "./pages/Prospects";
 import Locations from "./pages/Locations";
 import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
@@ -69,10 +69,12 @@ const App = () => (
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<HomeDashboard />} />
-            <Route path="/prospects" element={<Prospects />} />
-            <Route path="/locations" element={<Locations />} />
-            <Route path="/locations/:id" element={<LocationDetail />} />
-            <Route path="/machines" element={<Machines />} />
+        <Route path="/prospects" element={<ProspectsHome />} />
+        <Route path="/prospects/:id" element={<ProspectDetail />} />
+        <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
+        <Route path="/locations" element={<Locations />} />
+        <Route path="/locations/:id" element={<LocationDetail />} />
+        <Route path="/machines" element={<Machines />} />
             <Route path="/machines/:id" element={<MachineDetail />} />
             <Route path="/products" element={<Products />} />
             <Route path="/suppliers" element={<Suppliers />} />
