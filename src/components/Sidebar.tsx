@@ -187,6 +187,9 @@ export default function Sidebar() {
           <NavItem href="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Profit Reports
           </NavItem>
+          <NavItem href="/finance/processors" icon={Box} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Payment Processors
+          </NavItem>
         </Group>
 
         {/* 5. Logistics & Support */}
@@ -202,6 +205,9 @@ export default function Sidebar() {
           </NavItem>
           <NavItem href="/tickets" icon={TicketCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Tickets
+          </NavItem>
+          <NavItem href="/staff" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Staff Directory
           </NavItem>
         </Group>
 

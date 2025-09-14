@@ -34,6 +34,8 @@ import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
 import MachineFinance from "./pages/MachineFinance";
 import MachineMaintenance from "./pages/MachineMaintenance";
+import PaymentProcessors from "./pages/PaymentProcessors";
+import Staff from "./pages/Staff";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,8 @@ const App = () => (
               <Route path="/reports" element={<ProfitReports />} />
               <Route path="/machines/finance" element={<MachineFinance />} />
               <Route path="/machines/maintenance" element={<MachineMaintenance />} />
+              <Route path="/finance/processors" element={<PaymentProcessors />} />
+              <Route path="/staff" element={<Staff />} />
               <Route path="/account" element={<Account />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
