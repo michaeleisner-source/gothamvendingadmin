@@ -12,6 +12,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [isDemo, setIsDemo] = React.useState(true); // Always demo mode for now
   const [ready, setReady] = React.useState(true); // Always ready
 
+  console.log('DemoProvider: isDemo =', isDemo, 'ready =', ready);
+
   return (
     <DemoContext.Provider value={{ isDemo, ready }}>
       {children}
@@ -35,13 +37,9 @@ export function ProtectedRoute({ children }: { children: JSX.Element }) {
     );
   }
   
-  if (isDemo) {
-    console.log('ProtectedRoute: Demo mode - bypassing auth');
-    return children; // bypass auth in demo mode
-  }
-  
-  // Fallback to normal auth logic if demo is disabled
-  return <AuthGate>{children}</AuthGate>;
+  // Always bypass auth in demo mode (which is always true)
+  console.log('ProtectedRoute: Demo mode - bypassing auth');
+  return children;
 }
 
 // Demo Banner - visible indicator + read‑only hint
