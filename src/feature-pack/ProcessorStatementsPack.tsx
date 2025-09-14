@@ -506,10 +506,10 @@ export function ProcessorStatementsRoutes({ ProtectedRoute }: { ProtectedRoute?:
   const Wrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
   return (
-    <>
+    <React.Fragment>
       <Route path="/finance/processors/import" element={<Wrap><ProcessorImport /></Wrap>} />
       <Route path="/finance/processors/statements" element={<Wrap><ProcessorStatements /></Wrap>} />
-    </>
+    </React.Fragment>
   );
 }
 

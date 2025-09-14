@@ -58,12 +58,12 @@ export function MachineOpsRoutes({ ProtectedRoute }: MachineOpsRoutesProps) {
     ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
 
   return (
-    <>
+    <React.Fragment>
       <Route path="/machines/finance" element={<Wrap><MachineFinance /></Wrap>} />
       <Route path="/reports/machine-roi" element={<Wrap><MachineRoi /></Wrap>} />
       <Route path="/machines/maintenance" element={<Wrap><MachineMaintenance /></Wrap>} />
       <Route path="/reports/maintenance-backlog" element={<Wrap><MaintenanceBacklog /></Wrap>} />
-    </>
+    </React.Fragment>
   );
 }
 
