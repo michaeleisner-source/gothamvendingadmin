@@ -16,7 +16,6 @@ const NAV: Group[] = [
     children: [
       { label: "Dashboard", to: "/" },
       { label: "Reports", to: "/reports" },
-      { label: "Inventory", to: "/inventory" },
       { label: "Cost Analysis", to: "/cost-analysis" },
       { label: "Audit", to: "/audit" },
     ]
@@ -30,15 +29,27 @@ const NAV: Group[] = [
       { label: "Locations", to: "/locations" },
       { label: "Machines", to: "/machines" },
       { label: "Setup", to: "/setup" },
-      { label: "Slots", to: "/slots" },
       { label: "Restock", to: "/restock" },
       { label: "Sales Entry", to: "/sales" },
+      { label: "Delivery Routes", to: "/delivery-routes" },
+      { label: "Picklists", to: "/picklists" },
+      { label: "Tickets", to: "/tickets" },
+    ]
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: <Boxes className="w-4 h-4" />,
+    children: [
+      { label: "Inventory Manager", to: "/inventory" },
+      { label: "Slot Planner", to: "/slots" },
+      { label: "Deletion Logs", to: "/deletion-logs" },
     ]
   },
   {
     id: "catalog",
     label: "Catalog",
-    icon: <Boxes className="w-4 h-4" />,
+    icon: <Box className="w-4 h-4" />,
     children: [
       { label: "Products", to: "/products" },
       { label: "Suppliers", to: "/suppliers" },
@@ -51,6 +62,14 @@ const NAV: Group[] = [
     children: [
       { label: "New PO", to: "/purchase-orders/new" },
       { label: "Purchase Orders", to: "/purchase-orders" },
+    ]
+  },
+  {
+    id: "account",
+    label: "Account",
+    icon: <Settings className="w-4 h-4" />,
+    children: [
+      { label: "Account Settings", to: "/account" },
     ]
   }
 ];
