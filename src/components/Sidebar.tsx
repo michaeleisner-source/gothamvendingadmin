@@ -1,3 +1,3 @@
-// in your sidebar file
-import { SidebarFlowRefresh as Sidebar } from "@/feature-pack/FlowRefreshPack";
+// Updated to use LeanFlowPack sidebar
+import { SidebarLean as Sidebar } from "@/feature-pack/LeanFlowPack";
 export default Sidebar;
