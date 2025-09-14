@@ -272,6 +272,9 @@ export default function Sidebar() {
           <NavItem href="/help" icon={HelpCircle} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Center
           </NavItem>
+          <NavItem href="/help/backlog" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Content Backlog
+          </NavItem>
           <NavItem href="/reports/help" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Reports
           </NavItem>

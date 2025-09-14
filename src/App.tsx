@@ -46,6 +46,7 @@ import ComplianceLicenses from "./pages/ComplianceLicenses";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
 import HelpReports from "./pages/HelpReports";
+import HelpBacklog from "./pages/HelpBacklog";
 
 const queryClient = new QueryClient();
 
@@ -96,9 +97,10 @@ const App = () => (
               <Route path="/reports/roi" element={<ReportsROI />} />
               <Route path="/compliance/licenses" element={<ComplianceLicenses />} />
               <Route path="/staff" element={<Staff />} />
-              <Route path="/help" element={<HelpCenter />} />
-              <Route path="/help/article/:id" element={<HelpArticle />} />
-              <Route path="/reports/help" element={<HelpReports />} />
+                <Route path="/help" element={<HelpCenter />} />
+                <Route path="/help/article/:id" element={<HelpArticle />} />
+                <Route path="/help/backlog" element={<HelpBacklog />} />
+                <Route path="/reports/help" element={<HelpReports />} />
               <Route path="/account" element={<Account />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

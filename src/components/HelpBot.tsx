@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { MessageCircle, HelpCircle, X, Search, ChevronRight } from 'lucide-react';
+import { MessageCircle, HelpCircle, X, Search, ChevronRight, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logHelpSearch, logHelpClick, startHelpBotSession, endHelpBotSession } from '@/lib/help-analytics';
+import { logHelpEscalation } from '@/lib/help-escalation';
 
 export default function HelpBot() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
   const [answers, setAnswers] = useState<any[]>([]);
+  const [showEscalation, setShowEscalation] = useState(false);
   const searchIdRef = useRef<string | undefined>();
   const sessionIdRef = useRef<string | undefined>();
 
@@ -26,6 +28,11 @@ export default function HelpBot() {
         setAnswers(data || []);
         // Log the search with analytics
         searchIdRef.current = await logHelpSearch(q, data?.length || 0, window.location.pathname);
+        
+        // Show escalation option if no results found
+        if (!data || data.length === 0) {
+          setShowEscalation(true);
+        }
       }
     } catch (error) {
       console.error('Error searching help:', error);
@@ -47,6 +54,21 @@ export default function HelpBot() {
       await endHelpBotSession(sessionIdRef.current, true);
       sessionIdRef.current = undefined;
     }
+  };
+
+  const handleEscalation = async () => {
+    // Log this as an escalation for backlog processing
+    await logHelpEscalation(q, window.location.pathname);
+    
+    // End bot session as escalated
+    if (sessionIdRef.current) {
+      await endHelpBotSession(sessionIdRef.current, false);
+      sessionIdRef.current = undefined;
+    }
+    
+    // Close the modal and redirect to help center or support
+    setOpen(false);
+    window.location.href = '/help';
   };
 
   const handleClose = async () => {
@@ -122,13 +144,24 @@ export default function HelpBot() {
                   Searching…
                 </div>
               ) : answers.length === 0 ? (
-                <div className="p-4 text-muted-foreground text-sm text-center">
+                <div className="p-4 text-muted-foreground text-sm text-center space-y-3">
                   <div className="space-y-2">
                     <p>Type a question to see step-by-step guides and articles.</p>
                     <div className="text-xs">
                       Try: "How do I convert a prospect?" or "Machine setup steps"
                     </div>
                   </div>
+                  {showEscalation && q.trim() && (
+                    <div className="pt-2 border-t border-border">
+                      <button
+                        onClick={handleEscalation}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-md bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                      >
+                        <AlertTriangle className="size-3" />
+                        Can't find what you need? Get help
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="divide-y divide-border">
