@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface SilentMachine {
+  machine_id: string;
   machine_name: string;
   location_id: string;
   last_sale_at: string | null;
@@ -40,7 +41,17 @@ export default function SilentMachines() {
         return;
       }
 
-      setData(silentData || []);
+      // Type the response data properly
+      const typedData = (silentData as any[])?.map(item => ({
+        machine_id: item.machine_id || '',
+        machine_name: item.machine_name || '',
+        location_id: item.location_id || '',
+        last_sale_at: item.last_sale_at,
+        since_last_sale: item.since_last_sale ? String(item.since_last_sale) : null,
+        silent_flag: Boolean(item.silent_flag)
+      })) || [];
+
+      setData(typedData);
     } catch (error) {
       console.error('Error:', error);
       toast({
