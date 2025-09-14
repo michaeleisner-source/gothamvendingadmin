@@ -29,6 +29,7 @@ import Account from "./pages/Account";
 import RestockEntry from "./pages/RestockEntry";
 import SalesEntry from "./pages/SalesEntry";
 import MachineSetup from "./pages/MachineSetup";
+import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="/restock" element={<RestockEntry />} />
             <Route path="/sales" element={<SalesEntry />} />
             <Route path="/machine-setup" element={<MachineSetup />} />
+            <Route path="/profit-reports" element={<ProfitReports />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
