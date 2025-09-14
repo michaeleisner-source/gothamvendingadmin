@@ -17,6 +17,10 @@ import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
 import ProspectDetail from "./pages/ProspectDetail";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
+import MachineFinance from "./pages/MachineFinance";
+import MachineRoi from "./pages/MachineRoi";
+import MachineMaintenance from "./pages/MachineMaintenance";
+import MaintenanceBacklog from "./pages/MaintenanceBacklog";
 import Locations from "./pages/Locations";
 import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
@@ -35,8 +39,6 @@ import MachineSetup from "./pages/MachineSetup";
 import SlotPlanner from "./pages/SlotPlanner";
 import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
-import MachineFinance from "./pages/MachineFinance";
-import MachineMaintenance from "./pages/MachineMaintenance";
 import PaymentProcessors from "./pages/PaymentProcessors";
 import Staff from "./pages/Staff";
 import FinanceCommissions from "./pages/FinanceCommissions";
@@ -74,6 +76,10 @@ const App = () => (
         <Route path="/prospects" element={<Prospects />} />
         <Route path="/prospects/:id" element={<ProspectDetail />} />
         <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
+        <Route path="/machines/finance" element={<MachineFinance />} />
+        <Route path="/reports/machine-roi" element={<MachineRoi />} />
+        <Route path="/machines/maintenance" element={<MachineMaintenance />} />
+        <Route path="/reports/maintenance-backlog" element={<MaintenanceBacklog />} />
         <Route path="/locations" element={<Locations />} />
         <Route path="/locations/:id" element={<LocationDetail />} />
         <Route path="/machines" element={<Machines />} />
@@ -89,14 +95,12 @@ const App = () => (
             <Route path="/deletion-logs" element={<DeletionLogs />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cost-analysis" element={<CostAnalysis />} />
-            <Route path="/audit" element={<Audit />} />
             <Route path="/restock" element={<RestockEntry />} />
             <Route path="/sales" element={<SalesEntry />} />
             <Route path="/setup" element={<MachineSetup />} />
             <Route path="/slots" element={<SlotPlanner />} />
             <Route path="/reports" element={<ProfitReports />} />
-            <Route path="/machines/finance" element={<MachineFinance />} />
-            <Route path="/machines/maintenance" element={<MachineMaintenance />} />
+            <Route path="/audit" element={<Audit />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
             <Route path="/finance/commissions" element={<FinanceCommissions />} />
             <Route path="/finance/taxes" element={<FinanceTaxes />} />
