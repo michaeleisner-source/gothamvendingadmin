@@ -38,10 +38,10 @@ export default function AppHeader() {
           <Link to="/machines" className="text-foreground hover:text-primary transition-colors hover:underline">
             Machines
           </Link>
-          <Link to="/machine-setup" className="text-foreground hover:text-primary transition-colors hover:underline">
+          <Link to="/setup" className="text-foreground hover:text-primary transition-colors hover:underline">
             Setup
           </Link>
-          <Link to="/slot-planner" className="text-foreground hover:text-primary transition-colors hover:underline">
+          <Link to="/slots" className="text-foreground hover:text-primary transition-colors hover:underline">
             Slots
           </Link>
           <Link to="/products" className="text-foreground hover:text-primary transition-colors hover:underline">
@@ -58,9 +58,6 @@ export default function AppHeader() {
           </Link>
           <Link to="/reports" className="text-foreground hover:text-primary transition-colors hover:underline">
             Reports
-          </Link>
-          <Link to="/profit-reports" className="text-foreground hover:text-primary transition-colors hover:underline">
-            Profit Reports
           </Link>
           <Link to="/inventory" className="text-foreground hover:text-primary transition-colors hover:underline">
             Inventory

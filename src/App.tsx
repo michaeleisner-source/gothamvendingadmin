@@ -62,16 +62,15 @@ const App = () => (
             <Route path="/delivery-routes" element={<DeliveryRoutes />} />
             <Route path="/picklists" element={<Picklists />} />
             <Route path="/tickets" element={<Tickets />} />
-            <Route path="/reports" element={<Reports />} />
             <Route path="/deletion-logs" element={<DeletionLogs />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cost-analysis" element={<CostAnalysis />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/restock" element={<RestockEntry />} />
             <Route path="/sales" element={<SalesEntry />} />
-            <Route path="/machine-setup" element={<MachineSetup />} />
-            <Route path="/slot-planner" element={<SlotPlanner />} />
-            <Route path="/profit-reports" element={<ProfitReports />} />
+            <Route path="/setup" element={<MachineSetup />} />
+            <Route path="/slots" element={<SlotPlanner />} />
+            <Route path="/reports" element={<ProfitReports />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
