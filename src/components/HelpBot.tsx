@@ -1,23 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MessageCircle, HelpCircle, X, Search, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { logHelpSearch, logHelpClick, startHelpBotSession, endHelpBotSession } from '@/lib/help-analytics';
 
 export default function HelpBot() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
   const [answers, setAnswers] = useState<any[]>([]);
+  const searchIdRef = useRef<string | undefined>();
+  const sessionIdRef = useRef<string | undefined>();
 
   const ask = async () => {
     if (!q.trim()) return;
     setLoading(true);
+    
     try {
+      // Start bot session if not already started
+      if (!sessionIdRef.current) {
+        sessionIdRef.current = await startHelpBotSession();
+      }
+      
       const { data, error } = await supabase.rpc('search_help', { q, limit_count: 5 });
-      if (!error) setAnswers(data || []);
+      if (!error) {
+        setAnswers(data || []);
+        // Log the search with analytics
+        searchIdRef.current = await logHelpSearch(q, data?.length || 0, window.location.pathname);
+      }
     } catch (error) {
       console.error('Error searching help:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResultClick = async (result: any, index: number) => {
+    // Log the click with analytics
+    await logHelpClick(searchIdRef.current, result.source, result.id, index + 1);
+    
+    // Close the modal and navigate
+    setOpen(false);
+    window.location.href = result.url;
+    
+    // End the bot session as resolved since user clicked a result
+    if (sessionIdRef.current) {
+      await endHelpBotSession(sessionIdRef.current, true);
+      sessionIdRef.current = undefined;
+    }
+  };
+
+  const handleClose = async () => {
+    setOpen(false);
+    // End session without resolution if user closes without clicking
+    if (sessionIdRef.current) {
+      await endHelpBotSession(sessionIdRef.current, false);
+      sessionIdRef.current = undefined;
     }
   };
 
@@ -49,7 +86,7 @@ export default function HelpBot() {
                 <span className="text-sm font-semibold">HelpBot</span>
               </div>
               <button 
-                onClick={() => setOpen(false)} 
+                onClick={handleClose} 
                 className="size-8 rounded-md hover:bg-muted flex items-center justify-center transition-colors"
               >
                 <X className="size-4" />
@@ -95,7 +132,7 @@ export default function HelpBot() {
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {answers.map((r) => (
+                  {answers.map((r, index) => (
                     <div key={`${r.source}-${r.id}`} className="p-3">
                       <a 
                         href={r.url} 
@@ -111,7 +148,7 @@ export default function HelpBot() {
                         <a 
                           href={r.url} 
                           className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                          onClick={() => setOpen(false)}
+                          onClick={() => handleResultClick(r, index)}
                         >
                           Open step-by-step guide 
                           <ChevronRight className="size-3"/>

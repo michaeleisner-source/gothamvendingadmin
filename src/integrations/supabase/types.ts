@@ -95,6 +95,45 @@ export type Database = {
         }
         Relationships: []
       }
+      help_article_views: {
+        Row: {
+          article_id: string | null
+          created_at: string
+          dwell_ms: number | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          created_at?: string
+          dwell_ms?: number | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          created_at?: string
+          dwell_ms?: number | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_article_views_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_article_views_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "v_help_article_perf"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_articles: {
         Row: {
           body_md: string
@@ -133,6 +172,33 @@ export type Database = {
           },
         ]
       }
+      help_bot_sessions: {
+        Row: {
+          created_ticket_id: string | null
+          ended_at: string | null
+          id: string
+          resolved: boolean | null
+          started_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_ticket_id?: string | null
+          ended_at?: string | null
+          id?: string
+          resolved?: boolean | null
+          started_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_ticket_id?: string | null
+          ended_at?: string | null
+          id?: string
+          resolved?: boolean | null
+          started_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       help_categories: {
         Row: {
           id: string
@@ -154,6 +220,44 @@ export type Database = {
         }
         Relationships: []
       }
+      help_click_events: {
+        Row: {
+          created_at: string
+          id: string
+          rank: number | null
+          search_event_id: string | null
+          source: string
+          target_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rank?: number | null
+          search_event_id?: string | null
+          source: string
+          target_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rank?: number | null
+          search_event_id?: string | null
+          source?: string
+          target_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_click_events_search_event_id_fkey"
+            columns: ["search_event_id"]
+            isOneToOne: false
+            referencedRelation: "help_search_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_faqs: {
         Row: {
           answer_md: string
@@ -172,6 +276,75 @@ export type Database = {
           id?: string
           question?: string
           search_tsv?: unknown | null
+        }
+        Relationships: []
+      }
+      help_feedback: {
+        Row: {
+          article_id: string | null
+          comment: string | null
+          created_at: string
+          helpful: boolean | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "v_help_article_perf"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      help_search_events: {
+        Row: {
+          context_page: string | null
+          created_at: string
+          id: string
+          q: string
+          result_count: number
+          user_id: string | null
+        }
+        Insert: {
+          context_page?: string | null
+          created_at?: string
+          id?: string
+          q: string
+          result_count: number
+          user_id?: string | null
+        }
+        Update: {
+          context_page?: string | null
+          created_at?: string
+          id?: string
+          q?: string
+          result_count?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -202,7 +375,38 @@ export type Database = {
             referencedRelation: "help_articles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "help_steps_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "v_help_article_perf"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      help_zero_results: {
+        Row: {
+          context_page: string | null
+          created_at: string
+          id: string
+          q: string
+          user_id: string | null
+        }
+        Insert: {
+          context_page?: string | null
+          created_at?: string
+          id?: string
+          q: string
+          user_id?: string | null
+        }
+        Update: {
+          context_page?: string | null
+          created_at?: string
+          id?: string
+          q?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       location_commissions: {
         Row: {
@@ -1448,7 +1652,43 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_help_article_perf: {
+        Row: {
+          clicks: number | null
+          feedback_count: number | null
+          helpful_rate: number | null
+          id: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
+      v_help_bot_outcomes: {
+        Row: {
+          escalated: number | null
+          escalated_pct: number | null
+          resolved: number | null
+          resolved_pct: number | null
+          sessions: number | null
+          week: string | null
+        }
+        Relationships: []
+      }
+      v_help_top_queries: {
+        Row: {
+          avg_results: number | null
+          q: string | null
+          searches: number | null
+        }
+        Relationships: []
+      }
+      v_help_zero_results: {
+        Row: {
+          misses: number | null
+          q: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _normalize_range: {
@@ -1636,6 +1876,23 @@ export type Database = {
           product_name: string
           qty_sold: number
         }[]
+      }
+      rpc_log_help_click: {
+        Args: {
+          _rank: number
+          _search_id: string
+          _source: string
+          _target: string
+        }
+        Returns: undefined
+      }
+      rpc_log_help_feedback: {
+        Args: { _article: string; _comment: string; _helpful: boolean }
+        Returns: undefined
+      }
+      rpc_log_help_search: {
+        Args: { _context: string; _count: number; _q: string }
+        Returns: string
       }
       save_restock_session: {
         Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
