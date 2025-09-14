@@ -1,26 +1,29 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useDemo } from '@/lib/demo';
+import { useEffect, useState } from "react";
+
+type Probe = "ok" | "missing-env";
 
 export default function Debug() {
-  const { isDemo, ready } = useDemo();
-  const [authed, setAuthed] = useState<'loading'|'yes'|'no'>('loading');
-  const [db, setDb] = useState('pending');
+  const [demoFlag, setDemoFlag] = useState("false");
+  const [envProbe, setEnvProbe] = useState<Probe>("ok");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setAuthed(data.session ? 'yes' : 'no'));
-    (async () => {
-      const { data, error } = await supabase.from('locations').select('id').limit(1);
-      setDb(error ? 'fail: ' + error.message : 'ok: ' + (data?.length ?? 0) + ' rows');
-    })();
+    const url = new URL(window.location.href);
+    setDemoFlag(url.searchParams.get("demo") === "1" ? "true" : "false");
+
+    const hasUrl = !!import.meta.env.VITE_SUPABASE_URL;
+    const hasKey = !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!hasUrl || !hasKey) setEnvProbe("missing-env");
   }, []);
 
   return (
-    <div style={{ padding: 16 }}>
-      <h3>Debug</h3>
-      <div>demo: {String(isDemo)} | ready: {String(ready)}</div>
-      <div>session: {authed}</div>
-      <div>db: {db}</div>
+    <div style={{ padding: 24, fontFamily: "ui-sans-serif, system-ui" }}>
+      <h2>Debug</h2>
+      <div>hash router: true</div>
+      <div>demo query (?demo=1): {demoFlag}</div>
+      <div>supabase env: {envProbe}</div>
+      <p style={{ marginTop: 12, fontSize: 12, opacity: 0.7 }}>
+        You should be able to refresh this page at <code>#/debug</code> without errors.
+      </p>
     </div>
   );
 }
