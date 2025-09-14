@@ -50,6 +50,7 @@ import HelpReports from "./pages/HelpReports";
 import HelpBacklog from "./pages/HelpBacklog";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
+import SalesSummary7d from "./pages/reports/SalesSummary";
 import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
@@ -97,6 +98,7 @@ const App = () => (
             <Route path="/finance/loans" element={<FinanceLoans />} />
             <Route path="/products/margins" element={<ProductMargins />} />
             <Route path="/reports/roi" element={<ReportsROI />} />
+            <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/compliance/licenses" element={<ComplianceLicenses />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/help" element={<HelpCenter />} />

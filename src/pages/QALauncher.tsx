@@ -27,6 +27,7 @@ const items = [
   { to: "/sales", label: "Sales Entry" },
   { to: "/cost-analysis", label: "Cost Analysis" },
   { to: "/reports", label: "Profit Reports" },
+  { to: "/reports/sales-summary", label: "Sales Summary (7d)" },
   { to: "/finance/processors", label: "Payment Processors" },
   { to: "/finance/commissions", label: "Commissions" },
   { to: "/finance/taxes", label: "Taxes" },
