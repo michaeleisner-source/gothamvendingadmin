@@ -74,8 +74,8 @@ const App = () => (
         <Route path="/prospects" element={<Prospects />} />
         <Route path="/prospects/:id" element={<ProspectDetail />} />
         <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
-            {MachineOpsRoutes({})}
-            {ProcessorStatementsRoutes({})}
+            <MachineOpsRoutes ProtectedRoute={ProtectedRoute} />
+            <ProcessorStatementsRoutes ProtectedRoute={ProtectedRoute} />
         <Route path="/locations" element={<Locations />} />
         <Route path="/locations/:id" element={<LocationDetail />} />
         <Route path="/machines" element={<Machines />} />
