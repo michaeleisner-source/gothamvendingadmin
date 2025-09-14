@@ -15,6 +15,7 @@ import { InventoryRoutes } from "@/feature-pack/InventoryManagement";
 import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
 // Phase3 Advanced Reports
 import { Phase3Routes } from "@/feature-pack/Phase3OpsPack";
+import { Phase4Routes } from "@/feature-pack/Phase4PolishPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -131,6 +132,8 @@ const App = () => (
             {Phase2Routes({ ProtectedRoute })}
             {/* Phase 3 Advanced Business Intelligence */}
             {Phase3Routes({ ProtectedRoute })}
+            {/* Phase 4 Polish & System Health */}
+            {Phase4Routes({ ProtectedRoute })}
             {/* Inventory Management Routes */}
             {InventoryRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

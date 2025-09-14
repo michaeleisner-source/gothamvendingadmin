@@ -95,6 +95,8 @@ export function SidebarLean() {
         </Group>
 
         <Group label="Oversight & Admin" icon={ShieldAlert} open={open.admin} onClick={() => toggle("admin")}>
+          <Item to="/admin/system-check" icon={ShieldAlert}>System Check</Item>
+          <Item to="/reports/executive" icon={BarChart3}>Executive Overview</Item>
           <Item to="/audit" icon={ShieldAlert}>Audit</Item>
           <Item to="/deletion-logs" icon={Trash2}>Deletion Logs</Item>
           <Item to="/account" icon={UserCircle2}>Account</Item>
