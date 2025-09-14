@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/lib/demo";
 import { Workflow } from "@/feature-pack/VendingWorkflowPack";
+import { MachineOpsRoutes } from "@/feature-pack/MachineOpsPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -17,10 +18,6 @@ import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
 import ProspectDetail from "./pages/ProspectDetail";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
-import MachineFinance from "./pages/MachineFinance";
-import MachineRoi from "./pages/MachineRoi";
-import MachineMaintenance from "./pages/MachineMaintenance";
-import MaintenanceBacklog from "./pages/MaintenanceBacklog";
 import Locations from "./pages/Locations";
 import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
@@ -76,10 +73,7 @@ const App = () => (
         <Route path="/prospects" element={<Prospects />} />
         <Route path="/prospects/:id" element={<ProspectDetail />} />
         <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
-        <Route path="/machines/finance" element={<MachineFinance />} />
-        <Route path="/reports/machine-roi" element={<MachineRoi />} />
-        <Route path="/machines/maintenance" element={<MachineMaintenance />} />
-        <Route path="/reports/maintenance-backlog" element={<MaintenanceBacklog />} />
+            <MachineOpsRoutes />
         <Route path="/locations" element={<Locations />} />
         <Route path="/locations/:id" element={<LocationDetail />} />
         <Route path="/machines" element={<Machines />} />
