@@ -1,78 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Boxes, PackagePlus, ShoppingCart, Settings, PanelLeftOpen, PanelLeftClose,
-  Factory, MapPinned, Box, ListOrdered, LineChart, Receipt, ClipboardList, Shield
+  LayoutDashboard,
+  MapPinned,
+  Building2,
+  Settings2,
+  Box,
+  Factory,
+  FileText,
+  ClipboardList,
+  Truck,
+  ClipboardCheck,
+  TicketCheck,
+  Route,
+  DollarSign,
+  TrendingUp,
+  BarChart3,
+  Clipboard,
+  ShieldAlert,
+  Trash2,
+  UserCircle2,
+  ChevronDown,
+  PanelLeftOpen,
+  PanelLeftClose,
 } from "lucide-react";
-
-type Leaf = { label: string; to: string };
-type Group = { id: string; label: string; icon: React.ReactNode; children: Leaf[] };
-
-const NAV: Group[] = [
-  {
-    id: "sales",
-    label: "Sales",
-    icon: <LineChart className="w-4 h-4" />,
-    children: [
-      { label: "Dashboard", to: "/" },
-      { label: "Reports", to: "/reports" },
-      { label: "Cost Analysis", to: "/cost-analysis" },
-      { label: "Audit", to: "/audit" },
-    ]
-  },
-  {
-    id: "operations",
-    label: "Operations",
-    icon: <ClipboardList className="w-4 h-4" />,
-    children: [
-      { label: "Prospects", to: "/prospects" },
-      { label: "Locations", to: "/locations" },
-      { label: "Machines", to: "/machines" },
-      { label: "Setup", to: "/setup" },
-      { label: "Restock", to: "/restock" },
-      { label: "Sales Entry", to: "/sales" },
-      { label: "Delivery Routes", to: "/delivery-routes" },
-      { label: "Picklists", to: "/picklists" },
-      { label: "Tickets", to: "/tickets" },
-    ]
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    icon: <Boxes className="w-4 h-4" />,
-    children: [
-      { label: "Inventory Manager", to: "/inventory" },
-      { label: "Slot Planner", to: "/slots" },
-      { label: "Deletion Logs", to: "/deletion-logs" },
-    ]
-  },
-  {
-    id: "catalog",
-    label: "Catalog",
-    icon: <Box className="w-4 h-4" />,
-    children: [
-      { label: "Products", to: "/products" },
-      { label: "Suppliers", to: "/suppliers" },
-    ]
-  },
-  {
-    id: "purchasing",
-    label: "Purchasing",
-    icon: <ShoppingCart className="w-4 h-4" />,
-    children: [
-      { label: "New PO", to: "/purchase-orders/new" },
-      { label: "Purchase Orders", to: "/purchase-orders" },
-    ]
-  },
-  {
-    id: "account",
-    label: "Account",
-    icon: <Settings className="w-4 h-4" />,
-    children: [
-      { label: "Account Settings", to: "/account" },
-    ]
-  }
-];
 
 const STORAGE_KEY = "sidebar.openGroups";
 const COLLAPSED_KEY = "sidebar.collapsed";
@@ -82,38 +33,49 @@ function usePersistentState<T>(key: string, initial: T) {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : initial;
   });
-  useEffect(() => { localStorage.setItem(key, JSON.stringify(state)); }, [key, state]);
+  React.useEffect(() => { localStorage.setItem(key, JSON.stringify(state)); }, [key, state]);
   return [state, setState] as const;
 }
 
+/**
+ * Sidebar component built around your exact workflow.
+ * - Collapsible groups with smooth transitions
+ * - Active-route highlight
+ * - Keyboard accessible (Enter/Space toggles)
+ */
 export default function Sidebar() {
-  const location = useLocation();
-  const [openGroups, setOpenGroups] = usePersistentState<Record<string, boolean>>(STORAGE_KEY, {});
+  const { pathname } = useLocation();
   const [collapsed, setCollapsed] = usePersistentState<boolean>(COLLAPSED_KEY, false);
+  
+  // Toggle state per group
+  const [open, setOpen] = usePersistentState<Record<string, boolean>>(STORAGE_KEY, {
+    pipeline: true,
+    machines: true,
+    supply: true,
+    sales: true,
+    logistics: true,
+    admin: true,
+  });
 
-  // Auto-open group containing current route
-  useEffect(() => {
-    const active = NAV.find(g => g.children.some(c => location.pathname.startsWith(c.to.split("#")[0])));
-    if (active && !openGroups[active.id]) {
-      setOpenGroups(prev => ({ ...prev, [active.id]: true }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  const toggle = (key: string) =>
+    setOpen((s) => ({ ...s, [key]: !s[key] }));
 
-  const toggleGroup = (id: string) =>
-    setOpenGroups(prev => ({ ...prev, [id]: !prev[id] }));
+  const isActive = (href: string) => pathname === href;
 
   const cls = (...x: (string | false | null | undefined)[]) => x.filter(Boolean).join(" ");
 
   return (
     <aside className={cls(
-      "h-screen border-r bg-background flex flex-col transition-all duration-200",
-      collapsed ? "w-16" : "w-64"
+      "h-screen bg-background border-r flex flex-col transition-all duration-200",
+      collapsed ? "w-16" : "w-72"
     )}>
-      {/* Header */}
-      <div className="h-12 flex items-center justify-between px-3 border-b">
-        <div className={cls("font-semibold text-sm truncate", collapsed && "opacity-0 pointer-events-none")}>
-          Vending Ops
+      {/* Brand / Top */}
+      <div className="px-4 py-4 border-b flex items-center justify-between">
+        <div className={cls("flex items-center gap-2", collapsed && "opacity-0 pointer-events-none")}>
+          <div className="size-8 rounded-xl bg-muted grid place-items-center">
+            <Factory className="size-4" />
+          </div>
+          <div className="font-semibold tracking-tight">Gotham Vending</div>
         </div>
         <button
           className="p-1 rounded hover:bg-muted"
@@ -124,65 +86,301 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2">
-        {NAV.map(group => {
-          const isOpen = !!openGroups[group.id];
-          return (
-            <div key={group.id}>
-              <button
-                className={cls(
-                  "w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 text-left",
-                  "focus:outline-none focus:ring-2 focus:ring-primary/20"
-                )}
-                onClick={() => toggleGroup(group.id)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleGroup(group.id); } }}
-                aria-expanded={isOpen}
-              >
-                <span className="shrink-0">{group.icon}</span>
-                <span className={cls("text-sm font-medium", collapsed && "hidden")}>{group.label}</span>
-                {!collapsed && (
-                  <span className={cls("ml-auto text-xs text-muted-foreground", isOpen && "rotate-90", "transition-transform")}>›</span>
-                )}
-              </button>
-              {/* Children */}
-              <div
-                className={cls(
-                  "overflow-hidden transition-[max-height] duration-200",
-                  collapsed ? "max-h-0" : isOpen ? "max-h-96" : "max-h-0"
-                )}
-              >
-                {!collapsed && (
-                  <ul className="pl-8 pr-2 pb-2 space-y-1">
-                    {group.children.map(item => (
-                      <li key={item.to}>
-                        <NavLink
-                          to={item.to}
-                          className={({ isActive }) => cls(
-                            "block px-2 py-1 rounded text-sm",
-                            isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-foreground hover:bg-muted/50"
-                          )}
-                        >
-                          {item.label}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* Scroll area */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {/* Dashboard */}
+        {!collapsed && <SectionLabel>Dashboard</SectionLabel>}
+        <NavItem href="/" icon={LayoutDashboard} active={isActive("/")} collapsed={collapsed}>Dashboard</NavItem>
+
+        {/* 1. Pipeline */}
+        <Group
+          label="Pipeline"
+          icon={MapPinned}
+          isOpen={open.pipeline}
+          onToggle={() => toggle("pipeline")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/prospects" icon={Clipboard} active={isActive("/prospects")} collapsed={collapsed}>
+            Prospects
+          </NavItem>
+          <NavItem href="/locations" icon={Building2} active={isActive("/locations")} collapsed={collapsed}>
+            Locations
+          </NavItem>
+        </Group>
+
+        {/* 2. Machines */}
+        <Group
+          label="Machines"
+          icon={Settings2}
+          isOpen={open.machines}
+          onToggle={() => toggle("machines")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/machines" icon={Factory} active={isActive("/machines")} collapsed={collapsed}>
+            Machines
+          </NavItem>
+          <NavItem href="/setup" icon={ClipboardCheck} active={isActive("/setup")} collapsed={collapsed}>
+            Machine Setup
+          </NavItem>
+          <NavItem href="/slots" icon={ClipboardList} active={isActive("/slots")} collapsed={collapsed}>
+            Slot Planner
+          </NavItem>
+        </Group>
+
+        {/* 3. Supply & Stock */}
+        <Group
+          label="Supply & Stock"
+          icon={Box}
+          isOpen={open.supply}
+          onToggle={() => toggle("supply")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/products" icon={Box} active={isActive("/products")} collapsed={collapsed}>
+            Products
+          </NavItem>
+          <NavItem href="/suppliers" icon={FileText} active={isActive("/suppliers")} collapsed={collapsed}>
+            Suppliers
+          </NavItem>
+          {!collapsed && (
+            <NavParent label="Purchase Orders" icon={FileText}>
+              <NavChild href="/purchase-orders" active={isActive("/purchase-orders")}>
+                All POs
+              </NavChild>
+              <NavChild href="/purchase-orders/new" active={isActive("/purchase-orders/new")}>
+                New PO
+              </NavChild>
+            </NavParent>
+          )}
+          <NavItem href="/inventory" icon={ClipboardList} active={isActive("/inventory")} collapsed={collapsed}>
+            Inventory
+          </NavItem>
+          <NavItem href="/restock" icon={ClipboardCheck} active={isActive("/restock")} collapsed={collapsed}>
+            Restock
+          </NavItem>
+          <NavItem href="/picklists" icon={Clipboard} active={isActive("/picklists")} collapsed={collapsed}>
+            Picklists
+          </NavItem>
+        </Group>
+
+        {/* 4. Sales & Finance */}
+        <Group
+          label="Sales & Finance"
+          icon={DollarSign}
+          isOpen={open.sales}
+          onToggle={() => toggle("sales")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/sales" icon={DollarSign} active={isActive("/sales")} collapsed={collapsed}>
+            Sales Entry
+          </NavItem>
+          <NavItem href="/cost-analysis" icon={TrendingUp} active={isActive("/cost-analysis")} collapsed={collapsed}>
+            Cost Analysis
+          </NavItem>
+          <NavItem href="/reports" icon={BarChart3} active={isActive("/reports")} collapsed={collapsed}>
+            Profit Reports
+          </NavItem>
+        </Group>
+
+        {/* 5. Logistics & Support */}
+        <Group
+          label="Logistics & Support"
+          icon={Route}
+          isOpen={open.logistics}
+          onToggle={() => toggle("logistics")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/delivery-routes" icon={Truck} active={isActive("/delivery-routes")} collapsed={collapsed}>
+            Delivery Routes
+          </NavItem>
+          <NavItem href="/tickets" icon={TicketCheck} active={isActive("/tickets")} collapsed={collapsed}>
+            Tickets
+          </NavItem>
+        </Group>
+
+        {/* 6. Oversight & Admin */}
+        <Group
+          label="Oversight & Admin"
+          icon={ShieldAlert}
+          isOpen={open.admin}
+          onToggle={() => toggle("admin")}
+          collapsed={collapsed}
+        >
+          <NavItem href="/audit" icon={ShieldAlert} active={isActive("/audit")} collapsed={collapsed}>
+            Audit
+          </NavItem>
+          <NavItem href="/deletion-logs" icon={Trash2} active={isActive("/deletion-logs")} collapsed={collapsed}>
+            Deletion Logs
+          </NavItem>
+          <NavItem href="/account" icon={UserCircle2} active={isActive("/account")} collapsed={collapsed}>
+            Account
+          </NavItem>
+        </Group>
       </nav>
 
-      {/* Footer quick-links (optional) */}
-      <div className="border-t p-2">
-        {!collapsed && (
-          <div className="text-[11px] text-muted-foreground px-1">© {new Date().getFullYear()} Vending</div>
-        )}
+      {/* Footer / Version or quick context */}
+      <div className="px-4 py-3 border-t text-xs text-muted-foreground">
+        {!collapsed && <div>v1.0 · Workflow Nav</div>}
       </div>
     </aside>
+  );
+}
+
+/*************************
+ * UI atoms
+ *************************/
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-2 pt-2 pb-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
+function Group({
+  label,
+  icon: Icon,
+  isOpen,
+  onToggle,
+  collapsed,
+  children,
+}: {
+  label: string;
+  icon: React.ComponentType<any>;
+  isOpen: boolean;
+  onToggle: () => void;
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
+  if (collapsed) {
+    return (
+      <div className="mt-3">
+        <div className="px-2 py-2 rounded-lg hover:bg-muted/50 flex justify-center" title={label}>
+          <Icon className="size-4" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-muted/50 focus:bg-muted outline-none"
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+        aria-expanded={isOpen}
+      >
+        <span className="flex items-center gap-2">
+          <Icon className="size-4" />
+          <span className="text-sm font-medium">{label}</span>
+        </span>
+        <ChevronDown
+          className={`size-4 transition-transform ${isOpen ? "rotate-180" : "rotate-0"}`}
+        />
+      </button>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ${
+          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="mt-1 ml-1 border-l border-border pl-3">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function NavItem({
+  href,
+  icon: Icon,
+  active,
+  collapsed,
+  children,
+}: {
+  href: string;
+  icon: React.ComponentType<any>;
+  active?: boolean;
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
+  if (collapsed) {
+    return (
+      <NavLink
+        to={href}
+        className={`flex justify-center px-2 py-2 rounded-lg hover:bg-muted/50 ${
+          active ? "bg-primary text-primary-foreground" : ""
+        }`}
+        title={children as string}
+      >
+        <Icon className="size-4" />
+      </NavLink>
+    );
+  }
+
+  return (
+    <NavLink
+      to={href}
+      className={({ isActive }) =>
+        `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-muted/50 ${
+          isActive ? "bg-primary text-primary-foreground" : ""
+        }`
+      }
+    >
+      <Icon className="size-4" />
+      <span>{children}</span>
+    </NavLink>
+  );
+}
+
+function NavParent({
+  label,
+  icon: Icon,
+  children,
+}: {
+  label: string;
+  icon: React.ComponentType<any>;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="mt-1">
+      <button
+        className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-muted/50 focus:bg-muted"
+        onClick={() => setOpen((s) => !s)}
+      >
+        <span className="flex items-center gap-2">
+          <Icon className="size-4" />
+          <span className="text-sm">{label}</span>
+        </span>
+        <ChevronDown
+          className={`size-4 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
+        />
+      </button>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ${
+          open ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="ml-7 mt-1 space-y-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function NavChild({ href, active, children }: { href: string; active?: boolean; children: React.ReactNode }) {
+  return (
+    <NavLink
+      to={href}
+      className={({ isActive }) =>
+        `block text-sm px-2 py-1.5 rounded-md hover:bg-muted/50 ${
+          isActive ? "bg-primary text-primary-foreground" : ""
+        }`
+      }
+    >
+      {children}
+    </NavLink>
   );
 }
