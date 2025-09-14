@@ -270,8 +270,11 @@ const Products = () => {
 
   const handleDelete = async (product: Product) => {
     try {
+      console.log('Attempting to delete product:', product.name, product.id);
+      
       // First check if product has any references
       const references = await checkProductReferences(product.id);
+      console.log('Product references check result:', references);
       
       const referencedIn = [];
       if (references.hasPurchaseOrders) referencedIn.push("purchase orders");
@@ -281,14 +284,18 @@ const Products = () => {
       if (referencedIn.length > 0) {
         const message = `Cannot delete "${product.name}" because it's still referenced in: ${referencedIn.join(", ")}.\n\nPlease remove these references first, or contact support if you need to force delete this product.`;
         toast.error(message);
+        console.log('Delete blocked due to references:', referencedIn);
         return;
       }
       
       // If no references, proceed with confirmation
+      console.log('No references found, proceeding with confirmation...');
       if (confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+        console.log('User confirmed deletion, calling deleteProductMutation...');
         deleteProductMutation.mutate(product.id);
       }
     } catch (error: any) {
+      console.error('Error in handleDelete:', error);
       toast.error("Error checking product references: " + (error.message || "Unknown error"));
     }
   };
