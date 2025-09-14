@@ -1094,6 +1094,48 @@ export type Database = {
         }
         Relationships: []
       }
+      processor_settlements: {
+        Row: {
+          created_at: string | null
+          deposit_ref: string | null
+          fee_cents: number | null
+          gross_cents: number
+          id: string
+          net_cents: number | null
+          occurred_on: string
+          org_id: string | null
+          processor: string | null
+          txn_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deposit_ref?: string | null
+          fee_cents?: number | null
+          gross_cents: number
+          id?: string
+          net_cents?: number | null
+          occurred_on: string
+          org_id?: string | null
+          processor?: string | null
+          txn_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deposit_ref?: string | null
+          fee_cents?: number | null
+          gross_cents?: number
+          id?: string
+          net_cents?: number | null
+          occurred_on?: string
+          org_id?: string | null
+          processor?: string | null
+          txn_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       product_categories: {
         Row: {
           id: string

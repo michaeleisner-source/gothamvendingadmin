@@ -120,8 +120,12 @@ export function ProcessorImport() {
   useEffect(() => {
     // probe table
     (async () => {
-      const probe = await supabase.from("processor_settlements").select("occurred_on").limit(1);
-      setTableOk(!probe.error);
+      try {
+        const probe = await supabase.from("processor_settlements" as any).select("occurred_on").limit(1);
+        setTableOk(!probe.error);
+      } catch (error) {
+        setTableOk(false);
+      }
     })();
   }, []);
 
@@ -188,8 +192,13 @@ export function ProcessorImport() {
     const CHUNK = 500;
     for (let i = 0; i < all.length; i += CHUNK) {
       const slice = all.slice(i, i + CHUNK);
-      const { error } = await supabase.from("processor_settlements").insert(slice);
-      if (error) { setStatus({ err: `Insert failed at rows ${i + 1}-${i + slice.length}: ${error.message}` }); return; }
+      try {
+        const { error } = await supabase.from("processor_settlements" as any).insert(slice);
+        if (error) { setStatus({ err: `Insert failed at rows ${i + 1}-${i + slice.length}: ${error.message}` }); return; }
+      } catch (error) {
+        setStatus({ err: `Insert failed: ${error}` });
+        return;
+      }
     }
     setStatus({ ok: `Inserted ${all.length} rows into processor_settlements.` });
   }
@@ -367,13 +376,17 @@ export function ProcessorStatements() {
   useEffect(() => {
     (async () => {
       setLoading(true); setErr(null);
-      const { data, error } = await supabase
-        .from("processor_settlements")
-        .select("id, occurred_on, processor, gross_cents, fee_cents, net_cents, txn_count, deposit_ref")
-        .order("occurred_on", { ascending: false })
-        .limit(2000);
-      if (error) { setErr(error.message); setLoading(false); return; }
-      setRows((data || []) as Sett[]);
+      try {
+        const { data, error } = await supabase
+          .from("processor_settlements" as any)
+          .select("id, occurred_on, processor, gross_cents, fee_cents, net_cents, txn_count, deposit_ref")
+          .order("occurred_on", { ascending: false })
+          .limit(2000);
+        if (error) { setErr(error.message); setLoading(false); return; }
+        setRows((data || []) as unknown as Sett[]);
+      } catch (error) {
+        setErr(`Table access error: ${error}`);
+      }
       setLoading(false);
     })();
   }, []);

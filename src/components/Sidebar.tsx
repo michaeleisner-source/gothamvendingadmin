@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useDemo } from "@/lib/demo";
 import { FeatureSidebarItems } from "@/feature-pack/VendingWorkflowPack";
 import { MachineOpsSidebarMachines, MachineOpsSidebarReports } from "@/feature-pack/MachineOpsPack";
+import { ProcessorStatementsSidebarItems } from "@/feature-pack/ProcessorStatementsPack";
 import {
   LayoutDashboard,
   MapPinned,
@@ -198,9 +199,10 @@ export default function Sidebar() {
           <NavItem to="/cost-analysis" icon={TrendingUp} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Cost Analysis
           </NavItem>
-          <NavItem to="/finance/processors" icon={Percent} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            Payment Processors
-          </NavItem>
+           <NavItem to="/finance/processors" icon={Percent} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+             Payment Processors
+           </NavItem>
+           <ProcessorStatementsSidebarItems collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
           <NavItem to="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Commissions
           </NavItem>
