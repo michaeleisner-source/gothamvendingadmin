@@ -2420,6 +2420,23 @@ export type Database = {
         Args: { p_org_name?: string }
         Returns: string
       }
+      calculate_processor_fees: {
+        Args: {
+          p_amount_cents: number
+          p_machine_id: string
+          p_transaction_date?: string
+        }
+        Returns: {
+          fixed_fee_cents: number
+          percent_fee: number
+          processor_name: string
+          total_fee_cents: number
+        }[]
+      }
+      check_machine_health_and_create_tickets: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       convert_prospect_to_location: {
         Args: { p_prospect_id: string }
         Returns: string
