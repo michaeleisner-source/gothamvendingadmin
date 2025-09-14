@@ -10,8 +10,8 @@ import { Label } from "@/components/ui/label";
 import { AlertTriangle, CheckCircle, Download, Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-// ======== TYPES (adapted to Supabase schema) ========
-type Product = {
+// ======== TYPES (matching actual Supabase schema) ========
+export type Product = {
   id: string;
   sku: string;
   name: string;
@@ -22,46 +22,61 @@ type Product = {
   image_url?: string | null;
   description?: string | null;
   cost?: number;        // unit cost
-  price?: number;       // default vending price
+  price?: number;       // sale price (not sale_price)
   org_id: string;
+  created_at: string;
+  updated_at: string;
 };
 
-type Location = {
+export type Location = {
   id: string;
   name: string;
   address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
   location_type_id?: string;
   traffic_daily_est?: number;
+  traffic_monthly_est?: number;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
   org_id: string;
+  created_at?: string;
+  from_prospect_id?: string;
 };
 
-type Machine = {
+export type Machine = {
   id: string;
   name: string;
   location_id?: string | null;
   location?: string;
   status: string;
   org_id: string;
+  created_at?: string;
 };
 
-type MachineSlot = {
+export type MachineSlot = {
   id: string;
   machine_id: string;
-  label: string; // slot_code equivalent
+  label: string; // This is the slot identifier
   row: number;
   col: number;
-  capacity?: number; // par_level equivalent
+  capacity?: number; // max items slot can hold
+  org_id: string;
 };
 
-type SlotAssignment = {
+export type SlotAssignment = {
   id: string;
   slot_id: string;
   product_id: string;
   max_qty?: number;
   restock_threshold?: number;
+  org_id: string;
 };
 
-type Sale = {
+export type Sale = {
   id: string;
   machine_id: string;
   product_id: string;
@@ -70,9 +85,10 @@ type Sale = {
   unit_cost_cents?: number;
   occurred_at: string;
   source?: string;
+  org_id: string;
 };
 
-type RestockLine = {
+export type RestockLine = {
   id: string;
   session_id: string;
   slot_id: string;
@@ -80,6 +96,7 @@ type RestockLine = {
   prev_qty?: number;
   added_qty?: number;
   new_qty?: number;
+  org_id: string;
 };
 
 // ======== HELPERS ========
