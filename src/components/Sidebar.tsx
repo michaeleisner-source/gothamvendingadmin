@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard,
   MapPinned,
@@ -55,6 +56,7 @@ function usePersistentState<T>(key: string, initial: T) {
  * - Keyboard accessible (Enter/Space toggles)
  */
 export default function Sidebar() {
+  const { isDemo } = useDemo();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = usePersistentState<boolean>(COLLAPSED_KEY, false);
   
@@ -280,6 +282,11 @@ export default function Sidebar() {
           <NavItem to="/reports/help" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Reports
           </NavItem>
+          {isDemo && (
+            <NavItem to="/qa" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+              QA Launcher
+            </NavItem>
+          )}
         </Group>
       </nav>
 
