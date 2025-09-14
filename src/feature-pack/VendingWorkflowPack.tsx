@@ -42,6 +42,8 @@ const NEXT_MAP: Record<string, { to: string; label: string; note?: string }[]> =
   ],
   "/purchase-orders": [{ to: "/inventory", label: "Receive Inventory" }],
   "/inventory": [{ to: "/picklists", label: "Build Picklist from Par/Risk" }],
+  "/inventory/overview": [{ to: "/picklists", label: "Build Picklist from Par/Risk" }],
+  "/inventory/alerts": [{ to: "/restock", label: "Schedule Restocking" }],
   "/reports": [
     { to: "/reports/sales-summary", label: "Sales Summary (7d)" },
     { to: "/reports/silent-machines", label: "Silent Machines" },
