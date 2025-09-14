@@ -172,6 +172,92 @@ export type Database = {
           },
         ]
       }
+      help_backlog: {
+        Row: {
+          article_id: string | null
+          assigned_staff_id: string | null
+          category_id: string | null
+          context_page: string | null
+          created_at: string
+          escalations_90d: number | null
+          id: string
+          last_seen: string | null
+          misses_90d: number | null
+          normalized_q: string | null
+          notes: string | null
+          priority: number
+          q: string
+          query_hash: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          article_id?: string | null
+          assigned_staff_id?: string | null
+          category_id?: string | null
+          context_page?: string | null
+          created_at?: string
+          escalations_90d?: number | null
+          id?: string
+          last_seen?: string | null
+          misses_90d?: number | null
+          normalized_q?: string | null
+          notes?: string | null
+          priority?: number
+          q: string
+          query_hash?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string | null
+          assigned_staff_id?: string | null
+          category_id?: string | null
+          context_page?: string | null
+          created_at?: string
+          escalations_90d?: number | null
+          id?: string
+          last_seen?: string | null
+          misses_90d?: number | null
+          normalized_q?: string | null
+          notes?: string | null
+          priority?: number
+          q?: string
+          query_hash?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_backlog_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_backlog_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "v_help_article_perf"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_backlog_assigned_staff_id_fkey"
+            columns: ["assigned_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_backlog_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "help_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_bot_sessions: {
         Row: {
           created_ticket_id: string | null
@@ -257,6 +343,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      help_escalations: {
+        Row: {
+          context_page: string | null
+          created_at: string
+          created_ticket_id: string | null
+          id: string
+          q: string
+          user_id: string | null
+        }
+        Insert: {
+          context_page?: string | null
+          created_at?: string
+          created_ticket_id?: string | null
+          id?: string
+          q: string
+          user_id?: string | null
+        }
+        Update: {
+          context_page?: string | null
+          created_at?: string
+          created_ticket_id?: string | null
+          id?: string
+          q?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       help_faqs: {
         Row: {
@@ -1774,6 +1887,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      normalize_help_query: {
+        Args: { input_text: string }
+        Returns: string
+      }
       record_sale: {
         Args: {
           p_machine_id: string
@@ -1886,6 +2003,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      rpc_log_help_escalation: {
+        Args: { _context: string; _q: string; _ticket: string }
+        Returns: undefined
+      }
       rpc_log_help_feedback: {
         Args: { _article: string; _comment: string; _helpful: boolean }
         Returns: undefined
@@ -1893,6 +2014,18 @@ export type Database = {
       rpc_log_help_search: {
         Args: { _context: string; _count: number; _q: string }
         Returns: string
+      }
+      rpc_merge_backlog: {
+        Args: { _duplicate: string; _primary: string }
+        Returns: undefined
+      }
+      rpc_promote_backlog_to_article: {
+        Args: { _backlog_id: string }
+        Returns: string
+      }
+      rpc_refresh_help_backlog: {
+        Args: { days_back?: number }
+        Returns: undefined
       }
       save_restock_session: {
         Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
