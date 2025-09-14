@@ -10,20 +10,15 @@ type Group = { id: string; label: string; icon: React.ReactNode; children: Leaf[
 
 const NAV: Group[] = [
   {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: <LayoutDashboard className="w-4 h-4" />,
+    id: "sales",
+    label: "Sales",
+    icon: <LineChart className="w-4 h-4" />,
     children: [
-      { label: "Overview", to: "/" }
-    ]
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    icon: <Boxes className="w-4 h-4" />,
-    children: [
-      { label: "Inventory Manager", to: "/inventory" },
-      { label: "Slot Planner", to: "/slots" }
+      { label: "Dashboard", to: "/" },
+      { label: "Reports", to: "/reports" },
+      { label: "Inventory", to: "/inventory" },
+      { label: "Cost Analysis", to: "/cost-analysis" },
+      { label: "Audit", to: "/audit" },
     ]
   },
   {
@@ -31,36 +26,31 @@ const NAV: Group[] = [
     label: "Operations",
     icon: <ClipboardList className="w-4 h-4" />,
     children: [
-      { label: "Restock Entry", to: "/restock" },
-      { label: "Sales Entry", to: "/sales" }
+      { label: "Prospects", to: "/prospects" },
+      { label: "Locations", to: "/locations" },
+      { label: "Machines", to: "/machines" },
+      { label: "Setup", to: "/setup" },
+      { label: "Slots", to: "/slots" },
+      { label: "Restock", to: "/restock" },
+      { label: "Sales Entry", to: "/sales" },
     ]
   },
   {
-    id: "setup",
-    label: "Setup",
-    icon: <Settings className="w-4 h-4" />,
+    id: "catalog",
+    label: "Catalog",
+    icon: <Boxes className="w-4 h-4" />,
     children: [
-      { label: "Locations & Machines", to: "/setup" }
+      { label: "Products", to: "/products" },
+      { label: "Suppliers", to: "/suppliers" },
     ]
   },
   {
-    id: "reports",
-    label: "Reports",
-    icon: <LineChart className="w-4 h-4" />,
+    id: "purchasing",
+    label: "Purchasing",
+    icon: <ShoppingCart className="w-4 h-4" />,
     children: [
-      { label: "Profit Reports", to: "/reports" },
-      { label: "Inventory Valuation", to: "/reports#inv" },
-      { label: "Margins", to: "/reports#margins" },
-      { label: "Machine Performance", to: "/reports#machines" },
-      { label: "Product Profitability", to: "/reports#products" }
-    ]
-  },
-  {
-    id: "audit",
-    label: "Audit",
-    icon: <Shield className="w-4 h-4" />,
-    children: [
-      { label: "Advanced Audit", to: "/audit" }
+      { label: "New PO", to: "/purchase-orders/new" },
+      { label: "Purchase Orders", to: "/purchase-orders" },
     ]
   }
 ];
