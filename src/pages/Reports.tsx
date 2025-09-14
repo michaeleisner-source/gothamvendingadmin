@@ -113,6 +113,14 @@ type KPI = {
 type OrdersPerDay = { day: string; orders: number };
 type QtyPerDay = { day: string; qty_sold: number };
 type QtyPerMonth = { month: string; qty_sold: number };
+type PurchaseOrder = {
+  po_id: string;
+  created_at: string;
+  status: string;
+  supplier_id: string;
+  supplier_name: string | null;
+  total_amount: number;
+};
 
 // ---- Main page ----
 const Reports = () => {
@@ -132,6 +140,8 @@ const Reports = () => {
   const [ordersDay, setOrdersDay] = useState<OrdersPerDay[]>([]);
   const [qtyDay, setQtyDay] = useState<QtyPerDay[]>([]);
   const [qtyMonth, setQtyMonth] = useState<QtyPerMonth[]>([]);
+  const [openPOs, setOpenPOs] = useState<PurchaseOrder[]>([]);
+  const [allPOs, setAllPOs] = useState<PurchaseOrder[]>([]);
 
   async function loadAll() {
     setLoading(true);
@@ -147,6 +157,8 @@ const Reports = () => {
         ordDayRes,
         qtyDayRes,
         qtyMonRes,
+        openPORes,
+        allPORes,
       ] = await Promise.all([
         supabase.rpc("report_financial_kpis", { p_start, p_end }),
         supabase.rpc("report_revenue_per_machine", { p_start, p_end }),
@@ -155,6 +167,8 @@ const Reports = () => {
         supabase.rpc("report_orders_per_day", { p_start, p_end }),
         supabase.rpc("report_products_sold_per_day", { p_start, p_end }),
         supabase.rpc("report_products_sold_per_month", { p_start, p_end }),
+        supabase.rpc("report_purchase_orders", { p_status: 'OPEN', p_days: 365 }),
+        supabase.rpc("report_purchase_orders", { p_status: null, p_days: 90 }),
       ]);
 
       if (kpiRes.error) throw kpiRes.error;
@@ -164,6 +178,8 @@ const Reports = () => {
       if (ordDayRes.error) throw ordDayRes.error;
       if (qtyDayRes.error) throw qtyDayRes.error;
       if (qtyMonRes.error) throw qtyMonRes.error;
+      if (openPORes.error) throw openPORes.error;
+      if (allPORes.error) throw allPORes.error;
 
       setKpis(Array.isArray(kpiRes.data) ? (kpiRes.data[0] as KPI) : (kpiRes.data as KPI));
       setRevMachine(revMRes.data || []);
@@ -172,6 +188,8 @@ const Reports = () => {
       setOrdersDay(ordDayRes.data || []);
       setQtyDay(qtyDayRes.data || []);
       setQtyMonth(qtyMonRes.data || []);
+      setOpenPOs(openPORes.data || []);
+      setAllPOs(allPORes.data || []);
     } catch (e: any) {
       console.error("Failed to load reports:", e);
     } finally {
@@ -259,6 +277,32 @@ const Reports = () => {
     );
   };
 
+  const onExportOpenPOs = () => {
+    downloadCSV(
+      "open_purchase_orders.csv",
+      openPOs.map((r) => ({
+        po_id: r.po_id,
+        created_at: new Date(r.created_at).toLocaleDateString(),
+        status: r.status,
+        supplier: r.supplier_name || r.supplier_id,
+        total_amount: cents(r.total_amount * 100), // Convert to cents for formatting
+      }))
+    );
+  };
+
+  const onExportAllPOs = () => {
+    downloadCSV(
+      "purchase_order_history.csv",
+      allPOs.map((r) => ({
+        po_id: r.po_id,
+        created_at: new Date(r.created_at).toLocaleDateString(),
+        status: r.status,
+        supplier: r.supplier_name || r.supplier_id,
+        total_amount: cents(r.total_amount * 100), // Convert to cents for formatting
+      }))
+    );
+  };
+
   const refresh = () => loadAll();
 
   return (
@@ -282,7 +326,7 @@ const Reports = () => {
 
       {!loading && (
         <Tabs defaultValue="kpis" className="space-y-6">
-          <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-9 w-full">
             <TabsTrigger value="kpis">KPIs</TabsTrigger>
             <TabsTrigger value="rev_machine">Revenue/Machine</TabsTrigger>
             <TabsTrigger value="rev_product">Revenue/Product</TabsTrigger>
@@ -290,6 +334,8 @@ const Reports = () => {
             <TabsTrigger value="orders_day">Orders/Day</TabsTrigger>
             <TabsTrigger value="qty_day">Sold/Day</TabsTrigger>
             <TabsTrigger value="qty_month">Sold/Month</TabsTrigger>
+            <TabsTrigger value="open_pos">Open POs</TabsTrigger>
+            <TabsTrigger value="po_history">PO History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="kpis" className="space-y-4">
@@ -532,6 +578,100 @@ const Reports = () => {
                         <tr key={r.month} className="border-b last:border-0">
                           <td className="py-3 px-4 font-medium">{r.month}</td>
                           <td className="py-3 px-4">{r.qty_sold.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="open_pos" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Open Purchase Orders</h2>
+              <Button variant="outline" onClick={onExportOpenPOs}>Export CSV</Button>
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b">
+                      <tr className="text-left">
+                        <th className="py-3 px-4 font-medium">PO ID</th>
+                        <th className="py-3 px-4 font-medium">Created</th>
+                        <th className="py-3 px-4 font-medium">Status</th>
+                        <th className="py-3 px-4 font-medium">Supplier</th>
+                        <th className="py-3 px-4 font-medium">Total Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {openPOs.map((r) => (
+                        <tr key={r.po_id} className="border-b last:border-0">
+                          <td className="py-3 px-4 font-mono text-sm">
+                            {r.po_id.slice(0, 8)}...
+                          </td>
+                          <td className="py-3 px-4">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={r.status === 'OPEN' ? 'default' : 'secondary'}>
+                              {r.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">{r.supplier_name || r.supplier_id}</td>
+                          <td className="py-3 px-4 font-medium text-primary">
+                            {cents(r.total_amount * 100)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="po_history" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Purchase Order History (Last 90 Days)</h2>
+              <Button variant="outline" onClick={onExportAllPOs}>Export CSV</Button>
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b">
+                      <tr className="text-left">
+                        <th className="py-3 px-4 font-medium">PO ID</th>
+                        <th className="py-3 px-4 font-medium">Created</th>
+                        <th className="py-3 px-4 font-medium">Status</th>
+                        <th className="py-3 px-4 font-medium">Supplier</th>
+                        <th className="py-3 px-4 font-medium">Total Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allPOs.map((r) => (
+                        <tr key={r.po_id} className="border-b last:border-0">
+                          <td className="py-3 px-4 font-mono text-sm">
+                            {r.po_id.slice(0, 8)}...
+                          </td>
+                          <td className="py-3 px-4">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={
+                              r.status === 'OPEN' ? 'default' : 
+                              r.status === 'RECEIVED' ? 'secondary' : 
+                              r.status === 'CANCELLED' ? 'destructive' : 'outline'
+                            }>
+                              {r.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">{r.supplier_name || r.supplier_id}</td>
+                          <td className="py-3 px-4 font-medium text-primary">
+                            {cents(r.total_amount * 100)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
