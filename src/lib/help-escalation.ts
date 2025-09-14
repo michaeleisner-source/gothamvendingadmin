@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Extended help analytics with escalation logging for complex queries
+// Extended help analytics with escalation logging (Public - No Authentication Required)
 export async function logHelpEscalation(q: string, contextPage?: string, ticketId?: string) {
   try {
     const { error } = await supabase.rpc('rpc_log_help_escalation', {
