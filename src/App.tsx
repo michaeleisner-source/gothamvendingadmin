@@ -71,14 +71,12 @@ const App = () => (
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<HomeDashboard />} />
-        <Route path="/prospects" element={<Prospects />} />
-        <Route path="/prospects/:id" element={<ProspectDetail />} />
-        <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
-            <MachineOpsRoutes ProtectedRoute={ProtectedRoute} />
-            <ProcessorStatementsRoutes ProtectedRoute={ProtectedRoute} />
-        <Route path="/locations" element={<Locations />} />
-        <Route path="/locations/:id" element={<LocationDetail />} />
-        <Route path="/machines" element={<Machines />} />
+            <Route path="/prospects" element={<Prospects />} />
+            <Route path="/prospects/:id" element={<ProspectDetail />} />
+            <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
+            <Route path="/locations" element={<Locations />} />
+            <Route path="/locations/:id" element={<LocationDetail />} />
+            <Route path="/machines" element={<Machines />} />
             <Route path="/machines/:id" element={<MachineDetail />} />
             <Route path="/products" element={<Products />} />
             <Route path="/suppliers" element={<Suppliers />} />
@@ -120,6 +118,9 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
+          {/* Mount feature pack routes at root level */}
+          <MachineOpsRoutes ProtectedRoute={ProtectedRoute} />
+          <ProcessorStatementsRoutes ProtectedRoute={ProtectedRoute} />
         </Routes>
       </Router>
     </TooltipProvider>
