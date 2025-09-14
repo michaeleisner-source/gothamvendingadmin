@@ -6,6 +6,7 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/lib/demo";
 import { Workflow } from "@/feature-pack/VendingWorkflowPack";
 import { MachineOpsRoutes } from "@/feature-pack/MachineOpsPack";
+import { ProcessorStatementsRoutes } from "@/feature-pack/ProcessorStatementsPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -74,6 +75,7 @@ const App = () => (
         <Route path="/prospects/:id" element={<ProspectDetail />} />
         <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <MachineOpsRoutes />
+            <ProcessorStatementsRoutes />
         <Route path="/locations" element={<Locations />} />
         <Route path="/locations/:id" element={<LocationDetail />} />
         <Route path="/machines" element={<Machines />} />
