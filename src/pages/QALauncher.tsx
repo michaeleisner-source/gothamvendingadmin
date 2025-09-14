@@ -50,6 +50,7 @@ const items = [
 
   // Utilities
   { to: "/debug", label: "Debug" },
+  { to: "/health", label: "Health Check" },
 ];
 
 export default function QALauncher() {
