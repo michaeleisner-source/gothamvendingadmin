@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Link } from "react-router-dom";
 import { MessageCircle, HelpCircle, X, Search, ChevronRight, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logHelpSearch, logHelpClick, startHelpBotSession, endHelpBotSession } from '@/lib/help-analytics';
@@ -167,25 +168,25 @@ export default function HelpBot() {
                 <div className="divide-y divide-border">
                   {answers.map((r, index) => (
                     <div key={`${r.source}-${r.id}`} className="p-3">
-                       <a 
-                         href={r.url} 
+                       <Link 
+                         to={r.url} 
                          className="text-sm font-medium text-foreground hover:text-primary transition-colors"
                          onClick={() => handleResultClick(r, index)}
                        >
                         {r.title}
-                      </a>
+                      </Link>
                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
                         {r.snippet}
                       </div>
                       <div className="mt-2">
-                        <a 
-                          href={r.url} 
+                        <Link 
+                          to={r.url} 
                           className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                           onClick={() => handleResultClick(r, index)}
                         >
                           Open step-by-step guide 
                           <ChevronRight className="size-3"/>
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   ))}

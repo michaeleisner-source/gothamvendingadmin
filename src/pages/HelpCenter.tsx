@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
 import { HelpCircle, Search, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -80,9 +81,9 @@ export default function HelpCenter() {
           ) : (
             <div className="divide-y divide-border">
               {(results || []).map((r) => (
-                <a
+                <Link
                   key={`${r.source}-${r.id}`}
-                  href={r.url}
+                  to={r.url}
                   className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
@@ -90,7 +91,7 @@ export default function HelpCenter() {
                     <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.snippet}</div>
                   </div>
                   <ChevronRight className="size-4 text-muted-foreground ml-2 flex-shrink-0" />
-                </a>
+                </Link>
               ))}
               {(!loading && results?.length === 0) && (
                 <div className="p-6 text-muted-foreground text-center">
@@ -110,20 +111,20 @@ export default function HelpCenter() {
               </div>
               <div className="divide-y divide-border">
                 {(articlesByCat[c.id] || []).slice(0, 6).map((a) => (
-                  <a
+                  <Link
                     key={a.id}
-                    href={`/help/article/${a.id}`}
+                    to={`/help/article/${a.id}`}
                     className="block px-4 py-2 hover:bg-muted/50 transition-colors text-sm"
                   >
                     {a.title}
-                  </a>
+                  </Link>
                 ))}
-                <a
-                  href={`/help?cat=${c.slug}`}
+                <Link
+                  to={`/help?cat=${c.slug}`}
                   className="block px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   View all articles →
-                </a>
+                </Link>
               </div>
             </div>
           ))}
