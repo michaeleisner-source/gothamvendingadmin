@@ -32,9 +32,9 @@ export function SidebarLean() {
   const toggle = (k: string) => setOpen(s => ({ ...s, [k]: !s[k] }));
 
   return (
-    <aside className="h-screen w-72 bg-neutral-950 text-neutral-100 border-r border-neutral-800 flex flex-col">
-      <div className="px-4 py-4 border-b border-neutral-800 flex items-center gap-2">
-        <div className="size-8 rounded-xl bg-neutral-800 grid place-items-center"><Factory className="size-4"/></div>
+    <aside className="h-screen w-72 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
+      <div className="px-4 py-4 border-b border-sidebar-border flex items-center gap-2">
+        <div className="size-8 rounded-xl bg-sidebar-accent grid place-items-center"><Factory className="size-4"/></div>
         <div className="font-semibold">Gotham Vending</div>
       </div>
 
@@ -99,13 +99,13 @@ export function SidebarLean() {
         </Group>
       </nav>
 
-      <div className="px-4 py-3 border-t border-neutral-800 text-xs text-neutral-400">v3.0 · Lean Flow</div>
+      <div className="px-4 py-3 border-t border-sidebar-border text-xs text-muted-foreground">v3.0 · Lean Flow</div>
     </aside>
   );
 }
 
 function Section({ children }: { children: React.ReactNode }) {
-  return <div className="px-2 pt-2 pb-1 text-[11px] uppercase tracking-wider text-neutral-500">{children}</div>;
+  return <div className="px-2 pt-2 pb-1 text-[11px] uppercase tracking-wider text-muted-foreground">{children}</div>;
 }
 
 function Group({ 
@@ -123,12 +123,12 @@ function Group({
 }) {
   return (
     <div className="mt-3">
-      <button className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-neutral-900" onClick={onClick} aria-expanded={open}>
+      <button className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-sidebar-accent" onClick={onClick} aria-expanded={open}>
         <span className="flex items-center gap-2"><Icon className="size-4"/><span className="text-sm font-medium">{label}</span></span>
         <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />
       </button>
       <div className={`overflow-hidden transition-[max-height,opacity] duration-300 ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-        <div className="mt-1 ml-1 border-l border-neutral-800 pl-3">{children}</div>
+        <div className="mt-1 ml-1 border-l border-sidebar-border pl-3">{children}</div>
       </div>
     </div>
   );
@@ -145,7 +145,7 @@ function Item({
 }) {
   return (
     <NavLink to={to} className={({ isActive }) =>
-      `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-neutral-900 ${isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""}`}>
+      `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-sidebar-accent ${isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""}`}>
       <Icon className="size-4"/><span>{children}</span>
     </NavLink>
   );
@@ -154,7 +154,7 @@ function Item({
 function Child({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <NavLink to={to} className={({ isActive }) =>
-      `block text-sm px-2 py-1.5 rounded-md hover:bg-neutral-900 ${isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""}`}>
+      `block text-sm px-2 py-1.5 rounded-md hover:bg-sidebar-accent ${isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""}`}>
       {children}
     </NavLink>
   );
@@ -262,7 +262,7 @@ export function ProspectsBoard() {
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{stage.replace("_"," ")}</div>
             <div className="space-y-2">
               {byStage[stage].map(p => (
-                <div key={p.id} className="rounded-lg border bg-background p-2">
+                <div key={p.id} className="rounded-lg border border-border bg-card p-2">
                   <div className="text-sm font-medium">{p.business_name || "—"}</div>
                   <div className="text-xs text-muted-foreground">{p.source || "—"} · {p.contact_phone || p.contact_email || "no contact"}</div>
                   <div className="text-xs text-muted-foreground">Potential: {p.potential_machines || 1} machines · Traffic: {p.est_daily_traffic || "?"}</div>
