@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Download, Filter } from "lucide-react";
+import { Plus, Search, Download, Filter, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -76,6 +76,30 @@ const PurchaseOrders = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const deletePurchaseOrderMutation = useMutation({
+    mutationFn: async (poId: string) => {
+      const { error } = await supabase
+        .from("purchase_orders")
+        .delete()
+        .eq("id", poId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      toast.success("Purchase order deleted successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error deleting purchase order");
+    },
+  });
+
+  const handleDeletePO = async (po: PurchaseOrder) => {
+    if (confirm(`Are you sure you want to delete PO #${getShortId(po.id)}? This will also delete all associated line items. This action cannot be undone.`)) {
+      deletePurchaseOrderMutation.mutate(po.id);
+    }
+  };
 
   const {
     data: purchaseOrders = [],
@@ -251,6 +275,7 @@ const PurchaseOrders = () => {
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Notes</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -289,6 +314,20 @@ const PurchaseOrders = () => {
                           <Link to={`/purchase-orders/${po.id}`} className="text-muted-foreground">
                             {po.notes || "-"}
                           </Link>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeletePO(po);
+                            }}
+                            className="text-destructive hover:text-destructive"
+                            disabled={deletePurchaseOrderMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
