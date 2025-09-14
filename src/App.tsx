@@ -20,6 +20,7 @@ import DeliveryRoutes from "./pages/DeliveryRoutes";
 import Picklists from "./pages/Picklists";
 import Tickets from "./pages/Tickets";
 import Reports from "./pages/Reports";
+import DeletionLogs from "./pages/DeletionLogs";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/picklists" element={<Picklists />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/deletion-logs" element={<DeletionLogs />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

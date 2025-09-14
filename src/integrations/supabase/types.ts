@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      deletion_logs: {
+        Row: {
+          created_at: string
+          deleted_at: string
+          deleted_by_name: string
+          entity_data: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          org_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string
+          deleted_by_name: string
+          entity_data?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          org_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string
+          deleted_by_name?: string
+          entity_data?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          org_id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       location_types: {
         Row: {
           id: string
@@ -807,6 +843,18 @@ export type Database = {
       dashboard_metrics: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      delete_purchase_order_item_with_log: {
+        Args: {
+          p_deleted_by_name: string
+          p_item_id: string
+          p_reason?: string
+        }
+        Returns: undefined
+      }
+      delete_purchase_order_with_log: {
+        Args: { p_deleted_by_name: string; p_po_id: string; p_reason?: string }
+        Returns: undefined
       }
       generate_machine_slots: {
         Args: { p_cols: number; p_machine_id: string; p_rows: number }

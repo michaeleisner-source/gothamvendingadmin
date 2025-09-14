@@ -30,7 +30,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Edit, FileText, CheckCircle, XCircle } from "lucide-react";
+import { DeletionConfirmDialog } from "@/components/DeletionConfirmDialog";
+import { ArrowLeft, Edit, FileText, CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -87,6 +88,9 @@ const PurchaseOrderDetail = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newStatus, setNewStatus] = useState<string>("");
+  const [showDeletePODialog, setShowDeletePODialog] = useState(false);
+  const [showDeleteItemDialog, setShowDeleteItemDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const {
     data: purchaseOrder,
@@ -118,9 +122,73 @@ const PurchaseOrderDetail = () => {
     },
   });
 
+  const deletePOMutation = useMutation({
+    mutationFn: async ({ poId, deletedByName, reason }: { 
+      poId: string; 
+      deletedByName: string; 
+      reason?: string 
+    }) => {
+      const { error } = await supabase.rpc('delete_purchase_order_with_log', {
+        p_po_id: poId,
+        p_deleted_by_name: deletedByName,
+        p_reason: reason
+      });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Purchase order deleted successfully!");
+      navigate("/purchase-orders");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error deleting purchase order");
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async ({ itemId, deletedByName, reason }: { 
+      itemId: string; 
+      deletedByName: string; 
+      reason?: string 
+    }) => {
+      const { error } = await supabase.rpc('delete_purchase_order_item_with_log', {
+        p_item_id: itemId,
+        p_deleted_by_name: deletedByName,
+        p_reason: reason
+      });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-order", id] });
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      toast.success("Line item deleted successfully!");
+      setItemToDelete(null);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error deleting line item");
+      setItemToDelete(null);
+    },
+  });
+
   const handleStatusUpdate = (status: string) => {
     if (!id) return;
     updateStatusMutation.mutate({ id, status });
+  };
+
+  const handleDeletePO = (deletedByName: string, reason?: string) => {
+    if (!id) return;
+    deletePOMutation.mutate({ poId: id, deletedByName, reason });
+  };
+
+  const handleDeleteItem = (deletedByName: string, reason?: string) => {
+    if (!itemToDelete) return;
+    deleteItemMutation.mutate({ itemId: itemToDelete, deletedByName, reason });
+  };
+
+  const handleItemDeleteClick = (itemId: string) => {
+    setItemToDelete(itemId);
+    setShowDeleteItemDialog(true);
   };
 
   const canEdit = () => {
@@ -279,6 +347,16 @@ const PurchaseOrderDetail = () => {
               Edit
             </Button>
           )}
+          {(purchaseOrder?.status === "OPEN" || purchaseOrder?.status === "DRAFT") && (
+            <Button 
+              onClick={() => setShowDeletePODialog(true)} 
+              variant="destructive" 
+              size="sm"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete PO
+            </Button>
+          )}
         </div>
       </div>
 
@@ -401,6 +479,7 @@ const PurchaseOrderDetail = () => {
                     <TableHead className="text-right">Qty Ordered</TableHead>
                     <TableHead className="text-right">Unit Cost</TableHead>
                     <TableHead className="text-right">Line Total</TableHead>
+                    {canEdit() && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -413,6 +492,18 @@ const PurchaseOrderDetail = () => {
                       <TableCell className="text-right font-medium">
                         ${(item.qty_ordered * item.unit_cost).toFixed(2)}
                       </TableCell>
+                      {canEdit() && (
+                        <TableCell className="text-right">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleItemDeleteClick(item.id)}
+                            disabled={deleteItemMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -449,6 +540,29 @@ const PurchaseOrderDetail = () => {
           </Card>
         )}
       </div>
+      
+      {/* Deletion Confirmation Dialogs */}
+      <DeletionConfirmDialog
+        open={showDeletePODialog}
+        onOpenChange={setShowDeletePODialog}
+        title="Delete Purchase Order"
+        description={`Are you sure you want to permanently delete Purchase Order #${purchaseOrder ? getShortId(purchaseOrder.id) : ''}? This will delete all line items and cannot be undone.`}
+        itemName={purchaseOrder ? `PO-${getShortId(purchaseOrder.id)}` : 'PO'}
+        onConfirm={handleDeletePO}
+        isLoading={deletePOMutation.isPending}
+      />
+
+      <DeletionConfirmDialog
+        open={showDeleteItemDialog}
+        onOpenChange={setShowDeleteItemDialog}
+        title="Delete Line Item"
+        description="Are you sure you want to delete this line item? This action cannot be undone."
+        itemName={itemToDelete && purchaseOrder ? 
+          purchaseOrder.purchase_order_items.find(item => item.id === itemToDelete)?.product.name || 'ITEM' 
+          : 'ITEM'}
+        onConfirm={handleDeleteItem}
+        isLoading={deleteItemMutation.isPending}
+      />
     </div>
   );
 };
