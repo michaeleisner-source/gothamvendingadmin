@@ -284,10 +284,14 @@ export type Database = {
           category: string | null
           cost: number | null
           created_at: string
+          description: string | null
           id: string
+          image_url: string | null
           name: string
           org_id: string | null
           price: number | null
+          size_ml: number | null
+          size_oz: number | null
           sku: string
           updated_at: string
         }
@@ -295,10 +299,14 @@ export type Database = {
           category?: string | null
           cost?: number | null
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           name: string
           org_id?: string | null
           price?: number | null
+          size_ml?: number | null
+          size_oz?: number | null
           sku: string
           updated_at?: string
         }
@@ -306,10 +314,14 @@ export type Database = {
           category?: string | null
           cost?: number | null
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           org_id?: string | null
           price?: number | null
+          size_ml?: number | null
+          size_oz?: number | null
           sku?: string
           updated_at?: string
         }
@@ -814,10 +826,14 @@ export type Database = {
           category: string | null
           cost: number | null
           created_at: string
+          description: string | null
           id: string
+          image_url: string | null
           name: string
           org_id: string | null
           price: number | null
+          size_ml: number | null
+          size_oz: number | null
           sku: string
           updated_at: string
         }[]
