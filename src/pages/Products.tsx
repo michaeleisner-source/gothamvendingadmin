@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Pencil, Trash2, Upload, Search, Download } from "lucide-react";
+import { Pencil, Trash2, Upload, Search, Download, Building2 } from "lucide-react";
 
 
 type Product = {
@@ -379,13 +379,14 @@ const Products = () => {
       return;
     }
 
-    const headers = ['SKU', 'Name', 'Category', 'Cost', 'Price', 'Image URL', 'Description', 'Size (oz)', 'Size (ml)'];
+    const headers = ['SKU', 'Name', 'Category', 'Manufacturer', 'Cost', 'Price', 'Image URL', 'Description', 'Size (oz)', 'Size (ml)'];
     const csvContent = [
       headers.join(','),
       ...products.map(p => [
         p.sku,
         p.name,
         p.category || '',
+        p.manufacturer || '',
         p.cost || '',
         p.price || '',
         p.image_url || '',
@@ -480,6 +481,15 @@ const Products = () => {
                   value={formData.category}
                   onChange={(e) => updateFormData("category", e.target.value)}
                   placeholder="Enter category"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manufacturer">Manufacturer</Label>
+                <Input
+                  id="manufacturer"
+                  value={formData.manufacturer}
+                  onChange={(e) => updateFormData("manufacturer", e.target.value)}
+                  placeholder="Enter manufacturer"
                 />
               </div>
               <div className="space-y-2">
@@ -582,6 +592,7 @@ const Products = () => {
                     <TableHead>SKU</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
+                    <TableHead>Manufacturer</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead className="text-right">Cost</TableHead>
                     <TableHead className="text-right">Price</TableHead>
@@ -619,6 +630,7 @@ const Products = () => {
                         </div>
                       </TableCell>
                       <TableCell>{product.category || "-"}</TableCell>
+                      <TableCell>{product.manufacturer || "-"}</TableCell>
                       <TableCell>
                         <div className="text-sm">
                           {product.size_oz && <div>{product.size_oz} oz</div>}
@@ -690,6 +702,14 @@ const Products = () => {
                     value={editingProduct.category || ""}
                     onChange={(e) => updateEditingProduct("category", e.target.value)}
                     placeholder="Enter category"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Manufacturer</Label>
+                  <Input
+                    value={editingProduct.manufacturer || ""}
+                    onChange={(e) => updateEditingProduct("manufacturer", e.target.value)}
+                    placeholder="Enter manufacturer"
                   />
                 </div>
                 <div className="space-y-2">
