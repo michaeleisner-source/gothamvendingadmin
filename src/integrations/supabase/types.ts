@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      commission_payouts: {
+        Row: {
+          amount: number
+          calculated_at: string
+          created_at: string
+          id: string
+          location_id: string
+          notes: string | null
+          org_id: string
+          paid: boolean | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          location_id: string
+          notes?: string | null
+          org_id: string
+          paid?: boolean | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+          notes?: string | null
+          org_id?: string
+          paid?: boolean | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       deletion_logs: {
         Row: {
           created_at: string
@@ -47,6 +92,42 @@ export type Database = {
           id?: string
           org_id?: string
           reason?: string | null
+        }
+        Relationships: []
+      }
+      location_commissions: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          location_id: string
+          model: string
+          org_id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          effective_from: string
+          effective_to?: string | null
+          id?: string
+          location_id: string
+          model: string
+          org_id: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          location_id?: string
+          model?: string
+          org_id?: string
+          updated_at?: string
+          value?: number
         }
         Relationships: []
       }
@@ -91,6 +172,7 @@ export type Database = {
           name: string
           org_id: string | null
           postal_code: string | null
+          search_tsv: unknown | null
           state: string | null
           traffic_daily_est: number | null
           traffic_monthly_est: number | null
@@ -109,6 +191,7 @@ export type Database = {
           name: string
           org_id?: string | null
           postal_code?: string | null
+          search_tsv?: unknown | null
           state?: string | null
           traffic_daily_est?: number | null
           traffic_monthly_est?: number | null
@@ -127,6 +210,7 @@ export type Database = {
           name?: string
           org_id?: string | null
           postal_code?: string | null
+          search_tsv?: unknown | null
           state?: string | null
           traffic_daily_est?: number | null
           traffic_monthly_est?: number | null
@@ -328,6 +412,7 @@ export type Database = {
           location_id: string | null
           name: string
           org_id: string | null
+          search_tsv: unknown | null
           status: string | null
         }
         Insert: {
@@ -337,6 +422,7 @@ export type Database = {
           location_id?: string | null
           name: string
           org_id?: string | null
+          search_tsv?: unknown | null
           status?: string | null
         }
         Update: {
@@ -346,6 +432,7 @@ export type Database = {
           location_id?: string | null
           name?: string
           org_id?: string | null
+          search_tsv?: unknown | null
           status?: string | null
         }
         Relationships: [
@@ -648,6 +735,7 @@ export type Database = {
           name: string
           org_id: string | null
           price: number | null
+          search_tsv: unknown | null
           size_ml: number | null
           size_oz: number | null
           sku: string
@@ -664,6 +752,7 @@ export type Database = {
           name: string
           org_id?: string | null
           price?: number | null
+          search_tsv?: unknown | null
           size_ml?: number | null
           size_oz?: number | null
           sku: string
@@ -680,6 +769,7 @@ export type Database = {
           name?: string
           org_id?: string | null
           price?: number | null
+          search_tsv?: unknown | null
           size_ml?: number | null
           size_oz?: number | null
           sku?: string
@@ -994,6 +1084,39 @@ export type Database = {
           },
         ]
       }
+      route_assignments: {
+        Row: {
+          assigned_from: string | null
+          assigned_to: string | null
+          created_at: string
+          id: string
+          org_id: string
+          route_id: string | null
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_from?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          org_id: string
+          route_id?: string | null
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_from?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          org_id?: string
+          route_id?: string | null
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sales: {
         Row: {
           id: string
@@ -1111,6 +1234,7 @@ export type Database = {
           org_id: string
           phone: string | null
           role: string | null
+          search_tsv: unknown | null
           updated_at: string
         }
         Insert: {
@@ -1122,6 +1246,7 @@ export type Database = {
           org_id: string
           phone?: string | null
           role?: string | null
+          search_tsv?: unknown | null
           updated_at?: string
         }
         Update: {
@@ -1133,6 +1258,7 @@ export type Database = {
           org_id?: string
           phone?: string | null
           role?: string | null
+          search_tsv?: unknown | null
           updated_at?: string
         }
         Relationships: []
@@ -1144,6 +1270,7 @@ export type Database = {
           id: string
           name: string
           org_id: string | null
+          search_tsv: unknown | null
           updated_at: string
         }
         Insert: {
@@ -1152,6 +1279,7 @@ export type Database = {
           id?: string
           name: string
           org_id?: string | null
+          search_tsv?: unknown | null
           updated_at?: string
         }
         Update: {
@@ -1160,6 +1288,7 @@ export type Database = {
           id?: string
           name?: string
           org_id?: string | null
+          search_tsv?: unknown | null
           updated_at?: string
         }
         Relationships: [
@@ -1171,6 +1300,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tax_configs: {
+        Row: {
+          applies_to: string | null
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          jurisdiction: string
+          org_id: string
+          rate: number
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string | null
+          created_at?: string
+          effective_from: string
+          effective_to?: string | null
+          id?: string
+          jurisdiction: string
+          org_id: string
+          rate: number
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          jurisdiction?: string
+          org_id?: string
+          rate?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1220,6 +1385,26 @@ export type Database = {
         Args: { p_cols: number; p_machine_id: string; p_rows: number }
         Returns: number
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_org_member: {
         Args: { row_org: string }
         Returns: boolean
@@ -1241,6 +1426,7 @@ export type Database = {
           name: string
           org_id: string | null
           price: number | null
+          search_tsv: unknown | null
           size_ml: number | null
           size_oz: number | null
           sku: string
@@ -1255,6 +1441,7 @@ export type Database = {
           id: string
           name: string
           org_id: string | null
+          search_tsv: unknown | null
           updated_at: string
         }[]
       }
@@ -1365,9 +1552,40 @@ export type Database = {
         Args: { p_complete: boolean; p_lines: Json; p_session_id: string }
         Returns: number
       }
+      search_all: {
+        Args: { limit_count?: number; q: string }
+        Returns: {
+          entity: string
+          id: string
+          rank: number
+          subtitle: string
+          title: string
+          url: string
+        }[]
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
       start_restock_session: {
         Args: { p_machine_id: string; p_note?: string }
         Returns: string
+      }
+      unaccent: {
+        Args: { "": string }
+        Returns: string
+      }
+      unaccent_init: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       upsert_product: {
         Args: { p: Json }
