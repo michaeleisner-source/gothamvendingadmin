@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/lib/demo";
 import { Workflow } from "@/feature-pack/VendingWorkflowPack";
 import { MachineOpsRoutes } from "@/feature-pack/MachineOpsPack";
 import { ProcessorStatementsRoutes } from "@/feature-pack/ProcessorStatementsPack";
+import { CommissionsRoutes } from "@/feature-pack/CommissionsPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -118,6 +119,7 @@ const App = () => (
             {/* Feature pack routes with navigation */}
             {MachineOpsRoutes({ ProtectedRoute })}
             {ProcessorStatementsRoutes({ ProtectedRoute })}
+            {CommissionsRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>

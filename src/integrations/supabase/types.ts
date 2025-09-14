@@ -59,6 +59,133 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_settings: {
+        Row: {
+          commission_base: string | null
+          commission_flat_cents: number | null
+          commission_min_guarantee_cents: number | null
+          commission_rate: number | null
+          commission_tiers_json: Json | null
+          commission_type: string | null
+          created_at: string | null
+          effective_from: string | null
+          effective_to: string | null
+          location_id: string
+          org_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          commission_base?: string | null
+          commission_flat_cents?: number | null
+          commission_min_guarantee_cents?: number | null
+          commission_rate?: number | null
+          commission_tiers_json?: Json | null
+          commission_type?: string | null
+          created_at?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          location_id: string
+          org_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          commission_base?: string | null
+          commission_flat_cents?: number | null
+          commission_min_guarantee_cents?: number | null
+          commission_rate?: number | null
+          commission_tiers_json?: Json | null
+          commission_type?: string | null
+          created_at?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          location_id?: string
+          org_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_settings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: true
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commission_statements: {
+        Row: {
+          base: string | null
+          base_amount_cents: number | null
+          commission_cents: number | null
+          cost_cents: number | null
+          created_at: string | null
+          fees_cents: number | null
+          flat_cents: number | null
+          gross_cents: number | null
+          id: string
+          location_id: string | null
+          method: string | null
+          min_guarantee_cents: number | null
+          month: string
+          net_cents: number | null
+          org_id: string | null
+          rate_pct: number | null
+          status: string | null
+          tiers_json: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          base?: string | null
+          base_amount_cents?: number | null
+          commission_cents?: number | null
+          cost_cents?: number | null
+          created_at?: string | null
+          fees_cents?: number | null
+          flat_cents?: number | null
+          gross_cents?: number | null
+          id?: string
+          location_id?: string | null
+          method?: string | null
+          min_guarantee_cents?: number | null
+          month: string
+          net_cents?: number | null
+          org_id?: string | null
+          rate_pct?: number | null
+          status?: string | null
+          tiers_json?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          base?: string | null
+          base_amount_cents?: number | null
+          commission_cents?: number | null
+          cost_cents?: number | null
+          created_at?: string | null
+          fees_cents?: number | null
+          flat_cents?: number | null
+          gross_cents?: number | null
+          id?: string
+          location_id?: string | null
+          method?: string | null
+          min_guarantee_cents?: number | null
+          month?: string
+          net_cents?: number | null
+          org_id?: string | null
+          rate_pct?: number | null
+          status?: string | null
+          tiers_json?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_statements_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deletion_logs: {
         Row: {
           created_at: string

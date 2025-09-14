@@ -4,6 +4,7 @@ import { useDemo } from "@/lib/demo";
 import { FeatureSidebarItems } from "@/feature-pack/VendingWorkflowPack";
 import { MachineOpsSidebarMachines, MachineOpsSidebarReports } from "@/feature-pack/MachineOpsPack";
 import { ProcessorStatementsSidebarItems } from "@/feature-pack/ProcessorStatementsPack";
+import { CommissionsSidebarItems } from "@/feature-pack/CommissionsPack";
 import {
   LayoutDashboard,
   MapPinned,
@@ -203,6 +204,7 @@ export default function Sidebar() {
              Payment Processors
            </NavItem>
            <ProcessorStatementsSidebarItems collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
+           <CommissionsSidebarItems collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
           <NavItem to="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Commissions
           </NavItem>
