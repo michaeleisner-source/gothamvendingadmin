@@ -822,6 +822,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "machine_slots_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
             foreignKeyName: "machine_slots_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -1502,6 +1509,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "restock_sessions_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
             foreignKeyName: "restock_sessions_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -1584,6 +1598,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "machines"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
           },
           {
             foreignKeyName: "sales_org_id_fkey"
@@ -1802,6 +1823,25 @@ export type Database = {
         }
         Relationships: []
       }
+      v_machine_health: {
+        Row: {
+          last_sale_at: string | null
+          location_id: string | null
+          machine_id: string | null
+          machine_name: string | null
+          silent_flag: boolean | null
+          since_last_sale: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machines_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _normalize_range: {
@@ -1846,6 +1886,17 @@ export type Database = {
       generate_machine_slots: {
         Args: { p_cols: number; p_machine_id: string; p_rows: number }
         Returns: number
+      }
+      get_machine_health_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          last_sale_at: string
+          location_id: string
+          machine_id: string
+          machine_name: string
+          silent_flag: boolean
+          since_last_sale: unknown
+        }[]
       }
       is_org_member: {
         Args: { row_org: string }
@@ -2014,6 +2065,15 @@ export type Database = {
       rpc_log_help_search: {
         Args: { _context: string; _count: number; _q: string }
         Returns: string
+      }
+      rpc_machine_silence_alerts: {
+        Args: { _hours?: number }
+        Returns: {
+          hours_since_last_sale: number
+          last_sale_at: string
+          machine_id: string
+          machine_name: string
+        }[]
       }
       rpc_merge_backlog: {
         Args: { _duplicate: string; _primary: string }
