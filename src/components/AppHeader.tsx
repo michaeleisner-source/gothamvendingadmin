@@ -41,6 +41,9 @@ export default function AppHeader() {
           <Link to="/machine-setup" className="text-foreground hover:text-primary transition-colors hover:underline">
             Setup
           </Link>
+          <Link to="/slot-planner" className="text-foreground hover:text-primary transition-colors hover:underline">
+            Slots
+          </Link>
           <Link to="/products" className="text-foreground hover:text-primary transition-colors hover:underline">
             Products
           </Link>
