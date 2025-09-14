@@ -134,11 +134,11 @@ export default function HelpBot() {
                 <div className="divide-y divide-border">
                   {answers.map((r, index) => (
                     <div key={`${r.source}-${r.id}`} className="p-3">
-                      <a 
-                        href={r.url} 
-                        className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                        onClick={() => setOpen(false)}
-                      >
+                       <a 
+                         href={r.url} 
+                         className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                         onClick={() => handleResultClick(r, index)}
+                       >
                         {r.title}
                       </a>
                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
