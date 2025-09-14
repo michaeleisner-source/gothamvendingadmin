@@ -155,6 +155,126 @@ export type Database = {
           },
         ]
       }
+      machine_finance: {
+        Row: {
+          acquisition_type: string
+          apr: number | null
+          balloon_payment: number | null
+          created_at: string
+          data_plan_monthly: number | null
+          depreciation_method: string | null
+          first_payment_date: string | null
+          id: string
+          insurance_monthly: number | null
+          insurance_policy_no: string | null
+          insurance_provider: string | null
+          insured: boolean | null
+          lender: string | null
+          life_months: number | null
+          machine_id: string
+          monthly_payment: number | null
+          notes: string | null
+          org_id: string
+          purchase_price: number | null
+          purchased_at: string | null
+          salvage_value: number | null
+          supplier_id: string | null
+          telemetry_monthly: number | null
+          term_months: number | null
+          updated_at: string
+        }
+        Insert: {
+          acquisition_type: string
+          apr?: number | null
+          balloon_payment?: number | null
+          created_at?: string
+          data_plan_monthly?: number | null
+          depreciation_method?: string | null
+          first_payment_date?: string | null
+          id?: string
+          insurance_monthly?: number | null
+          insurance_policy_no?: string | null
+          insurance_provider?: string | null
+          insured?: boolean | null
+          lender?: string | null
+          life_months?: number | null
+          machine_id: string
+          monthly_payment?: number | null
+          notes?: string | null
+          org_id: string
+          purchase_price?: number | null
+          purchased_at?: string | null
+          salvage_value?: number | null
+          supplier_id?: string | null
+          telemetry_monthly?: number | null
+          term_months?: number | null
+          updated_at?: string
+        }
+        Update: {
+          acquisition_type?: string
+          apr?: number | null
+          balloon_payment?: number | null
+          created_at?: string
+          data_plan_monthly?: number | null
+          depreciation_method?: string | null
+          first_payment_date?: string | null
+          id?: string
+          insurance_monthly?: number | null
+          insurance_policy_no?: string | null
+          insurance_provider?: string | null
+          insured?: boolean | null
+          lender?: string | null
+          life_months?: number | null
+          machine_id?: string
+          monthly_payment?: number | null
+          notes?: string | null
+          org_id?: string
+          purchase_price?: number | null
+          purchased_at?: string | null
+          salvage_value?: number | null
+          supplier_id?: string | null
+          telemetry_monthly?: number | null
+          term_months?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      machine_processor_mappings: {
+        Row: {
+          created_at: string
+          fixed_fee: number | null
+          id: string
+          machine_id: string
+          monthly_fee: number | null
+          org_id: string
+          percent_fee: number | null
+          processor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fixed_fee?: number | null
+          id?: string
+          machine_id: string
+          monthly_fee?: number | null
+          org_id: string
+          percent_fee?: number | null
+          processor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fixed_fee?: number | null
+          id?: string
+          machine_id?: string
+          monthly_fee?: number | null
+          org_id?: string
+          percent_fee?: number | null
+          processor_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       machine_slots: {
         Row: {
           capacity: number | null
@@ -286,6 +406,42 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      payment_processors: {
+        Row: {
+          created_at: string
+          default_fixed_fee: number | null
+          default_percent_fee: number | null
+          id: string
+          monthly_fee: number | null
+          name: string
+          org_id: string
+          processor_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_fixed_fee?: number | null
+          default_percent_fee?: number | null
+          id?: string
+          monthly_fee?: number | null
+          name: string
+          org_id: string
+          processor_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_fixed_fee?: number | null
+          default_percent_fee?: number | null
+          id?: string
+          monthly_fee?: number | null
+          name?: string
+          org_id?: string
+          processor_type?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -779,6 +935,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          org_id: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          org_id: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          org_id?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       suppliers: {
         Row: {
