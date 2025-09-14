@@ -38,6 +38,9 @@ export default function AppHeader() {
           <Link to="/machines" className="text-foreground hover:text-primary transition-colors hover:underline">
             Machines
           </Link>
+          <Link to="/machine-setup" className="text-foreground hover:text-primary transition-colors hover:underline">
+            Setup
+          </Link>
           <Link to="/products" className="text-foreground hover:text-primary transition-colors hover:underline">
             Products
           </Link>
