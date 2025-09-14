@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -33,7 +33,7 @@ function usePersistentState<T>(key: string, initial: T) {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : initial;
   });
-  React.useEffect(() => { localStorage.setItem(key, JSON.stringify(state)); }, [key, state]);
+  useEffect(() => { localStorage.setItem(key, JSON.stringify(state)); }, [key, state]);
   return [state, setState] as const;
 }
 
@@ -90,7 +90,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {/* Dashboard */}
         {!collapsed && <SectionLabel>Dashboard</SectionLabel>}
-        <NavItem href="/" icon={LayoutDashboard} active={isActive("/")} collapsed={collapsed}>Dashboard</NavItem>
+        <NavItem href="/" icon={LayoutDashboard} collapsed={collapsed}>Dashboard</NavItem>
 
         {/* 1. Pipeline */}
         <Group
@@ -100,10 +100,10 @@ export default function Sidebar() {
           onToggle={() => toggle("pipeline")}
           collapsed={collapsed}
         >
-          <NavItem href="/prospects" icon={Clipboard} active={isActive("/prospects")} collapsed={collapsed}>
+          <NavItem href="/prospects" icon={Clipboard} collapsed={collapsed}>
             Prospects
           </NavItem>
-          <NavItem href="/locations" icon={Building2} active={isActive("/locations")} collapsed={collapsed}>
+          <NavItem href="/locations" icon={Building2} collapsed={collapsed}>
             Locations
           </NavItem>
         </Group>
@@ -116,13 +116,13 @@ export default function Sidebar() {
           onToggle={() => toggle("machines")}
           collapsed={collapsed}
         >
-          <NavItem href="/machines" icon={Factory} active={isActive("/machines")} collapsed={collapsed}>
+          <NavItem href="/machines" icon={Factory} collapsed={collapsed}>
             Machines
           </NavItem>
-          <NavItem href="/setup" icon={ClipboardCheck} active={isActive("/setup")} collapsed={collapsed}>
+          <NavItem href="/setup" icon={ClipboardCheck} collapsed={collapsed}>
             Machine Setup
           </NavItem>
-          <NavItem href="/slots" icon={ClipboardList} active={isActive("/slots")} collapsed={collapsed}>
+          <NavItem href="/slots" icon={ClipboardList} collapsed={collapsed}>
             Slot Planner
           </NavItem>
         </Group>
@@ -135,29 +135,29 @@ export default function Sidebar() {
           onToggle={() => toggle("supply")}
           collapsed={collapsed}
         >
-          <NavItem href="/products" icon={Box} active={isActive("/products")} collapsed={collapsed}>
+          <NavItem href="/products" icon={Box} collapsed={collapsed}>
             Products
           </NavItem>
-          <NavItem href="/suppliers" icon={FileText} active={isActive("/suppliers")} collapsed={collapsed}>
+          <NavItem href="/suppliers" icon={FileText} collapsed={collapsed}>
             Suppliers
           </NavItem>
           {!collapsed && (
             <NavParent label="Purchase Orders" icon={FileText}>
-              <NavChild href="/purchase-orders" active={isActive("/purchase-orders")}>
+              <NavChild href="/purchase-orders">
                 All POs
               </NavChild>
-              <NavChild href="/purchase-orders/new" active={isActive("/purchase-orders/new")}>
+              <NavChild href="/purchase-orders/new">
                 New PO
               </NavChild>
             </NavParent>
           )}
-          <NavItem href="/inventory" icon={ClipboardList} active={isActive("/inventory")} collapsed={collapsed}>
+          <NavItem href="/inventory" icon={ClipboardList} collapsed={collapsed}>
             Inventory
           </NavItem>
-          <NavItem href="/restock" icon={ClipboardCheck} active={isActive("/restock")} collapsed={collapsed}>
+          <NavItem href="/restock" icon={ClipboardCheck} collapsed={collapsed}>
             Restock
           </NavItem>
-          <NavItem href="/picklists" icon={Clipboard} active={isActive("/picklists")} collapsed={collapsed}>
+          <NavItem href="/picklists" icon={Clipboard} collapsed={collapsed}>
             Picklists
           </NavItem>
         </Group>
@@ -170,13 +170,13 @@ export default function Sidebar() {
           onToggle={() => toggle("sales")}
           collapsed={collapsed}
         >
-          <NavItem href="/sales" icon={DollarSign} active={isActive("/sales")} collapsed={collapsed}>
+          <NavItem href="/sales" icon={DollarSign} collapsed={collapsed}>
             Sales Entry
           </NavItem>
-          <NavItem href="/cost-analysis" icon={TrendingUp} active={isActive("/cost-analysis")} collapsed={collapsed}>
+          <NavItem href="/cost-analysis" icon={TrendingUp} collapsed={collapsed}>
             Cost Analysis
           </NavItem>
-          <NavItem href="/reports" icon={BarChart3} active={isActive("/reports")} collapsed={collapsed}>
+          <NavItem href="/reports" icon={BarChart3} collapsed={collapsed}>
             Profit Reports
           </NavItem>
         </Group>
@@ -189,10 +189,10 @@ export default function Sidebar() {
           onToggle={() => toggle("logistics")}
           collapsed={collapsed}
         >
-          <NavItem href="/delivery-routes" icon={Truck} active={isActive("/delivery-routes")} collapsed={collapsed}>
+          <NavItem href="/delivery-routes" icon={Truck} collapsed={collapsed}>
             Delivery Routes
           </NavItem>
-          <NavItem href="/tickets" icon={TicketCheck} active={isActive("/tickets")} collapsed={collapsed}>
+          <NavItem href="/tickets" icon={TicketCheck} collapsed={collapsed}>
             Tickets
           </NavItem>
         </Group>
@@ -205,13 +205,13 @@ export default function Sidebar() {
           onToggle={() => toggle("admin")}
           collapsed={collapsed}
         >
-          <NavItem href="/audit" icon={ShieldAlert} active={isActive("/audit")} collapsed={collapsed}>
+          <NavItem href="/audit" icon={ShieldAlert} collapsed={collapsed}>
             Audit
           </NavItem>
-          <NavItem href="/deletion-logs" icon={Trash2} active={isActive("/deletion-logs")} collapsed={collapsed}>
+          <NavItem href="/deletion-logs" icon={Trash2} collapsed={collapsed}>
             Deletion Logs
           </NavItem>
-          <NavItem href="/account" icon={UserCircle2} active={isActive("/account")} collapsed={collapsed}>
+          <NavItem href="/account" icon={UserCircle2} collapsed={collapsed}>
             Account
           </NavItem>
         </Group>
@@ -296,13 +296,11 @@ function Group({
 function NavItem({
   href,
   icon: Icon,
-  active,
   collapsed,
   children,
 }: {
   href: string;
   icon: React.ComponentType<any>;
-  active?: boolean;
   collapsed: boolean;
   children: React.ReactNode;
 }) {
@@ -310,9 +308,11 @@ function NavItem({
     return (
       <NavLink
         to={href}
-        className={`flex justify-center px-2 py-2 rounded-lg hover:bg-muted/50 ${
-          active ? "bg-primary text-primary-foreground" : ""
-        }`}
+        className={({ isActive }) =>
+          `flex justify-center px-2 py-2 rounded-lg hover:bg-muted/50 ${
+            isActive ? "bg-primary text-primary-foreground" : ""
+          }`
+        }
         title={children as string}
       >
         <Icon className="size-4" />
@@ -370,7 +370,7 @@ function NavParent({
   );
 }
 
-function NavChild({ href, active, children }: { href: string; active?: boolean; children: React.ReactNode }) {
+function NavChild({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <NavLink
       to={href}
