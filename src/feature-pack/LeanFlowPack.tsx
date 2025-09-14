@@ -82,6 +82,7 @@ export function SidebarLean() {
 
         <Group label="Reports" icon={BarChart3} open={open.reports} onClick={() => toggle("reports")}>
           <Item to="/reports" icon={BarChart3}>Profit Reports</Item>
+          <Child to="/reports/executive">Executive Overview</Child>
           <Child to="/reports/sales-summary">Sales Summary (7d)</Child>
           <Child to="/reports/silent-machines">Silent Machines</Child>
           <Child to="/reports/machine-roi">Machine ROI</Child>
