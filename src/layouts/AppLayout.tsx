@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import AppHeader from "./AppHeader";
-import Breadcrumbs from "./Breadcrumbs";
+import Sidebar from "../components/Sidebar";
+import AppHeader from "../components/AppHeader";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 export default function AppLayout() {
   return (
