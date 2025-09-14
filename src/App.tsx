@@ -115,12 +115,12 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
             <Route path="/workflow" element={<Workflow />} />
+            {/* Feature pack routes with navigation */}
+            {MachineOpsRoutes({ ProtectedRoute })}
+            {ProcessorStatementsRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
-          {/* Feature pack routes - called as functions */}
-          {MachineOpsRoutes({ ProtectedRoute })}
-          {ProcessorStatementsRoutes({ ProtectedRoute })}
         </Routes>
       </Router>
     </TooltipProvider>

@@ -503,12 +503,10 @@ export function ProcessorStatements() {
  *  Route mounter (drop-in)
  * ========================================================*/
 export function ProcessorStatementsRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{ children: React.ReactNode }> }) {
-  const Wrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-    ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
   return (
     <React.Fragment>
-      <Route path="/finance/processors/import" element={<Wrap><ProcessorImport /></Wrap>} />
-      <Route path="/finance/processors/statements" element={<Wrap><ProcessorStatements /></Wrap>} />
+      <Route path="/finance/processors/import" element={<ProcessorImport />} />
+      <Route path="/finance/processors/statements" element={<ProcessorStatements />} />
     </React.Fragment>
   );
 }
