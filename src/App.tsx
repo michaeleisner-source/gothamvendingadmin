@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/lib/demo";
+import { FeatureRoutes } from "@/feature-pack/VendingWorkflowPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <FeatureRoutes />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

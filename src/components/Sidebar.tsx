@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDemo } from "@/lib/demo";
+import { FeatureSidebarItems } from "@/feature-pack/VendingWorkflowPack";
 import {
   LayoutDashboard,
   MapPinned,
@@ -69,6 +70,7 @@ export default function Sidebar() {
     supply: true,
     sales: true,
     logistics: true,
+    workflow: true,
     admin: true,
     help: true,
   });
@@ -216,6 +218,17 @@ export default function Sidebar() {
           <NavItem to="/finance/loans" icon={Coins} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Loans & Financing
           </NavItem>
+        </Group>
+
+        {/* 5. Workflow & Reports */}
+        <Group
+          label="Workflow & Reports"
+          icon={BarChart3}
+          isOpen={open.workflow}
+          onToggle={() => toggle("workflow")}
+          collapsed={collapsed}
+        >
+          <FeatureSidebarItems />
           <NavItem to="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Profit Reports
           </NavItem>
@@ -224,7 +237,7 @@ export default function Sidebar() {
           </NavItem>
         </Group>
 
-        {/* 5. Logistics & Support */}
+        {/* 6. Logistics & Support */}
         <Group
           label="Logistics & Support"
           icon={Route}
@@ -243,7 +256,7 @@ export default function Sidebar() {
           </NavItem>
         </Group>
 
-        {/* 6. Oversight & Admin */}
+        {/* 7. Oversight & Admin */}
         <Group
           label="Oversight & Admin"
           icon={ShieldAlert}
