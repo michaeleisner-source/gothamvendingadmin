@@ -15,10 +15,9 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     (async () => {
       const url = new URL(window.location.href);
-      const flag = import.meta.env.VITE_PUBLIC_DEMO === 'true' || url.searchParams.get('demo') === '1';
+      const flag = url.searchParams.get('demo') === '1';
       
       console.log('DemoProvider: Environment check', {
-        VITE_PUBLIC_DEMO: import.meta.env.VITE_PUBLIC_DEMO,
         queryParam: url.searchParams.get('demo'),
         demoMode: flag
       });
