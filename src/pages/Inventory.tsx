@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState, useEffect } from 'react';
+import { Package, AlertTriangle, TrendingUp, RefreshCw, MapPin, DollarSign, Search, Download } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -12,225 +15,185 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Package, 
-  AlertTriangle, 
-  TrendingUp, 
-  DollarSign,
-  Search,
-  Download
-} from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-type InventoryItem = {
+interface InventoryLevel {
+  id: string;
   machine_id: string;
-  machine_name: string;
-  slot_label: string;
+  slot_id: string;
   product_id: string;
-  product_name: string;
-  product_cost: number;
-  product_price: number;
   current_qty: number;
-  max_qty: number;
-  restock_threshold: number;
-  stock_value: number;
-  potential_revenue: number;
-  margin_per_unit: number;
-  status: 'ok' | 'low' | 'empty' | 'no_data';
-};
+  par_level: number;
+  reorder_point: number;
+  last_restocked_at?: string;
+  sales_velocity: number;
+  days_of_supply: number;
+  machines: { name: string };
+  machine_slots: { label: string };
+  products: { name: string; sku: string; cost?: number; price?: number };
+}
 
-type StockSummary = {
-  total_products: number;
+interface InventoryStats {
+  total_items: number;
+  low_stock_items: number;
+  out_of_stock_items: number;
   total_stock_value: number;
   total_potential_revenue: number;
-  low_stock_items: number;
-  empty_slots: number;
-  well_stocked: number;
-};
-
-const fetchInventoryData = async (search?: string): Promise<{
-  inventory: InventoryItem[];
-  summary: StockSummary;
-}> => {
-  try {
-    // Get all slot assignments with machine and product data
-    const { data: slotsData, error: slotsError } = await supabase
-      .from('slot_assignments')
-      .select(`
-        slot_id,
-        product_id,
-        max_qty,
-        restock_threshold,
-        machine_slots!inner(
-          machine_id,
-          label,
-          machines!inner(
-            name
-          )
-        ),
-        products!inner(
-          name,
-          sku,
-          cost,
-          price
-        )
-      `);
-
-    if (slotsError) throw slotsError;
-
-    // Get latest restock data for current quantities
-    const { data: restockData } = await supabase
-      .from('restock_lines')
-      .select(`
-        slot_id,
-        new_qty,
-        restock_sessions!inner(
-          completed_at
-        )
-      `)
-      .order('restock_sessions(completed_at)', { ascending: false });
-
-    // Create a map of slot_id to latest quantity
-    const latestQtyMap = new Map<string, number>();
-    (restockData || []).forEach((line: any) => {
-      if (!latestQtyMap.has(line.slot_id)) {
-        latestQtyMap.set(line.slot_id, line.new_qty || 0);
-      }
-    });
-
-    // Build inventory items
-    const inventoryItems: InventoryItem[] = (slotsData || []).map((slot: any) => {
-      const currentQty = latestQtyMap.get(slot.slot_id) || 0;
-      const cost = slot.products.cost || 0;
-      const price = slot.products.price || 0;
-      const marginPerUnit = price - cost;
-      const stockValue = currentQty * cost;
-      const potentialRevenue = currentQty * price;
-      const maxQty = slot.max_qty || 0;
-      const threshold = slot.restock_threshold || 0;
-
-      let status: 'ok' | 'low' | 'empty' | 'no_data' = 'no_data';
-      if (currentQty === 0) {
-        status = 'empty';
-      } else if (threshold > 0 && currentQty <= threshold) {
-        status = 'low';
-      } else if (currentQty > 0) {
-        status = 'ok';
-      }
-
-      return {
-        machine_id: slot.machine_slots.machine_id,
-        machine_name: slot.machine_slots.machines.name,
-        slot_label: slot.machine_slots.label,
-        product_id: slot.product_id,
-        product_name: slot.products.name,
-        product_cost: cost,
-        product_price: price,
-        current_qty: currentQty,
-        max_qty: maxQty,
-        restock_threshold: threshold,
-        stock_value: stockValue,
-        potential_revenue: potentialRevenue,
-        margin_per_unit: marginPerUnit,
-        status,
-      };
-    });
-
-    // Filter by search if provided
-    let filteredInventory = inventoryItems;
-    if (search) {
-      filteredInventory = inventoryItems.filter(item =>
-        item.product_name.toLowerCase().includes(search.toLowerCase()) ||
-        item.machine_name.toLowerCase().includes(search.toLowerCase()) ||
-        item.slot_label.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    // Calculate summary
-    const summary: StockSummary = {
-      total_products: filteredInventory.length,
-      total_stock_value: filteredInventory.reduce((sum, item) => sum + item.stock_value, 0),
-      total_potential_revenue: filteredInventory.reduce((sum, item) => sum + item.potential_revenue, 0),
-      low_stock_items: filteredInventory.filter(item => item.status === 'low').length,
-      empty_slots: filteredInventory.filter(item => item.status === 'empty').length,
-      well_stocked: filteredInventory.filter(item => item.status === 'ok').length,
-    };
-
-    return { inventory: filteredInventory, summary };
-  } catch (error) {
-    console.error('Error fetching inventory:', error);
-    return {
-      inventory: [],
-      summary: {
-        total_products: 0,
-        total_stock_value: 0,
-        total_potential_revenue: 0,
-        low_stock_items: 0,
-        empty_slots: 0,
-        well_stocked: 0,
-      },
-    };
-  }
-};
-
-const fetchLowStockItems = async (): Promise<any[]> => {
-  const { data, error } = await supabase.rpc('report_low_stock');
-  
-  if (error && !error.message.includes('function')) {
-    throw error;
-  }
-
-  return data || [];
-};
+  avg_days_of_supply: number;
+}
 
 const Inventory = () => {
+  const { toast } = useToast();
+  const [inventory, setInventory] = useState<InventoryLevel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterMachine, setFilterMachine] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
-
-  const {
-    data: inventoryData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["inventory", searchTerm],
-    queryFn: () => fetchInventoryData(searchTerm),
+  const [machines, setMachines] = useState<Array<{ id: string; name: string }>>([]);
+  const [stats, setStats] = useState<InventoryStats>({
+    total_items: 0,
+    low_stock_items: 0,
+    out_of_stock_items: 0,
+    total_stock_value: 0,
+    total_potential_revenue: 0,
+    avg_days_of_supply: 0
   });
 
-  const {
-    data: lowStockItems = [],
-    isLoading: lowStockLoading,
-  } = useQuery({
-    queryKey: ["low-stock"],
-    queryFn: fetchLowStockItems,
-  });
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [inventoryRes, machinesRes] = await Promise.all([
+        supabase
+          .from('inventory_levels')
+          .select(`
+            *,
+            machines!inventory_levels_machine_id_fkey(name),
+            machine_slots!inventory_levels_slot_id_fkey(label),
+            products!inventory_levels_product_id_fkey(name, sku, cost, price)
+          `)
+          .order('current_qty', { ascending: true }),
+        supabase.from('machines').select('id, name').order('name')
+      ]);
+
+      if (inventoryRes.error) throw inventoryRes.error;
+      if (machinesRes.error) throw machinesRes.error;
+
+      const inventoryData = inventoryRes.data || [];
+      setInventory(inventoryData);
+      setMachines(machinesRes.data || []);
+
+      // Calculate stats
+      const totalItems = inventoryData.length;
+      const lowStockItems = inventoryData.filter(item => item.current_qty <= item.reorder_point && item.current_qty > 0).length;
+      const outOfStockItems = inventoryData.filter(item => item.current_qty === 0).length;
+      const avgDaysOfSupply = inventoryData.reduce((sum, item) => sum + (item.days_of_supply || 0), 0) / totalItems || 0;
+      const totalStockValue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products.cost || 0)), 0);
+      const totalPotentialRevenue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products.price || 0)), 0);
+
+      setStats({
+        total_items: totalItems,
+        low_stock_items: lowStockItems,
+        out_of_stock_items: outOfStockItems,
+        total_stock_value: totalStockValue,
+        total_potential_revenue: totalPotentialRevenue,
+        avg_days_of_supply: Math.round(avgDaysOfSupply * 10) / 10
+      });
+    } catch (error) {
+      toast({
+        title: "Error loading inventory",
+        description: error instanceof Error ? error.message : "Failed to load inventory data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const recalculateVelocity = async () => {
+    try {
+      // Trigger recalculation by calling a custom function
+      const { error } = await supabase.rpc('check_machine_health_and_create_tickets');
+      if (error) throw error;
+
+      toast({
+        title: "Velocity updated",
+        description: "Sales velocity has been recalculated for all products"
+      });
+      
+      loadData();
+    } catch (error) {
+      toast({
+        title: "Error updating velocity",
+        description: error instanceof Error ? error.message : "Failed to update sales velocity",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getStockStatus = (item: InventoryLevel) => {
+    if (item.current_qty === 0) return 'out';
+    if (item.current_qty <= item.reorder_point) return 'low';
+    if (item.current_qty >= item.par_level * 0.8) return 'good';
+    return 'medium';
+  };
+
+  const getStockStatusColor = (status: string) => {
+    switch (status) {
+      case 'out': return 'bg-red-100 text-red-800';
+      case 'low': return 'bg-orange-100 text-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'good': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStockStatusText = (status: string) => {
+    switch (status) {
+      case 'out': return 'Out of Stock';
+      case 'low': return 'Low Stock';
+      case 'medium': return 'Medium Stock';
+      case 'good': return 'Good Stock';
+      default: return 'Unknown';
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    return <Badge className={getStockStatusColor(status)}>{getStockStatusText(status)}</Badge>;
+  };
 
   const exportInventoryCSV = () => {
-    if (!inventoryData?.inventory.length) {
-      toast.error("No inventory data to export");
+    if (!inventory.length) {
+      toast({
+        title: "No data to export",
+        description: "No inventory data available for export",
+        variant: "destructive"
+      });
       return;
     }
 
     const headers = [
-      'Machine', 'Slot', 'Product', 'Current Qty', 'Max Qty', 
-      'Threshold', 'Unit Cost', 'Unit Price', 'Margin', 'Stock Value', 'Status'
+      'Machine', 'Slot', 'Product', 'Current Qty', 'PAR Level', 
+      'Reorder Point', 'Sales Velocity', 'Days Supply', 'Stock Value', 'Status'
     ];
     
     const csvContent = [
       headers.join(','),
-      ...inventoryData.inventory.map(item => [
-        item.machine_name,
-        item.slot_label,
-        item.product_name,
+      ...inventory.map(item => [
+        item.machines.name,
+        item.machine_slots.label,
+        item.products.name,
         item.current_qty,
-        item.max_qty,
-        item.restock_threshold,
-        item.product_cost?.toFixed(2) || '0.00',
-        item.product_price?.toFixed(2) || '0.00',
-        item.margin_per_unit?.toFixed(2) || '0.00',
-        item.stock_value?.toFixed(2) || '0.00',
-        item.status
+        item.par_level,
+        item.reorder_point,
+        item.sales_velocity.toFixed(1),
+        item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply),
+        (item.current_qty * (item.products.cost || 0)).toFixed(2),
+        getStockStatusText(getStockStatus(item))
       ].map(field => `"${field}"`).join(','))
     ].join('\n');
 
@@ -241,42 +204,53 @@ const Inventory = () => {
     a.download = 'inventory-report.csv';
     a.click();
     URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export successful",
+      description: "Inventory report has been downloaded"
+    });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ok':
-        return <Badge variant="default" className="bg-green-500">Well Stocked</Badge>;
-      case 'low':
-        return <Badge variant="destructive">Low Stock</Badge>;
-      case 'empty':
-        return <Badge variant="destructive">Empty</Badge>;
-      default:
-        return <Badge variant="outline">No Data</Badge>;
-    }
-  };
+  const filteredInventory = inventory.filter(item => {
+    const machineMatch = filterMachine === 'all' || item.machine_id === filterMachine;
+    const statusMatch = filterStatus === 'all' || getStockStatus(item) === filterStatus;
+    const searchMatch = !searchTerm || 
+      item.products.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.machines.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.machine_slots.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.products.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    return machineMatch && statusMatch && searchMatch;
+  });
 
-  if (error) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">Inventory Management</h1>
-        <p className="text-muted-foreground">
-          Inventory tracking is not set up yet. Please configure machines and product slots first.
-        </p>
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-48 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-muted rounded"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  const { inventory = [], summary } = inventoryData || {};
-
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Inventory Management</h1>
-        <Button onClick={exportInventoryCSV} variant="outline" size="sm">
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Inventory Management</h1>
+        <div className="flex gap-2">
+          <Button onClick={recalculateVelocity} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Update Velocity
+          </Button>
+          <Button onClick={exportInventoryCSV} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -287,55 +261,50 @@ const Inventory = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary?.total_products || 0}</div>
-                <p className="text-xs text-muted-foreground">Across all machines</p>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Items</p>
+                    <p className="text-2xl font-semibold">{stats.total_items}</p>
+                  </div>
+                  <Package className="w-8 h-8 text-muted-foreground" />
+                </div>
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Stock Value</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(summary?.total_stock_value || 0).toFixed(2)}
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Stock Value</p>
+                    <p className="text-2xl font-semibold">${stats.total_stock_value.toFixed(0)}</p>
+                  </div>
+                  <DollarSign className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <p className="text-xs text-muted-foreground">Current inventory value</p>
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Potential Revenue</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${(summary?.total_potential_revenue || 0).toFixed(2)}
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Low Stock</p>
+                    <p className="text-2xl font-semibold text-orange-600">{stats.low_stock_items}</p>
+                  </div>
+                  <AlertTriangle className="w-8 h-8 text-orange-600" />
                 </div>
-                <p className="text-xs text-muted-foreground">If all items sold</p>
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Stock Alerts</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">
-                  {(summary?.low_stock_items || 0) + (summary?.empty_slots || 0)}
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Out of Stock</p>
+                    <p className="text-2xl font-semibold text-red-600">{stats.out_of_stock_items}</p>
+                  </div>
+                  <Package className="w-8 h-8 text-red-600" />
                 </div>
-                <p className="text-xs text-muted-foreground">Items need attention</p>
               </CardContent>
             </Card>
           </div>
@@ -346,24 +315,30 @@ const Inventory = () => {
               <CardTitle>Stock Status Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-4 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-green-600">
-                    {summary?.well_stocked || 0}
+                    {inventory.filter(i => getStockStatus(i) === 'good').length}
                   </div>
-                  <p className="text-sm text-muted-foreground">Well Stocked</p>
+                  <p className="text-sm text-muted-foreground">Good Stock</p>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-yellow-600">
-                    {summary?.low_stock_items || 0}
+                    {inventory.filter(i => getStockStatus(i) === 'medium').length}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Medium Stock</p>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {stats.low_stock_items}
                   </div>
                   <p className="text-sm text-muted-foreground">Low Stock</p>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-red-600">
-                    {summary?.empty_slots || 0}
+                    {stats.out_of_stock_items}
                   </div>
-                  <p className="text-sm text-muted-foreground">Empty Slots</p>
+                  <p className="text-sm text-muted-foreground">Out of Stock</p>
                 </div>
               </div>
             </CardContent>
@@ -371,82 +346,139 @@ const Inventory = () => {
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
-          {/* Search */}
+          {/* Filters and Search */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by product, machine, or slot..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-4">
+                <div className="relative flex-1 min-w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by product, machine, slot, or SKU..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Machine:</label>
+                  <Select value={filterMachine} onValueChange={setFilterMachine}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Machines</SelectItem>
+                      {machines.map(machine => (
+                        <SelectItem key={machine.id} value={machine.id}>
+                          {machine.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Status:</label>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="out">Out of Stock</SelectItem>
+                      <SelectItem value="low">Low Stock</SelectItem>
+                      <SelectItem value="medium">Medium Stock</SelectItem>
+                      <SelectItem value="good">Good Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Detailed Inventory Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Inventory ({inventory.length} items)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : inventory.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No inventory data available.</p>
-                  <p className="text-sm mt-2">Set up machines and product assignments to track inventory.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Machine</TableHead>
-                        <TableHead>Slot</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Current</TableHead>
-                        <TableHead className="text-right">Max</TableHead>
-                        <TableHead className="text-right">Cost</TableHead>
-                        <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Margin</TableHead>
-                        <TableHead className="text-right">Value</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {inventory.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{item.machine_name}</TableCell>
-                          <TableCell>{item.slot_label}</TableCell>
-                          <TableCell>{item.product_name}</TableCell>
-                          <TableCell className="text-right">{item.current_qty}</TableCell>
-                          <TableCell className="text-right">{item.max_qty}</TableCell>
-                          <TableCell className="text-right">
-                            ${item.product_cost?.toFixed(2) || '0.00'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            ${item.product_price?.toFixed(2) || '0.00'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            ${item.margin_per_unit?.toFixed(2) || '0.00'}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            ${item.stock_value?.toFixed(2) || '0.00'}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(item.status)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Inventory Grid */}
+          <div className="space-y-4">
+            {filteredInventory.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No inventory found</h3>
+                  <p className="text-muted-foreground">
+                    {inventory.length === 0 
+                      ? "No inventory data available. Inventory levels are created automatically when you restock machines."
+                      : "No items match the current filters."
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {filteredInventory.map((item) => {
+                  const status = getStockStatus(item);
+                  const fillPercentage = Math.min((item.current_qty / item.par_level) * 100, 100);
+                  
+                  return (
+                    <Card key={item.id}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium">{item.products.name}</h3>
+                              <Badge variant="secondary" className="text-xs">
+                                {item.products.sku}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4" />
+                              <span>{item.machines.name}</span>
+                              <span>•</span>
+                              <span>Slot {item.machine_slots.label}</span>
+                            </div>
+                          </div>
+                          <Badge className={getStockStatusColor(status)}>
+                            {getStockStatusText(status)}
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>Current Stock</span>
+                              <span className="font-medium">
+                                {item.current_qty} / {item.par_level}
+                              </span>
+                            </div>
+                            <Progress value={fillPercentage} className="h-2" />
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Reorder Point</p>
+                              <p className="font-medium">{item.reorder_point}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Sales/Day</p>
+                              <p className="font-medium">{item.sales_velocity.toFixed(1)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Days Supply</p>
+                              <p className="font-medium">
+                                {item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {item.last_restocked_at && (
+                            <div className="text-xs text-muted-foreground">
+                              Last restocked: {new Date(item.last_restocked_at).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-6">
@@ -458,11 +490,7 @@ const Inventory = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {lowStockLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : lowStockItems.length === 0 ? (
+              {inventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-green-600 mb-2">
                     <Package className="w-12 h-12 mx-auto" />
@@ -478,28 +506,27 @@ const Inventory = () => {
                         <TableHead>Machine</TableHead>
                         <TableHead>Slot</TableHead>
                         <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Current Qty</TableHead>
-                        <TableHead className="text-right">Threshold</TableHead>
-                        <TableHead>Action Needed</TableHead>
+                        <TableHead className="text-right">Reorder Point</TableHead>
+                        <TableHead className="text-right">Days Supply</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {lowStockItems.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{item.machine_name}</TableCell>
-                          <TableCell>{item.slot_label}</TableCell>
-                          <TableCell>{item.product_name}</TableCell>
-                          <TableCell className="text-right">
-                            <span className="text-destructive font-medium">
-                              {item.current_qty}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">{item.restock_threshold}</TableCell>
-                          <TableCell>
-                            <Badge variant="destructive">Restock Required</Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {inventory
+                        .filter(item => getStockStatus(item) === 'low' || getStockStatus(item) === 'out')
+                        .map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.machines.name}</TableCell>
+                            <TableCell>{item.machine_slots.label}</TableCell>
+                            <TableCell>{item.products.name}</TableCell>
+                            <TableCell className="text-right">{item.current_qty}</TableCell>
+                            <TableCell className="text-right">{item.reorder_point}</TableCell>
+                            <TableCell className="text-right">
+                              {item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply)}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(getStockStatus(item))}</TableCell>
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 </div>
@@ -511,5 +538,4 @@ const Inventory = () => {
     </div>
   );
 };
-
 export default Inventory;

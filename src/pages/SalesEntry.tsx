@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, Product, Machine, MachineSlot, SlotAssignment } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Building2, AlertCircle, CheckCircle, DollarSign } from "lucide-react";
-import { toast } from "sonner";
+import { ShoppingCart, Building2, AlertCircle, CheckCircle, DollarSign, Package } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SalesEntry() {
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [slots, setSlots] = useState<MachineSlot[]>([]);
@@ -23,6 +25,8 @@ export default function SalesEntry() {
   const [occurredAt, setOccurredAt] = useState<string>("");
   const [source, setSource] = useState<string>("manual");
   const [loading, setLoading] = useState(false);
+  const [currentInventory, setCurrentInventory] = useState<any>(null);
+  const [showInventoryImpact, setShowInventoryImpact] = useState(false);
 
   // Load initial data
   useEffect(() => {
@@ -36,7 +40,11 @@ export default function SalesEntry() {
         setMachines(machinesData);
       } catch (error: any) {
         console.error('Error loading data:', error);
-        toast.error(`Failed to load data: ${error.message}`);
+        toast({
+          title: "Error loading data",
+          description: error.message,
+          variant: "destructive"
+        });
       }
     };
     loadData();
@@ -55,7 +63,11 @@ export default function SalesEntry() {
           setAssignments(assignmentsData);
         } catch (error: any) {
           console.error('Error loading slots:', error);
-          toast.error(`Failed to load slots: ${error.message}`);
+          toast({
+            title: "Error loading slots",
+            description: error.message,
+            variant: "destructive"
+          });
         }
       } else {
         setSlots([]);
@@ -80,7 +92,7 @@ export default function SalesEntry() {
   const selectedSlotAssignment = assignments.find(a => a.slot_id === selectedSlotId);
   const slotProduct = selectedSlotAssignment ? products.find(p => p.id === selectedSlotAssignment.product_id) : null;
 
-  // Auto-fill unit price when product is selected
+  // Auto-fill unit price when product is selected and check inventory
   useEffect(() => {
     if (selectedProduct && selectedProduct.price && unitPrice === 0) {
       setUnitPrice(selectedProduct.price);
@@ -91,7 +103,28 @@ export default function SalesEntry() {
     if (slotProduct && slotProduct.price && unitPrice === 0) {
       setUnitPrice(slotProduct.price);
     }
-  }, [slotProduct, unitPrice]);
+    if (selectedSlotId) {
+      checkCurrentInventory(selectedSlotId);
+    }
+  }, [slotProduct, unitPrice, selectedSlotId]);
+
+  const checkCurrentInventory = async (slotId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('inventory_levels')
+        .select('*')
+        .eq('slot_id', slotId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setCurrentInventory(data);
+      setShowInventoryImpact(!!data);
+    } catch (error) {
+      console.error('Error checking inventory:', error);
+      setCurrentInventory(null);
+      setShowInventoryImpact(false);
+    }
+  };
 
   const resetForm = () => {
     setSelectedSlotId("");
@@ -110,22 +143,38 @@ export default function SalesEntry() {
     } else if (selectedSku && selectedProduct) {
       productId = selectedProduct.id;
     } else {
-      toast.error("Please select a product or slot");
+      toast({
+        title: "Product selection required",
+        description: "Please select a product or slot",
+        variant: "destructive"
+      });
       return;
     }
 
     if (!selectedMachineId) {
-      toast.error("Please select a machine");
+      toast({
+        title: "Machine selection required",
+        description: "Please select a machine",
+        variant: "destructive"
+      });
       return;
     }
 
     if (quantity <= 0) {
-      toast.error("Quantity must be greater than 0");
+      toast({
+        title: "Invalid quantity",
+        description: "Quantity must be greater than 0",
+        variant: "destructive"
+      });
       return;
     }
 
     if (unitPrice <= 0) {
-      toast.error("Unit price must be greater than 0");
+      toast({
+        title: "Invalid price",
+        description: "Unit price must be greater than 0",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -146,12 +195,19 @@ export default function SalesEntry() {
       
       const productName = slotProduct?.name || selectedProduct?.name;
       const total = (quantity * unitPrice).toFixed(2);
-      toast.success(`Sale recorded: ${quantity}x ${productName} for $${total}`);
+      toast({
+        title: "Sale recorded successfully",
+        description: `${quantity}x ${productName} for $${total}`
+      });
 
       resetForm();
     } catch (error: any) {
       console.error('Error recording sale:', error);
-      toast.error(`Failed to record sale: ${error.message}`);
+      toast({
+        title: "Error recording sale",
+        description: error.message,
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -303,6 +359,48 @@ export default function SalesEntry() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Inventory Impact Alert */}
+      {showInventoryImpact && currentInventory && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Package className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Current Inventory Impact</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-blue-600">Current Stock:</span>
+                <span className="font-medium ml-2">{currentInventory.current_qty}</span>
+              </div>
+              <div>
+                <span className="text-blue-600">After Sale:</span>
+                <span className="font-medium ml-2">
+                  {Math.max(0, currentInventory.current_qty - quantity)}
+                </span>
+              </div>
+              <div>
+                <span className="text-blue-600">Reorder Point:</span>
+                <span className="font-medium ml-2">{currentInventory.reorder_point}</span>
+              </div>
+              <div>
+                <span className="text-blue-600">Days of Supply:</span>
+                <span className="font-medium ml-2">
+                  {currentInventory.sales_velocity > 0 
+                    ? Math.round((currentInventory.current_qty - quantity) / currentInventory.sales_velocity)
+                    : '∞'
+                  }
+                </span>
+              </div>
+            </div>
+            {currentInventory.current_qty - quantity <= currentInventory.reorder_point && (
+              <div className="mt-2 p-2 bg-orange-100 rounded text-orange-800 text-sm">
+                ⚠️ This sale will trigger a restock alert!
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Sale Details */}
       <Card>
