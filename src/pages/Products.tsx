@@ -192,13 +192,33 @@ const Products = () => {
     },
   });
 
-  const updateProductMutation = useMutation({
+const updateProductMutation = useMutation({
     mutationFn: upsertProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setEditingProduct(null);
       setIsEditDialogOpen(false);
       toast.success("Product updated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error updating product");
+    },
+  });
+
+  // Quick update mutation for inline editing
+  const quickUpdateMutation = useMutation({
+    mutationFn: async ({ id, field, value }: { id: string; field: string; value: any }) => {
+      const updateData: any = { id };
+      if (field === "cost" || field === "price") {
+        updateData[field] = value ? value.toString() : "";
+      } else {
+        updateData[field] = value || "";
+      }
+      return upsertProduct(updateData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated!");
     },
     onError: (error: any) => {
       toast.error(error?.message || "Error updating product");
@@ -637,7 +657,22 @@ const Products = () => {
                         </div>
                       </TableCell>
                       <TableCell>{product.category || "-"}</TableCell>
-                      <TableCell>{product.manufacturer || "-"}</TableCell>
+                      <TableCell>
+                        <Input
+                          className="w-40 h-8"
+                          defaultValue={product.manufacturer || ""}
+                          onBlur={(e) => {
+                            if (e.target.value !== (product.manufacturer || "")) {
+                              quickUpdateMutation.mutate({
+                                id: product.id,
+                                field: "manufacturer",
+                                value: e.target.value
+                              });
+                            }
+                          }}
+                          placeholder="Enter manufacturer"
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           {product.size_oz && <div>{product.size_oz} oz</div>}
@@ -646,10 +681,44 @@ const Products = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(product.cost)}
+                        <Input
+                          className="w-20 h-8 text-right"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={product.cost || ""}
+                          onBlur={(e) => {
+                            const newValue = e.target.value ? parseFloat(e.target.value) : null;
+                            if (newValue !== product.cost) {
+                              quickUpdateMutation.mutate({
+                                id: product.id,
+                                field: "cost",
+                                value: newValue
+                              });
+                            }
+                          }}
+                          placeholder="0.00"
+                        />
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(product.price)}
+                        <Input
+                          className="w-20 h-8 text-right"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={product.price || ""}
+                          onBlur={(e) => {
+                            const newValue = e.target.value ? parseFloat(e.target.value) : null;
+                            if (newValue !== product.price) {
+                              quickUpdateMutation.mutate({
+                                id: product.id,
+                                field: "price",
+                                value: newValue
+                              });
+                            }
+                          }}
+                          placeholder="0.00"
+                        />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
