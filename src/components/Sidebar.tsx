@@ -205,9 +205,6 @@ export default function Sidebar() {
            </NavItem>
            <ProcessorStatementsSidebarItems collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
            <CommissionsSidebarItems collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
-          <NavItem to="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            Commissions
-          </NavItem>
           <NavItem to="/finance/taxes" icon={Landmark} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Taxes
           </NavItem>
