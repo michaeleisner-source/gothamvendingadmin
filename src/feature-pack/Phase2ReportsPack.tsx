@@ -284,13 +284,7 @@ export function MachineROIReport() {
   );
 }
 
-/* =============================== PROSPECT FUNNEL ===============================
-
-- Auto-detects stage/status column, created_at, won_at/lost_at if present
-- KPIs: counts by stage, win rate (won / (won+lost)), avg/median cycle time to win
-- SQL hint to add won_at / lost_at if missing
-
-============================================================================ */
+/* =============================== PROSPECT FUNNEL =============================== */
 
 const PROSPECTS_ENHANCE_SQL = `-- Enhanced prospect tracking for cycle time analysis
 DO $$
@@ -454,11 +448,7 @@ CREATE TABLE IF NOT EXISTS public.prospects (
   );
 }
 
-/* =============================== ROUTE EFFICIENCY ===============================
-
-Enhanced delivery route analysis with revenue attribution and efficiency metrics.
-
-============================================================================ */
+/* =============================== ROUTE EFFICIENCY =============================== */
 
 const ROUTES_ENHANCED_SQL = `-- Complete route efficiency tracking system
 DO $$
@@ -694,7 +684,7 @@ function KPI({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 /* =============================== ROUTES EXPORT =============================== */
-export function BusinessIntelligenceRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{children:React.ReactNode}> }) {
+export function Phase2Routes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{children:React.ReactNode}> }) {
   const Wrap: React.FC<{children:React.ReactNode}> = ({ children }) =>
     ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
 
