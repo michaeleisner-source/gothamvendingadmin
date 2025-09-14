@@ -48,6 +48,7 @@ import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
 import HelpReports from "./pages/HelpReports";
 import HelpBacklog from "./pages/HelpBacklog";
+import QALauncher from "./pages/QALauncher";
 import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
@@ -102,6 +103,7 @@ const App = () => (
             <Route path="/help/backlog" element={<HelpBacklog />} />
             <Route path="/reports/help" element={<HelpReports />} />
             <Route path="/debug" element={<ProtectedRoute><Debug /></ProtectedRoute>} />
+            <Route path="/qa" element={<QALauncher />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
