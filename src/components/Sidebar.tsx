@@ -1,3 +1,3 @@
-// Updated to use LeanFlowPack sidebar
-import { SidebarLean as Sidebar } from "@/feature-pack/LeanFlowPack";
-export default Sidebar;
+// Updated to use SimplifiedSidebar
+import SimplifiedSidebar from "./SimplifiedSidebar";
+export default SimplifiedSidebar;
