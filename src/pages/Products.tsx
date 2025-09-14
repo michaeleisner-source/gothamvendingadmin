@@ -93,6 +93,35 @@ const upsertProduct = async (product: ProductFormData & { id?: string }) => {
   return data;
 };
 
+const checkProductReferences = async (id: string) => {
+  // Check if product is used in purchase orders
+  const { data: poItems } = await supabase
+    .from("purchase_order_items")
+    .select("id")
+    .eq("product_id", id)
+    .limit(1);
+
+  // Check if product is used in slot assignments
+  const { data: slotAssignments } = await supabase
+    .from("slot_assignments")
+    .select("id")
+    .eq("product_id", id)
+    .limit(1);
+
+  // Check if product is used in sales
+  const { data: sales } = await supabase
+    .from("sales")
+    .select("id")
+    .eq("product_id", id)
+    .limit(1);
+
+  return {
+    hasPurchaseOrders: (poItems?.length || 0) > 0,
+    hasSlotAssignments: (slotAssignments?.length || 0) > 0,
+    hasSales: (sales?.length || 0) > 0
+  };
+};
+
 const deleteProduct = async (id: string) => {
   const { error } = await supabase
     .from("products")
@@ -230,9 +259,28 @@ const Products = () => {
     });
   };
 
-  const handleDelete = (product: Product) => {
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      deleteProductMutation.mutate(product.id);
+  const handleDelete = async (product: Product) => {
+    try {
+      // First check if product has any references
+      const references = await checkProductReferences(product.id);
+      
+      const referencedIn = [];
+      if (references.hasPurchaseOrders) referencedIn.push("purchase orders");
+      if (references.hasSlotAssignments) referencedIn.push("machine slot assignments");
+      if (references.hasSales) referencedIn.push("sales records");
+      
+      if (referencedIn.length > 0) {
+        const message = `Cannot delete "${product.name}" because it's still referenced in: ${referencedIn.join(", ")}.\n\nPlease remove these references first, or contact support if you need to force delete this product.`;
+        toast.error(message);
+        return;
+      }
+      
+      // If no references, proceed with confirmation
+      if (confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+        deleteProductMutation.mutate(product.id);
+      }
+    } catch (error: any) {
+      toast.error("Error checking product references: " + (error.message || "Unknown error"));
     }
   };
 
