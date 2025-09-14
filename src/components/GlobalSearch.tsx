@@ -111,8 +111,8 @@ export default function GlobalSearch() {
 
   return (
     <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-border">
-      <div className="max-w-screen-2xl mx-auto px-4 py-2">
-        <div className="relative">
+      <div className="max-w-screen-2xl mx-auto px-4 py-2 flex justify-center">
+        <div className="relative w-1/2 max-w-md">
           <input
             ref={inputRef}
             value={q}
