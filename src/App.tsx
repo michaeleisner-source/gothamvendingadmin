@@ -10,7 +10,6 @@ import { ProcessorStatementsRoutes } from "@/feature-pack/ProcessorStatementsPac
 import { CommissionsRoutes } from "@/feature-pack/CommissionsPack";
 import { FlowRefreshRoutes } from "@/feature-pack/FlowRefreshPack";
 import { LeanFlowRoutes } from "@/feature-pack/LeanFlowPack";
-import { InventoryRoutes } from "@/feature-pack/InventoryManagement";
 // Phase2 Reports
 import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
 // Phase3 Advanced Reports
@@ -33,7 +32,6 @@ import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
 import Picklists from "./pages/Picklists";
 import Tickets from "./pages/Tickets";
-import Reports from "./pages/Reports";
 import DeletionLogs from "./pages/DeletionLogs";
 import Inventory from "./pages/Inventory";
 import CostAnalysis from "./pages/CostAnalysis";
@@ -44,24 +42,16 @@ import RestockEntry from "./pages/RestockEntry";
 import SalesEntry from "./pages/SalesEntry";
 import MachineSetup from "./pages/MachineSetup";
 import SlotPlanner from "./pages/SlotPlanner";
-import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
 import PaymentProcessors from "./pages/PaymentProcessors";
 import Staff from "./pages/Staff";
-import FinanceTaxes from "./pages/FinanceTaxes";
-import FinanceExpenses from "./pages/FinanceExpenses";
-import FinanceLoans from "./pages/FinanceLoans";
-import ProductMargins from "./pages/ProductMargins";
-import ReportsROI from "./pages/ReportsROI";
-import ComplianceLicenses from "./pages/ComplianceLicenses";
+import FinanceManagement from "./pages/FinanceManagement";
+import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
-import HelpReports from "./pages/HelpReports";
-import HelpBacklog from "./pages/HelpBacklog";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
-import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 
@@ -95,27 +85,20 @@ const App = () => (
             <Route path="/picklists" element={<Picklists />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/deletion-logs" element={<DeletionLogs />} />
+            <Route path="/inventory" element={<Inventory />} />
             <Route path="/cost-analysis" element={<CostAnalysis />} />
             <Route path="/restock" element={<RestockEntry />} />
             <Route path="/sales" element={<SalesEntry />} />
             <Route path="/setup" element={<MachineSetup />} />
             <Route path="/slots" element={<SlotPlanner />} />
-            <Route path="/reports" element={<ProfitReports />} />
+            <Route path="/reports" element={<EnhancedReports />} />
             <Route path="/audit" element={<Audit />} />
+            <Route path="/finance" element={<FinanceManagement />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
-            <Route path="/finance/taxes" element={<FinanceTaxes />} />
-            <Route path="/finance/expenses" element={<FinanceExpenses />} />
-            <Route path="/finance/loans" element={<FinanceLoans />} />
-            <Route path="/products/margins" element={<ProductMargins />} />
-            <Route path="/reports/roi" element={<ReportsROI />} />
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
-            <Route path="/compliance/licenses" element={<ComplianceLicenses />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
-            <Route path="/help/backlog" element={<HelpBacklog />} />
-            <Route path="/reports/help" element={<HelpReports />} />
-            <Route path="/debug" element={<ProtectedRoute><Debug /></ProtectedRoute>} />
             <Route path="/health" element={<Health />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/account" element={<Account />} />
@@ -133,8 +116,6 @@ const App = () => (
             {Phase3Routes({ ProtectedRoute })}
             {/* Phase 4 Polish & System Health */}
             {Phase4Routes({ ProtectedRoute })}
-            {/* Inventory Management Routes */}
-            {InventoryRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>

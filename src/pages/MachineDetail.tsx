@@ -10,6 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Settings, DollarSign, Wrench, TrendingUp, Grid3x3, Info } from 'lucide-react';
+import MachineSetup from './MachineSetup';
+import MachineFinance from './MachineFinance';
+import MachineMaintenance from './MachineMaintenance';
+import MachineRoi from './MachineRoi';
 
 type Machine = {
   id: string;
@@ -18,25 +23,28 @@ type Machine = {
   status: string | null;
 };
 
-type MachineSlot = {
-  id: string;
-  label: string;
-  row: number;
-  col: number;
-  capacity?: number | null;
-};
-
 type Product = {
   id: string;
   name: string;
   sku: string;
 };
 
+type Slot = {
+  id: string;
+  label: string;
+  row: number;
+  col: number;
+  capacity: number | null;
+  product_id?: string;
+  max_qty?: number;
+  restock_threshold?: number;
+};
+
 type SlotAssignment = {
   slot_id: string;
   product_id: string;
-  max_qty?: number | null;
-  restock_threshold?: number | null;
+  max_qty?: number;
+  restock_threshold?: number;
 };
 
 const fetchMachine = async (id: string): Promise<Machine> => {
@@ -46,20 +54,35 @@ const fetchMachine = async (id: string): Promise<Machine> => {
     .eq("id", id)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 };
 
-const fetchMachineSlots = async (machineId: string): Promise<MachineSlot[]> => {
+const fetchSlots = async (machineId: string): Promise<Slot[]> => {
   const { data, error } = await supabase
     .from("machine_slots")
-    .select("id, label, row, col, capacity")
+    .select(`
+      id, label, row, col, capacity,
+      slot_assignments (
+        product_id, max_qty, restock_threshold
+      )
+    `)
     .eq("machine_id", machineId)
     .order("row")
     .order("col");
 
-  if (error) throw new Error(error.message);
-  return data || [];
+  if (error) throw error;
+
+  return (data || []).map(slot => ({
+    id: slot.id,
+    label: slot.label,
+    row: slot.row,
+    col: slot.col,
+    capacity: slot.capacity,
+    product_id: slot.slot_assignments?.[0]?.product_id,
+    max_qty: slot.slot_assignments?.[0]?.max_qty,
+    restock_threshold: slot.slot_assignments?.[0]?.restock_threshold,
+  }));
 };
 
 const fetchProducts = async (): Promise<Product[]> => {
@@ -68,35 +91,18 @@ const fetchProducts = async (): Promise<Product[]> => {
     .select("id, name, sku")
     .order("name");
 
-  if (error) throw new Error(error.message);
-  return data || [];
-};
-
-const fetchSlotAssignments = async (machineId: string): Promise<SlotAssignment[]> => {
-  const { data, error } = await supabase
-    .from("slot_assignments")
-    .select(`
-      slot_id,
-      product_id,
-      max_qty,
-      restock_threshold,
-      machine_slots!inner(machine_id)
-    `)
-    .eq("machine_slots.machine_id", machineId);
-
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data || [];
 };
 
 const PlanogramTab = ({ machineId }: { machineId: string }) => {
   const queryClient = useQueryClient();
-  const [rows, setRows] = useState(4);
-  const [cols, setCols] = useState(6);
-  const [assignments, setAssignments] = useState<Record<string, { product_id: string; max_qty: string; restock_threshold: string }>>({});
+  const [selectedSlots, setSelectedSlots] = useState<Record<string, SlotAssignment>>({});
+  const [gridDimensions, setGridDimensions] = useState({ rows: 6, cols: 8 });
 
   const { data: slots = [], isLoading: slotsLoading } = useQuery({
-    queryKey: ["machine-slots", machineId],
-    queryFn: () => fetchMachineSlots(machineId),
+    queryKey: ["slots", machineId],
+    queryFn: () => fetchSlots(machineId),
   });
 
   const { data: products = [] } = useQuery({
@@ -104,241 +110,175 @@ const PlanogramTab = ({ machineId }: { machineId: string }) => {
     queryFn: fetchProducts,
   });
 
-  const { data: existingAssignments = [] } = useQuery({
-    queryKey: ["slot-assignments", machineId],
-    queryFn: () => fetchSlotAssignments(machineId),
-    enabled: slots.length > 0,
-  });
-
   const generateSlotsMutation = useMutation({
     mutationFn: async ({ rows, cols }: { rows: number; cols: number }) => {
-      const { data, error } = await supabase.rpc("generate_machine_slots", {
+      const { error } = await supabase.rpc("generate_machine_slots", {
         p_machine_id: machineId,
         p_rows: rows,
         p_cols: cols,
       });
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["machine-slots", machineId] });
-      toast.success("Machine slots generated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["slots", machineId] });
+      toast.success("Slots generated successfully");
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error(`Error generating slots: ${error.message}`);
     },
   });
 
   const saveAssignmentsMutation = useMutation({
-    mutationFn: async (assignmentData: any[]) => {
-      const { data, error } = await supabase.rpc("upsert_slot_assignments", {
+    mutationFn: async (assignments: SlotAssignment[]) => {
+      const { error } = await supabase.rpc("upsert_slot_assignments", {
         p_machine_id: machineId,
-        p_assignments: assignmentData,
+        p_assignments: assignments.map(a => ({
+          label: slots.find(s => s.id === a.slot_id)?.label || "",
+          product_id: a.product_id,
+          max_qty: a.max_qty,
+          restock_threshold: a.restock_threshold,
+        })),
       });
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["slot-assignments", machineId] });
-      toast.success("Slot assignments saved successfully!");
+      queryClient.invalidateQueries({ queryKey: ["slots", machineId] });
+      toast.success("Slot assignments saved successfully");
+      setSelectedSlots({});
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error(`Error saving assignments: ${error.message}`);
     },
   });
 
   const handleGenerateSlots = () => {
-    if (rows < 1 || cols < 1) {
-      toast.error("Rows and columns must be at least 1");
-      return;
-    }
-    generateSlotsMutation.mutate({ rows, cols });
+    generateSlotsMutation.mutate(gridDimensions);
   };
 
-  const handleAssignmentChange = (slotId: string, field: string, value: string) => {
-    setAssignments(prev => ({
+  const handleSaveAssignments = () => {
+    const assignments = Object.values(selectedSlots);
+    if (assignments.length === 0) {
+      toast.error("No assignments to save");
+      return;
+    }
+    saveAssignmentsMutation.mutate(assignments);
+  };
+
+  const handleSlotChange = (slotId: string, field: keyof SlotAssignment, value: any) => {
+    setSelectedSlots(prev => ({
       ...prev,
       [slotId]: {
         ...prev[slotId],
+        slot_id: slotId,
         [field]: value,
       }
     }));
   };
 
-  const handleSaveAssignments = () => {
-    const assignmentData = Object.entries(assignments)
-      .filter(([_, assignment]) => assignment.product_id)
-      .map(([slotId, assignment]) => {
-        const slot = slots.find(s => s.id === slotId);
-        return {
-          label: slot?.label,
-          product_id: assignment.product_id,
-          max_qty: assignment.max_qty || null,
-          restock_threshold: assignment.restock_threshold || null,
-        };
-      });
-
-    if (assignmentData.length === 0) {
-      toast.error("No product assignments to save");
-      return;
-    }
-
-    saveAssignmentsMutation.mutate(assignmentData);
-  };
-
-  // Initialize assignments from existing data
-  useEffect(() => {
-    if (existingAssignments.length > 0) {
-      const assignmentMap = existingAssignments.reduce((acc, assignment) => {
-        acc[assignment.slot_id] = {
-          product_id: assignment.product_id,
-          max_qty: assignment.max_qty?.toString() || '',
-          restock_threshold: assignment.restock_threshold?.toString() || '',
-        };
-        return acc;
-      }, {} as Record<string, { product_id: string; max_qty: string; restock_threshold: string }>);
-      
-      setAssignments(assignmentMap);
-    }
-  }, [existingAssignments]);
-
   if (slotsLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <div>Loading slots...</div>;
   }
 
-  if (slots.length === 0) {
-    return (
+  const maxRow = Math.max(...slots.map(s => s.row), 0);
+  const maxCol = Math.max(...slots.map(s => s.col), 0);
+
+  return (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Generate Machine Layout</CardTitle>
+          <CardTitle>Slot Configuration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            No slots configured for this machine. Set up the grid layout first.
-          </p>
-          <div className="grid grid-cols-2 gap-4 max-w-xs">
-            <div className="space-y-2">
-              <Label htmlFor="rows">Rows</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Rows</Label>
               <Input
-                id="rows"
                 type="number"
                 min="1"
-                max="10"
-                value={rows}
-                onChange={(e) => setRows(parseInt(e.target.value) || 1)}
+                max="12"
+                value={gridDimensions.rows}
+                onChange={(e) => setGridDimensions(prev => ({ ...prev, rows: parseInt(e.target.value) || 1 }))}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="cols">Columns</Label>
+            <div>
+              <Label>Columns</Label>
               <Input
-                id="cols"
                 type="number"
                 min="1"
-                max="10"
-                value={cols}
-                onChange={(e) => setCols(parseInt(e.target.value) || 1)}
+                max="12"
+                value={gridDimensions.cols}
+                onChange={(e) => setGridDimensions(prev => ({ ...prev, cols: parseInt(e.target.value) || 1 }))}
               />
             </div>
           </div>
-          <Button 
-            onClick={handleGenerateSlots}
-            disabled={generateSlotsMutation.isPending}
-          >
+          <Button onClick={handleGenerateSlots} disabled={generateSlotsMutation.isPending}>
             {generateSlotsMutation.isPending ? "Generating..." : "Generate Slots"}
           </Button>
         </CardContent>
       </Card>
-    );
-  }
 
-  // Create grid layout
-  const maxRow = Math.max(...slots.map(s => s.row));
-  const maxCol = Math.max(...slots.map(s => s.col));
-  
-  const grid = Array.from({ length: maxRow }, (_, rowIndex) =>
-    Array.from({ length: maxCol }, (_, colIndex) => {
-      return slots.find(s => s.row === rowIndex + 1 && s.col === colIndex + 1);
-    })
-  );
+      {slots.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Planogram ({maxRow} x {maxCol})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div 
+                className="grid gap-2 w-fit mx-auto"
+                style={{
+                  gridTemplateColumns: `repeat(${maxCol}, minmax(0, 1fr))`,
+                }}
+              >
+                {Array.from({ length: maxRow }, (_, rowIndex) => {
+                  const row = rowIndex + 1;
+                  return Array.from({ length: maxCol }, (_, colIndex) => {
+                    const col = colIndex + 1;
+                    const slot = slots.find(s => s.row === row && s.col === col);
+                    
+                    if (!slot) {
+                      return <div key={`${row}-${col}`} className="w-24 h-20 border border-dashed border-muted-foreground/30 rounded" />;
+                    }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Slot Configuration</h3>
-        <Button 
-          onClick={handleSaveAssignments}
-          disabled={saveAssignmentsMutation.isPending}
-        >
-          {saveAssignmentsMutation.isPending ? "Saving..." : "Save Assignments"}
-        </Button>
-      </div>
+                    const assignedProduct = products.find(p => p.id === slot.product_id);
+                    const assignment = selectedSlots[slot.id] || { slot_id: slot.id, product_id: '', max_qty: undefined, restock_threshold: undefined };
 
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${maxCol}, minmax(200px, 1fr))` }}>
-        {grid.map((row, rowIndex) =>
-          row.map((slot, colIndex) => (
-            <Card key={`${rowIndex}-${colIndex}`} className="p-3">
-              {slot ? (
-                <div className="space-y-2">
-                  <div className="font-medium text-center">{slot.label}</div>
-                  
-                  <div className="space-y-2">
-                    <Label className="text-xs">Product</Label>
-                    <Select
-                      value={assignments[slot.id]?.product_id || ""}
-                      onValueChange={(value) => handleAssignmentChange(slot.id, "product_id", value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Select product" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50 bg-background">
-                        <SelectItem value="">No product</SelectItem>
-                        {products.map(product => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    return (
+                      <div key={slot.id} className="w-24 h-20 border rounded p-1 bg-card">
+                        <div className="text-xs font-mono text-center mb-1">{slot.label}</div>
+                        <Select
+                          value={assignment.product_id || slot.product_id || ""}
+                          onValueChange={(value) => handleSlotChange(slot.id, 'product_id', value)}
+                        >
+                          <SelectTrigger className="h-6 text-xs">
+                            <SelectValue placeholder="Empty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Empty</SelectItem>
+                            {products.map(product => (
+                              <SelectItem key={product.id} value={product.id}>
+                                {product.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  });
+                }).flat()}
+              </div>
 
-                  <div className="grid grid-cols-2 gap-1">
-                    <div>
-                      <Label className="text-xs">Max Qty</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        className="h-8 text-xs"
-                        value={assignments[slot.id]?.max_qty || ""}
-                        onChange={(e) => handleAssignmentChange(slot.id, "max_qty", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Restock</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        className="h-8 text-xs"
-                        value={assignments[slot.id]?.restock_threshold || ""}
-                        onChange={(e) => handleAssignmentChange(slot.id, "restock_threshold", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-20 flex items-center justify-center text-muted-foreground text-xs">
-                  Empty
+              {Object.keys(selectedSlots).length > 0 && (
+                <div className="flex justify-center">
+                  <Button onClick={handleSaveAssignments} disabled={saveAssignmentsMutation.isPending}>
+                    {saveAssignmentsMutation.isPending ? "Saving..." : "Save Assignments"}
+                  </Button>
                 </div>
               )}
-            </Card>
-          ))
-        )}
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
@@ -401,9 +341,31 @@ const MachineDetail = () => {
       </div>
 
       <Tabs defaultValue="planogram" className="w-full">
-        <TabsList>
-          <TabsTrigger value="planogram">Planogram</TabsTrigger>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="planogram" className="flex items-center gap-2">
+            <Grid3x3 className="w-4 h-4" />
+            Planogram
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="setup" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Setup
+          </TabsTrigger>
+          <TabsTrigger value="finance" className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4" />
+            Finance
+          </TabsTrigger>
+          <TabsTrigger value="maintenance" className="flex items-center gap-2">
+            <Wrench className="w-4 h-4" />
+            Maintenance
+          </TabsTrigger>
+          <TabsTrigger value="roi" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            ROI Analysis
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="planogram" className="mt-6">
@@ -434,6 +396,22 @@ const MachineDetail = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="setup" className="mt-6">
+          <MachineSetup />
+        </TabsContent>
+        
+        <TabsContent value="finance" className="mt-6">
+          <MachineFinance />
+        </TabsContent>
+        
+        <TabsContent value="maintenance" className="mt-6">
+          <MachineMaintenance />
+        </TabsContent>
+        
+        <TabsContent value="roi" className="mt-6">
+          <MachineRoi />
         </TabsContent>
       </Tabs>
     </div>
