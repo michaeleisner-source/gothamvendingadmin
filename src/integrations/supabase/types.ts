@@ -365,6 +365,96 @@ export type Database = {
           },
         ]
       }
+      maintenance_plans: {
+        Row: {
+          created_at: string
+          id: string
+          interval_days: number
+          machine_id: string
+          next_due: string | null
+          org_id: string
+          plan_name: string | null
+          updated_at: string
+          warranty_expires_on: string | null
+          warranty_provider: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interval_days: number
+          machine_id: string
+          next_due?: string | null
+          org_id: string
+          plan_name?: string | null
+          updated_at?: string
+          warranty_expires_on?: string | null
+          warranty_provider?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interval_days?: number
+          machine_id?: string
+          next_due?: string | null
+          org_id?: string
+          plan_name?: string | null
+          updated_at?: string
+          warranty_expires_on?: string | null
+          warranty_provider?: string | null
+        }
+        Relationships: []
+      }
+      maintenance_work_orders: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          id: string
+          issue: string
+          labor_cost: number | null
+          labor_hours: number | null
+          machine_id: string
+          opened_at: string
+          org_id: string
+          parts_cost: number | null
+          priority: string | null
+          resolution: string | null
+          technician_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          issue: string
+          labor_cost?: number | null
+          labor_hours?: number | null
+          machine_id: string
+          opened_at?: string
+          org_id: string
+          parts_cost?: number | null
+          priority?: string | null
+          resolution?: string | null
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          issue?: string
+          labor_cost?: number | null
+          labor_hours?: number | null
+          machine_id?: string
+          opened_at?: string
+          org_id?: string
+          parts_cost?: number | null
+          priority?: string | null
+          resolution?: string | null
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           org_id: string
@@ -406,6 +496,45 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      par_rules: {
+        Row: {
+          created_at: string
+          id: string
+          max_qty: number | null
+          min_qty: number
+          org_id: string
+          product_id: string | null
+          reorder_qty: number | null
+          scope_id: string | null
+          scope_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_qty?: number | null
+          min_qty?: number
+          org_id: string
+          product_id?: string | null
+          reorder_qty?: number | null
+          scope_id?: string | null
+          scope_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_qty?: number | null
+          min_qty?: number
+          org_id?: string
+          product_id?: string | null
+          reorder_qty?: number | null
+          scope_id?: string | null
+          scope_type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -470,6 +599,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_lots: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          lot_no: string | null
+          org_id: string
+          product_id: string
+          received_at: string | null
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          lot_no?: string | null
+          org_id: string
+          product_id: string
+          received_at?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          lot_no?: string | null
+          org_id?: string
+          product_id?: string
+          received_at?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
