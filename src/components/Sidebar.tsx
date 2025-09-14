@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDemo } from "@/lib/demo";
 import { FeatureSidebarItems } from "@/feature-pack/VendingWorkflowPack";
+import { MachineOpsSidebarMachines, MachineOpsSidebarReports } from "@/feature-pack/MachineOpsPack";
 import {
   LayoutDashboard,
   MapPinned,
@@ -25,17 +26,16 @@ import {
   ChevronDown,
   PanelLeftOpen,
   PanelLeftClose,
-  Percent,
-  Receipt,
-  Coins,
-  Landmark,
-  Scale,
-  FileSpreadsheet,
-  Package2,
-  BadgeCheck,
-  Wrench,
-  CreditCard,
-  HelpCircle,
+   Percent,
+   Receipt,
+   Coins,
+   Landmark,
+   Scale,
+   FileSpreadsheet,
+   Package2,
+   BadgeCheck,
+   CreditCard,
+   HelpCircle,
 } from "lucide-react";
 
 const STORAGE_KEY = "sidebar.openGroups";
@@ -143,12 +143,7 @@ export default function Sidebar() {
           <NavItem to="/slots" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Slot Planner
           </NavItem>
-          <NavItem to="/machines/finance" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            Machine Finance
-          </NavItem>
-          <NavItem to="/machines/maintenance" icon={Wrench} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            Machine Maintenance
-          </NavItem>
+           <MachineOpsSidebarMachines collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
         </Group>
 
         {/* 3. Supply & Stock */}
@@ -232,9 +227,7 @@ export default function Sidebar() {
           <NavItem to="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Profit Reports
           </NavItem>
-          <NavItem to="/reports/roi" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            ROI & Depreciation
-          </NavItem>
+           <MachineOpsSidebarReports collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
         </Group>
 
         {/* 6. Logistics & Support */}
