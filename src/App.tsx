@@ -26,6 +26,7 @@ import CostAnalysis from "./pages/CostAnalysis";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
+import Audit from "./pages/Audit";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/deletion-logs" element={<DeletionLogs />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cost-analysis" element={<CostAnalysis />} />
+            <Route path="/audit" element={<Audit />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

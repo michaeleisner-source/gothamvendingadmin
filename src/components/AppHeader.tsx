@@ -59,6 +59,9 @@ export default function AppHeader() {
           <Link to="/cost-analysis" className="text-foreground hover:text-primary transition-colors hover:underline">
             Cost Analysis
           </Link>
+          <Link to="/audit" className="text-foreground hover:text-primary transition-colors hover:underline">
+            Audit
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           {email ? (
