@@ -102,7 +102,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {/* Dashboard */}
         {!collapsed && <SectionLabel>Dashboard</SectionLabel>}
-        <NavItem href="/" icon={LayoutDashboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>Dashboard</NavItem>
+        <NavItem to="/" icon={LayoutDashboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>Dashboard</NavItem>
 
         {/* 1. Pipeline */}
         <Group
@@ -112,10 +112,10 @@ export default function Sidebar() {
           onToggle={() => toggle("pipeline")}
           collapsed={collapsed}
         >
-          <NavItem href="/prospects" icon={Clipboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/prospects" icon={Clipboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Prospects
           </NavItem>
-          <NavItem href="/locations" icon={Building2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/locations" icon={Building2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Locations
           </NavItem>
         </Group>
@@ -128,19 +128,19 @@ export default function Sidebar() {
           onToggle={() => toggle("machines")}
           collapsed={collapsed}
         >
-          <NavItem href="/machines" icon={Factory} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/machines" icon={Factory} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machines
           </NavItem>
-          <NavItem href="/setup" icon={ClipboardCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/setup" icon={ClipboardCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machine Setup
           </NavItem>
-          <NavItem href="/slots" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/slots" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Slot Planner
           </NavItem>
-          <NavItem href="/machines/finance" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/machines/finance" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machine Finance
           </NavItem>
-          <NavItem href="/machines/maintenance" icon={Wrench} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/machines/maintenance" icon={Wrench} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machine Maintenance
           </NavItem>
         </Group>
@@ -153,32 +153,32 @@ export default function Sidebar() {
           onToggle={() => toggle("supply")}
           collapsed={collapsed}
         >
-          <NavItem href="/products" icon={Box} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/products" icon={Box} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Products
           </NavItem>
-          <NavItem href="/products/margins" icon={FileSpreadsheet} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/products/margins" icon={FileSpreadsheet} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Product Margins
           </NavItem>
-          <NavItem href="/suppliers" icon={FileText} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/suppliers" icon={FileText} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Suppliers
           </NavItem>
           {!collapsed && (
             <NavParent label="Purchase Orders" icon={FileText}>
-              <NavChild href="/purchase-orders">
+              <NavChild to="/purchase-orders">
                 All POs
               </NavChild>
-              <NavChild href="/purchase-orders/new">
+              <NavChild to="/purchase-orders/new">
                 New PO
               </NavChild>
             </NavParent>
           )}
-          <NavItem href="/inventory" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/inventory" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Inventory
           </NavItem>
-          <NavItem href="/restock" icon={ClipboardCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/restock" icon={ClipboardCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Restock
           </NavItem>
-          <NavItem href="/picklists" icon={Clipboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/picklists" icon={Clipboard} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Picklists
           </NavItem>
         </Group>
@@ -191,31 +191,31 @@ export default function Sidebar() {
           onToggle={() => toggle("sales")}
           collapsed={collapsed}
         >
-          <NavItem href="/sales" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/sales" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Sales Entry
           </NavItem>
-          <NavItem href="/cost-analysis" icon={TrendingUp} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/cost-analysis" icon={TrendingUp} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Cost Analysis
           </NavItem>
-          <NavItem href="/finance/processors" icon={Percent} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/processors" icon={Percent} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Payment Processors
           </NavItem>
-          <NavItem href="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Commissions
           </NavItem>
-          <NavItem href="/finance/taxes" icon={Landmark} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/taxes" icon={Landmark} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Taxes
           </NavItem>
-          <NavItem href="/finance/expenses" icon={Receipt} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/expenses" icon={Receipt} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Expenses
           </NavItem>
-          <NavItem href="/finance/loans" icon={PiggyBank} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/loans" icon={PiggyBank} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Loans & Financing
           </NavItem>
-          <NavItem href="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Profit Reports
           </NavItem>
-          <NavItem href="/reports/roi" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/reports/roi" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             ROI & Depreciation
           </NavItem>
         </Group>
@@ -228,13 +228,13 @@ export default function Sidebar() {
           onToggle={() => toggle("logistics")}
           collapsed={collapsed}
         >
-          <NavItem href="/delivery-routes" icon={Truck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/delivery-routes" icon={Truck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Delivery Routes
           </NavItem>
-          <NavItem href="/tickets" icon={TicketCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/tickets" icon={TicketCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Tickets
           </NavItem>
-          <NavItem href="/staff" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/staff" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Staff Directory
           </NavItem>
         </Group>
@@ -247,16 +247,16 @@ export default function Sidebar() {
           onToggle={() => toggle("admin")}
           collapsed={collapsed}
         >
-          <NavItem href="/compliance/licenses" icon={BadgeCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/compliance/licenses" icon={BadgeCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Compliance & Licenses
           </NavItem>
-          <NavItem href="/audit" icon={ShieldAlert} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/audit" icon={ShieldAlert} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Audit
           </NavItem>
-          <NavItem href="/deletion-logs" icon={Trash2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/deletion-logs" icon={Trash2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Deletion Logs
           </NavItem>
-          <NavItem href="/account" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/account" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Account
           </NavItem>
         </Group>
@@ -269,13 +269,13 @@ export default function Sidebar() {
           onToggle={() => toggle('help')}
           collapsed={collapsed}
         >
-          <NavItem href="/help" icon={HelpCircle} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/help" icon={HelpCircle} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Center
           </NavItem>
-          <NavItem href="/help/backlog" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/help/backlog" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Content Backlog
           </NavItem>
-          <NavItem href="/reports/help" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/reports/help" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Reports
           </NavItem>
         </Group>
@@ -358,13 +358,13 @@ function Group({
 }
 
 function NavItem({
-  href,
+  to,
   icon: Icon,
   collapsed,
   onExpandSidebar,
   children,
 }: {
-  href: string;
+  to: string;
   icon: React.ComponentType<any>;
   collapsed: boolean;
   onExpandSidebar?: () => void;
@@ -387,7 +387,7 @@ function NavItem({
 
   return (
     <NavLink
-      to={href}
+      to={to}
       className={({ isActive }) =>
         `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-neutral-900 ${
           isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
@@ -435,10 +435,10 @@ function NavParent({
   );
 }
 
-function NavChild({ href, children }: { href: string; children: React.ReactNode }) {
+function NavChild({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <NavLink
-      to={href}
+      to={to}
       className={({ isActive }) =>
         `block text-sm px-2 py-1.5 rounded-md hover:bg-neutral-900 ${
           isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
