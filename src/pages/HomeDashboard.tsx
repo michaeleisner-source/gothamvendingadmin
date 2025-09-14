@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NextActionBar } from "@/feature-pack/VendingWorkflowPack";
 
 type Machine = {
   id: string;
@@ -90,6 +91,8 @@ const HomeDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+      
+      <NextActionBar />
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiData.map((kpi) => (
