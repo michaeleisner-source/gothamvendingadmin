@@ -391,8 +391,8 @@ function NavItem({
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-neutral-900 ${
-          isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
+        `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-muted ${
+          isActive ? "bg-muted ring-1 ring-border" : ""
         }`
       }
     >
@@ -442,8 +442,8 @@ function NavChild({ to, children }: { to: string; children: React.ReactNode }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `block text-sm px-2 py-1.5 rounded-md hover:bg-neutral-900 ${
-          isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
+        `block text-sm px-2 py-1.5 rounded-md hover:bg-muted ${
+          isActive ? "bg-muted ring-1 ring-border" : ""
         }`
       }
     >
