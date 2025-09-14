@@ -66,6 +66,7 @@ export default function Sidebar() {
     sales: true,
     logistics: true,
     admin: true,
+    help: true,
   });
 
   const toggle = (key: string) =>
@@ -258,6 +259,16 @@ export default function Sidebar() {
           <NavItem href="/account" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Account
           </NavItem>
+        </Group>
+
+        {/* Help Section */}
+        <Group 
+          icon={HelpCircle} 
+          label="Help" 
+          isOpen={open.help} 
+          onToggle={() => toggle('help')}
+          collapsed={collapsed}
+        >
           <NavItem href="/help" icon={HelpCircle} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Help Center
           </NavItem>
