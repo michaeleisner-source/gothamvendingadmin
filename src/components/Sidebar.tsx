@@ -23,6 +23,14 @@ import {
   ChevronDown,
   PanelLeftOpen,
   PanelLeftClose,
+  Landmark,
+  Percent,
+  Receipt,
+  PiggyBank,
+  Scale,
+  FileSpreadsheet,
+  BadgeCheck,
+  Wrench,
 } from "lucide-react";
 
 const STORAGE_KEY = "sidebar.openGroups";
@@ -146,6 +154,9 @@ export default function Sidebar() {
           <NavItem href="/products" icon={Box} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Products
           </NavItem>
+          <NavItem href="/products/margins" icon={FileSpreadsheet} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Product Margins
+          </NavItem>
           <NavItem href="/suppliers" icon={FileText} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Suppliers
           </NavItem>
@@ -184,11 +195,26 @@ export default function Sidebar() {
           <NavItem href="/cost-analysis" icon={TrendingUp} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Cost Analysis
           </NavItem>
+          <NavItem href="/finance/processors" icon={Percent} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Payment Processors
+          </NavItem>
+          <NavItem href="/finance/commissions" icon={Scale} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Commissions
+          </NavItem>
+          <NavItem href="/finance/taxes" icon={Landmark} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Taxes
+          </NavItem>
+          <NavItem href="/finance/expenses" icon={Receipt} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Expenses
+          </NavItem>
+          <NavItem href="/finance/loans" icon={PiggyBank} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Loans & Financing
+          </NavItem>
           <NavItem href="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Profit Reports
           </NavItem>
-          <NavItem href="/finance/processors" icon={Box} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
-            Payment Processors
+          <NavItem href="/reports/roi" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            ROI & Depreciation
           </NavItem>
         </Group>
 
@@ -219,6 +245,9 @@ export default function Sidebar() {
           onToggle={() => toggle("admin")}
           collapsed={collapsed}
         >
+          <NavItem href="/compliance/licenses" icon={BadgeCheck} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Compliance & Licenses
+          </NavItem>
           <NavItem href="/audit" icon={ShieldAlert} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Audit
           </NavItem>
@@ -233,7 +262,7 @@ export default function Sidebar() {
 
       {/* Footer / Version or quick context */}
       <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-        {!collapsed && <div>v1.0 · Workflow Nav</div>}
+        {!collapsed && <div>v1.1 · Workflow+Finance</div>}
       </div>
     </aside>
   );

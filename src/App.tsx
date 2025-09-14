@@ -36,6 +36,13 @@ import MachineFinance from "./pages/MachineFinance";
 import MachineMaintenance from "./pages/MachineMaintenance";
 import PaymentProcessors from "./pages/PaymentProcessors";
 import Staff from "./pages/Staff";
+import FinanceCommissions from "./pages/FinanceCommissions";
+import FinanceTaxes from "./pages/FinanceTaxes";
+import FinanceExpenses from "./pages/FinanceExpenses";
+import FinanceLoans from "./pages/FinanceLoans";
+import ProductMargins from "./pages/ProductMargins";
+import ReportsROI from "./pages/ReportsROI";
+import ComplianceLicenses from "./pages/ComplianceLicenses";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +85,13 @@ const App = () => (
               <Route path="/machines/finance" element={<MachineFinance />} />
               <Route path="/machines/maintenance" element={<MachineMaintenance />} />
               <Route path="/finance/processors" element={<PaymentProcessors />} />
+              <Route path="/finance/commissions" element={<FinanceCommissions />} />
+              <Route path="/finance/taxes" element={<FinanceTaxes />} />
+              <Route path="/finance/expenses" element={<FinanceExpenses />} />
+              <Route path="/finance/loans" element={<FinanceLoans />} />
+              <Route path="/products/margins" element={<ProductMargins />} />
+              <Route path="/reports/roi" element={<ReportsROI />} />
+              <Route path="/compliance/licenses" element={<ComplianceLicenses />} />
               <Route path="/staff" element={<Staff />} />
               <Route path="/account" element={<Account />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
