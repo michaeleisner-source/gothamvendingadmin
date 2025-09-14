@@ -10,6 +10,8 @@ import { ProcessorStatementsRoutes } from "@/feature-pack/ProcessorStatementsPac
 import { CommissionsRoutes } from "@/feature-pack/CommissionsPack";
 import { FlowRefreshRoutes } from "@/feature-pack/FlowRefreshPack";
 import { LeanFlowRoutes } from "@/feature-pack/LeanFlowPack";
+import { BusinessIntelligenceRoutes } from "@/feature-pack/BusinessIntelligencePack";
+import { InventoryRoutes } from "@/feature-pack/InventoryManagement";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -122,6 +124,8 @@ const App = () => (
             {CommissionsRoutes({ ProtectedRoute })}
             {FlowRefreshRoutes({ ProtectedRoute })}
             {LeanFlowRoutes({ ProtectedRoute })}
+            {BusinessIntelligenceRoutes({ ProtectedRoute })}
+            {InventoryRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>

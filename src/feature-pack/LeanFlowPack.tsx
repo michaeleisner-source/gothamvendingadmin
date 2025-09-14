@@ -83,6 +83,10 @@ export function SidebarLean() {
           <Child to="/reports/sales-summary">Sales Summary (7d)</Child>
           <Child to="/reports/silent-machines">Silent Machines</Child>
           <Child to="/reports/machine-roi">Machine ROI</Child>
+          <Child to="/reports/prospect-funnel">Prospect Funnel</Child>
+          <Child to="/reports/route-efficiency">Route Efficiency</Child>
+          <Child to="/inventory/overview">Inventory Overview</Child>
+          <Child to="/inventory/alerts">Low Stock Alerts</Child>
         </Group>
 
         <Group label="Oversight & Admin" icon={ShieldAlert} open={open.admin} onClick={() => toggle("admin")}>
