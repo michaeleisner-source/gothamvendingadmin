@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthGate from "@/components/AuthGate";
 import AppHeader from "@/components/AppHeader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
@@ -42,6 +43,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AppHeader />
+        <Breadcrumbs />
         <AuthGate>
           <Routes>
             {/* Public routes */}
