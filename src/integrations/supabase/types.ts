@@ -323,6 +323,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          manufacturer: string | null
           name: string
           org_id: string | null
           price: number | null
@@ -338,6 +339,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          manufacturer?: string | null
           name: string
           org_id?: string | null
           price?: number | null
@@ -353,6 +355,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          manufacturer?: string | null
           name?: string
           org_id?: string | null
           price?: number | null
@@ -877,6 +880,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          manufacturer: string | null
           name: string
           org_id: string | null
           price: number | null

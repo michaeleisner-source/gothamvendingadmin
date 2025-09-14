@@ -30,6 +30,7 @@ type Product = {
   sku: string;
   name: string;
   category: string | null;
+  manufacturer: string | null;
   cost: number | null;
   price: number | null;
   image_url: string | null;
@@ -44,6 +45,7 @@ type ProductFormData = {
   sku: string;
   name: string;
   category: string;
+  manufacturer: string;
   cost: string;
   price: string;
   image_url: string;
@@ -59,7 +61,7 @@ const fetchProducts = async (search?: string): Promise<Product[]> => {
     .order("created_at", { ascending: false });
 
   if (search) {
-    query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,category.ilike.%${search}%`);
+    query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,category.ilike.%${search}%,manufacturer.ilike.%${search}%`);
   }
 
   const { data, error } = await query;
@@ -78,6 +80,7 @@ const upsertProduct = async (product: ProductFormData & { id?: string }) => {
       sku: product.sku,
       name: product.name,
       category: product.category || null,
+      manufacturer: product.manufacturer || null,
       cost: product.cost || null,
       price: product.price || null,
       image_url: product.image_url || null,
@@ -144,6 +147,7 @@ const Products = () => {
     sku: "",
     name: "",
     category: "",
+    manufacturer: "",
     cost: "",
     price: "",
     image_url: "",
@@ -169,6 +173,7 @@ const Products = () => {
         sku: "",
         name: "",
         category: "",
+        manufacturer: "",
         cost: "",
         price: "",
         image_url: "",
@@ -229,6 +234,7 @@ const Products = () => {
       sku: formData.sku.trim(),
       name: formData.name.trim(),
       category: formData.category.trim(),
+      manufacturer: formData.manufacturer.trim(),
       cost: formData.cost.trim(),
       price: formData.price.trim(),
       image_url: formData.image_url.trim(),
@@ -252,6 +258,7 @@ const Products = () => {
       sku: editingProduct.sku,
       name: editingProduct.name,
       category: editingProduct.category || "",
+      manufacturer: editingProduct.manufacturer || "",
       cost: editingProduct.cost?.toString() || "",
       price: editingProduct.price?.toString() || "",
       image_url: editingProduct.image_url || "",
@@ -344,6 +351,7 @@ const Products = () => {
               sku: product.sku,
               name: product.name,
               category: product.category || "",
+              manufacturer: product.manufacturer || "",
               cost: product.cost?.toString() || "",
               price: product.price?.toString() || "",
               image_url: product.image_url || "",
