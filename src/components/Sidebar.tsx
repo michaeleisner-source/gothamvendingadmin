@@ -23,14 +23,16 @@ import {
   ChevronDown,
   PanelLeftOpen,
   PanelLeftClose,
-  Landmark,
   Percent,
   Receipt,
-  PiggyBank,
+  Coins,
+  Landmark,
   Scale,
   FileSpreadsheet,
+  Package2,
   BadgeCheck,
   Wrench,
+  CreditCard,
   HelpCircle,
 } from "lucide-react";
 
@@ -209,7 +211,7 @@ export default function Sidebar() {
           <NavItem to="/finance/expenses" icon={Receipt} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Expenses
           </NavItem>
-          <NavItem to="/finance/loans" icon={PiggyBank} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem to="/finance/loans" icon={Coins} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Loans & Financing
           </NavItem>
           <NavItem to="/reports" icon={BarChart3} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
