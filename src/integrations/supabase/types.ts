@@ -222,6 +222,53 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_routes: {
+        Row: {
+          created_at: string
+          driver_id: string | null
+          estimated_duration: unknown | null
+          id: string
+          name: string
+          org_id: string
+          route_day: string | null
+          start_time: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id?: string | null
+          estimated_duration?: unknown | null
+          id?: string
+          name: string
+          org_id: string
+          route_day?: string | null
+          start_time?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string | null
+          estimated_duration?: unknown | null
+          id?: string
+          name?: string
+          org_id?: string
+          route_day?: string | null
+          start_time?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_routes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_article_views: {
         Row: {
           article_id: string | null
@@ -648,6 +695,83 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_levels: {
+        Row: {
+          created_at: string
+          current_qty: number
+          days_of_supply: number | null
+          id: string
+          last_restocked_at: string | null
+          machine_id: string
+          org_id: string
+          par_level: number | null
+          product_id: string
+          reorder_point: number | null
+          sales_velocity: number | null
+          slot_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_qty?: number
+          days_of_supply?: number | null
+          id?: string
+          last_restocked_at?: string | null
+          machine_id: string
+          org_id: string
+          par_level?: number | null
+          product_id: string
+          reorder_point?: number | null
+          sales_velocity?: number | null
+          slot_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_qty?: number
+          days_of_supply?: number | null
+          id?: string
+          last_restocked_at?: string | null
+          machine_id?: string
+          org_id?: string
+          par_level?: number | null
+          product_id?: string
+          reorder_point?: number | null
+          sales_velocity?: number | null
+          slot_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_levels_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_levels_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
+            foreignKeyName: "inventory_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_levels_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: true
+            referencedRelation: "machine_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_commissions: {
         Row: {
           created_at: string
@@ -961,6 +1085,69 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      machine_telemetry: {
+        Row: {
+          bill_jam_count: number | null
+          cash_level_cents: number | null
+          coin_jam_count: number | null
+          door_open_alerts: number | null
+          error_codes: string[] | null
+          id: string
+          last_sale_at: string | null
+          machine_id: string
+          network_status: string | null
+          org_id: string
+          power_cycles: number | null
+          recorded_at: string
+          temperature: number | null
+        }
+        Insert: {
+          bill_jam_count?: number | null
+          cash_level_cents?: number | null
+          coin_jam_count?: number | null
+          door_open_alerts?: number | null
+          error_codes?: string[] | null
+          id?: string
+          last_sale_at?: string | null
+          machine_id: string
+          network_status?: string | null
+          org_id: string
+          power_cycles?: number | null
+          recorded_at?: string
+          temperature?: number | null
+        }
+        Update: {
+          bill_jam_count?: number | null
+          cash_level_cents?: number | null
+          coin_jam_count?: number | null
+          door_open_alerts?: number | null
+          error_codes?: string[] | null
+          id?: string
+          last_sale_at?: string | null
+          machine_id?: string
+          network_status?: string | null
+          org_id?: string
+          power_cycles?: number | null
+          recorded_at?: string
+          temperature?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_telemetry_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_telemetry_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
           },
         ]
       }
@@ -1792,6 +1979,67 @@ export type Database = {
         }
         Relationships: []
       }
+      route_stops: {
+        Row: {
+          actual_arrival: string | null
+          completed: boolean | null
+          estimated_arrival: string | null
+          id: string
+          machine_id: string
+          notes: string | null
+          org_id: string
+          route_id: string
+          service_type: string | null
+          stop_order: number
+        }
+        Insert: {
+          actual_arrival?: string | null
+          completed?: boolean | null
+          estimated_arrival?: string | null
+          id?: string
+          machine_id: string
+          notes?: string | null
+          org_id: string
+          route_id: string
+          service_type?: string | null
+          stop_order: number
+        }
+        Update: {
+          actual_arrival?: string | null
+          completed?: boolean | null
+          estimated_arrival?: string | null
+          id?: string
+          machine_id?: string
+          notes?: string | null
+          org_id?: string
+          route_id?: string
+          service_type?: string | null
+          stop_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_stops_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_stops_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
+            foreignKeyName: "route_stops_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           id: string
@@ -2018,6 +2266,88 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          labor_cost_cents: number | null
+          labor_hours: number | null
+          machine_id: string | null
+          org_id: string
+          parts_cost_cents: number | null
+          priority: string
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          labor_cost_cents?: number | null
+          labor_hours?: number | null
+          machine_id?: string | null
+          org_id: string
+          parts_cost_cents?: number | null
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          labor_cost_cents?: number | null
+          labor_hours?: number | null
+          machine_id?: string | null
+          org_id?: string
+          parts_cost_cents?: number | null
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+        ]
       }
     }
     Views: {
