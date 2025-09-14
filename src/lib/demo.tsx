@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useState } from 'react';
+import React from 'react';
 import { Eye } from 'lucide-react';
 import AuthGate from '@/components/AuthGate';
 
 // Demo Context
 type DemoCtx = { isDemo: boolean; ready: boolean };
-const DemoContext = createContext<DemoCtx>({ isDemo: false, ready: false });
-export const useDemo = () => useContext(DemoContext);
+const DemoContext = React.createContext<DemoCtx>({ isDemo: false, ready: false });
+export const useDemo = () => React.useContext(DemoContext);
 
 // Demo Provider
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [isDemo, setIsDemo] = useState(true); // Always demo mode for now
-  const [ready, setReady] = useState(true); // Always ready
+  const [isDemo, setIsDemo] = React.useState(true); // Always demo mode for now
+  const [ready, setReady] = React.useState(true); // Always ready
 
   return (
     <DemoContext.Provider value={{ isDemo, ready }}>
