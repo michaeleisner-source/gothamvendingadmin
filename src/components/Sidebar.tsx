@@ -138,7 +138,7 @@ export default function Sidebar() {
           <NavItem href="/machines/finance" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machine Finance
           </NavItem>
-          <NavItem href="/machines/maintenance" icon={Settings2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+          <NavItem href="/machines/maintenance" icon={Wrench} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Machine Maintenance
           </NavItem>
         </Group>
