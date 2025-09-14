@@ -118,9 +118,9 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
-          {/* Mount feature pack routes at root level */}
-          <MachineOpsRoutes ProtectedRoute={ProtectedRoute} />
-          <ProcessorStatementsRoutes ProtectedRoute={ProtectedRoute} />
+          {/* Feature pack routes - called as functions */}
+          {MachineOpsRoutes({ ProtectedRoute })}
+          {ProcessorStatementsRoutes({ ProtectedRoute })}
         </Routes>
       </Router>
     </TooltipProvider>
