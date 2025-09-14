@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
 import { ClipboardList, RefreshCw, ArrowUpRight, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -272,13 +273,13 @@ export default function HelpBacklog() {
                         </button>
                       )}
                       {r.article_id && (
-                        <a 
-                          href={`/help/article/${r.article_id}`} 
+                        <Link 
+                          to={`/help/article/${r.article_id}`} 
                           className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90"
                         >
                           <ArrowUpRight className="h-3 w-3" />
                           Open
-                        </a>
+                        </Link>
                       )}
                     </div>
                   </td>
