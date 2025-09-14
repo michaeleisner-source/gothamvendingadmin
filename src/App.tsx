@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthGate from "@/components/AuthGate";
 import AppHeader from "@/components/AppHeader";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Sidebar from "@/components/Sidebar";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
@@ -42,42 +43,49 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppHeader />
-        <Breadcrumbs />
-        <AuthGate>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/auth" element={<Auth />} />
+        <div className="flex min-h-screen w-full">
+          <Sidebar />
+          <div className="flex-1 flex flex-col">
+            <AppHeader />
+            <Breadcrumbs />
+            <main className="flex-1">
+              <AuthGate>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/auth" element={<Auth />} />
 
-            {/* Protected routes */}
-            <Route path="/" element={<HomeDashboard />} />
-            <Route path="/prospects" element={<Prospects />} />
-            <Route path="/locations" element={<Locations />} />
-            <Route path="/locations/:id" element={<LocationDetail />} />
-            <Route path="/machines" element={<Machines />} />
-            <Route path="/machines/:id" element={<MachineDetail />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/purchase-orders" element={<PurchaseOrders />} />
-            <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
-            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
-            <Route path="/delivery-routes" element={<DeliveryRoutes />} />
-            <Route path="/picklists" element={<Picklists />} />
-            <Route path="/tickets" element={<Tickets />} />
-            <Route path="/deletion-logs" element={<DeletionLogs />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/cost-analysis" element={<CostAnalysis />} />
-            <Route path="/audit" element={<Audit />} />
-            <Route path="/restock" element={<RestockEntry />} />
-            <Route path="/sales" element={<SalesEntry />} />
-            <Route path="/setup" element={<MachineSetup />} />
-            <Route path="/slots" element={<SlotPlanner />} />
-            <Route path="/reports" element={<ProfitReports />} />
-            <Route path="/account" element={<Account />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthGate>
+                  {/* Protected routes */}
+                  <Route path="/" element={<HomeDashboard />} />
+                  <Route path="/prospects" element={<Prospects />} />
+                  <Route path="/locations" element={<Locations />} />
+                  <Route path="/locations/:id" element={<LocationDetail />} />
+                  <Route path="/machines" element={<Machines />} />
+                  <Route path="/machines/:id" element={<MachineDetail />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/purchase-orders" element={<PurchaseOrders />} />
+                  <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
+                  <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+                  <Route path="/delivery-routes" element={<DeliveryRoutes />} />
+                  <Route path="/picklists" element={<Picklists />} />
+                  <Route path="/tickets" element={<Tickets />} />
+                  <Route path="/deletion-logs" element={<DeletionLogs />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/cost-analysis" element={<CostAnalysis />} />
+                  <Route path="/audit" element={<Audit />} />
+                  <Route path="/restock" element={<RestockEntry />} />
+                  <Route path="/sales" element={<SalesEntry />} />
+                  <Route path="/setup" element={<MachineSetup />} />
+                  <Route path="/slots" element={<SlotPlanner />} />
+                  <Route path="/reports" element={<ProfitReports />} />
+                  <Route path="/account" element={<Account />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthGate>
+            </main>
+          </div>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
