@@ -50,6 +50,7 @@ export function SidebarLean() {
           <Item to="/setup" icon={ClipboardCheck}>Machine Setup</Item>
           <Item to="/slots" icon={ClipboardList}>Slot Planner</Item>
           <Item to="/machines/maintenance" icon={Wrench}>Maintenance</Item>
+          <Child to="/machines/finance-admin">Finance Admin</Child>
         </Group>
 
         <Group label="Supply & Stock" icon={Box} open={open.stock} onClick={() => toggle("stock")}>
@@ -72,6 +73,7 @@ export function SidebarLean() {
           <Item to="/sales" icon={DollarSign}>Sales Entry</Item>
           <Item to="/finance/processors" icon={ClipboardList}>Payment Processors</Item>
           <Child to="/finance/processors/statements">Processor Statements</Child>
+          <Child to="/finance/processor-fees">Processor Fees Admin</Child>
           <Item to="/finance/commissions" icon={PercentIcon}>Commissions</Item>
           <Item to="/finance/expenses" icon={ClipboardList}>Expenses</Item>
           <Item to="/finance/loans" icon={ClipboardList}>Loans</Item>
@@ -87,6 +89,9 @@ export function SidebarLean() {
           <Child to="/reports/route-efficiency">Route Efficiency</Child>
           <Child to="/inventory/overview">Inventory Overview</Child>
           <Child to="/inventory/alerts">Low Stock Alerts</Child>
+          <Child to="/reports/low-stock">Low Stock Report</Child>
+          <Child to="/reports/location-profitability">Location Profitability</Child>
+          <Child to="/reports/sku-velocity">SKU Velocity</Child>
         </Group>
 
         <Group label="Oversight & Admin" icon={ShieldAlert} open={open.admin} onClick={() => toggle("admin")}>

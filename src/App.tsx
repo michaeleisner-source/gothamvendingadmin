@@ -13,6 +13,8 @@ import { LeanFlowRoutes } from "@/feature-pack/LeanFlowPack";
 import { InventoryRoutes } from "@/feature-pack/InventoryManagement";
 // Phase2 Reports
 import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
+// Phase3 Advanced Reports
+import { Phase3Routes } from "@/feature-pack/Phase3ReportsPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -127,6 +129,8 @@ const App = () => (
             {LeanFlowRoutes({ ProtectedRoute })}
             {/* Phase 2 Business Intelligence Reports */}
             {Phase2Routes({ ProtectedRoute })}
+            {/* Phase 3 Advanced Business Intelligence */}
+            {Phase3Routes({ ProtectedRoute })}
             {/* Inventory Management Routes */}
             {InventoryRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
