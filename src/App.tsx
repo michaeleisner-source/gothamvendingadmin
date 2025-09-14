@@ -14,7 +14,7 @@ import { InventoryRoutes } from "@/feature-pack/InventoryManagement";
 // Phase2 Reports
 import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
 // Phase3 Advanced Reports
-import { Phase3Routes } from "@/feature-pack/Phase3ReportsPack";
+import { Phase3Routes } from "@/feature-pack/Phase3OpsPack";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
