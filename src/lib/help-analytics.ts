@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Help Center Analytics Instrumentation
+// Help Center Analytics Instrumentation (Public - No Authentication Required)
 export async function logHelpSearch(q: string, resultCount: number, contextPage?: string) {
   try {
     const { data, error } = await supabase.rpc('rpc_log_help_search', { 
@@ -56,7 +56,7 @@ export async function logHelpArticleView(articleId: string, dwellMs?: number) {
       .insert({
         article_id: articleId,
         dwell_ms: dwellMs || null,
-        user_id: (await supabase.auth.getUser()).data.user?.id || null
+        user_id: null // Public access - no user authentication
       });
     if (error) console.error('logHelpArticleView error', error);
   } catch (error) {
@@ -69,7 +69,7 @@ export async function startHelpBotSession() {
     const { data, error } = await supabase
       .from('help_bot_sessions')
       .insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id || null
+        user_id: null // Public access - no user authentication
       })
       .select('id')
       .single();

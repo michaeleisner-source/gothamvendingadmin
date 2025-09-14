@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthGate from "@/components/AuthGate";
+import PublicAccess from "@/components/PublicAccess";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -56,11 +56,10 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthGate>
+        <PublicAccess>
           <Routes>
-            {/* Public routes */}
+            {/* All routes are now public */}
             <Route path="/auth" element={<Auth />} />
-            
             {/* Protected routes with layout */}
             <Route element={<AppLayout />}>
               <Route path="/" element={<HomeDashboard />} />
@@ -106,7 +105,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
-        </AuthGate>
+        </PublicAccess>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
