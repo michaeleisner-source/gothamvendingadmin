@@ -56,6 +56,9 @@ export default function AppHeader() {
           <Link to="/inventory" className="text-foreground hover:text-primary transition-colors hover:underline">
             Inventory
           </Link>
+          <Link to="/restock" className="text-foreground hover:text-primary transition-colors hover:underline">
+            Restock
+          </Link>
           <Link to="/cost-analysis" className="text-foreground hover:text-primary transition-colors hover:underline">
             Cost Analysis
           </Link>
