@@ -95,6 +95,115 @@ export type Database = {
         }
         Relationships: []
       }
+      help_articles: {
+        Row: {
+          body_md: string
+          category_id: string | null
+          id: string
+          search_tsv: unknown | null
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body_md: string
+          category_id?: string | null
+          id?: string
+          search_tsv?: unknown | null
+          slug?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          category_id?: string | null
+          id?: string
+          search_tsv?: unknown | null
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "help_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      help_categories: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      help_faqs: {
+        Row: {
+          answer_md: string
+          id: string
+          question: string
+          search_tsv: unknown | null
+        }
+        Insert: {
+          answer_md: string
+          id?: string
+          question: string
+          search_tsv?: unknown | null
+        }
+        Update: {
+          answer_md?: string
+          id?: string
+          question?: string
+          search_tsv?: unknown | null
+        }
+        Relationships: []
+      }
+      help_steps: {
+        Row: {
+          article_id: string | null
+          content_md: string
+          id: string
+          step_no: number
+        }
+        Insert: {
+          article_id?: string | null
+          content_md: string
+          id?: string
+          step_no: number
+        }
+        Update: {
+          article_id?: string | null
+          content_md?: string
+          id?: string
+          step_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_steps_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "help_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_commissions: {
         Row: {
           created_at: string
@@ -1559,6 +1668,17 @@ export type Database = {
           id: string
           rank: number
           subtitle: string
+          title: string
+          url: string
+        }[]
+      }
+      search_help: {
+        Args: { limit_count?: number; q: string }
+        Returns: {
+          id: string
+          rank: number
+          snippet: string
+          source: string
           title: string
           url: string
         }[]

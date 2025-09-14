@@ -31,6 +31,7 @@ import {
   FileSpreadsheet,
   BadgeCheck,
   Wrench,
+  HelpCircle,
 } from "lucide-react";
 
 const STORAGE_KEY = "sidebar.openGroups";
@@ -256,6 +257,9 @@ export default function Sidebar() {
           </NavItem>
           <NavItem href="/account" icon={UserCircle2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Account
+          </NavItem>
+          <NavItem href="/help" icon={HelpCircle} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Help Center
           </NavItem>
         </Group>
       </nav>
