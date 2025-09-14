@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState } from 'react';
 import { Eye } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import AuthGate from '@/components/AuthGate';
 
 // Demo Context
 type DemoCtx = { isDemo: boolean; ready: boolean };
@@ -10,30 +9,8 @@ export const useDemo = () => useContext(DemoContext);
 
 // Demo Provider
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [isDemo, setIsDemo] = useState(false);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const url = new URL(window.location.href);
-      // Enable demo mode by default for this implementation, or with ?demo=1 parameter
-      const flag = true || import.meta.env.VITE_PUBLIC_DEMO === 'true' || url.searchParams.get('demo') === '1';
-      
-      console.log('Demo mode check:', { flag, env: import.meta.env.VITE_PUBLIC_DEMO, param: url.searchParams.get('demo') });
-      
-      if (!flag) {
-        console.log('Demo mode disabled, using normal auth');
-        setReady(true);
-        return; // normal authenticated app
-      }
-      
-      console.log('Demo mode enabled');
-      setIsDemo(true);
-
-      // Since your app is already public, just mark as ready
-      setReady(true);
-    })();
-  }, []);
+  const [isDemo, setIsDemo] = useState(true); // Always demo mode for now
+  const [ready, setReady] = useState(true); // Always ready
 
   return (
     <DemoContext.Provider value={{ isDemo, ready }}>
@@ -46,26 +23,10 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
 // Protected Route - bypasses login when demo is active
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isDemo, ready } = useDemo();
-  const [authed, setAuthed] = useState<boolean | null>(null);
-  const loc = useLocation();
 
-  useEffect(() => {
-    const run = async () => {
-      const { data } = await supabase.auth.getSession();
-      console.log('ProtectedRoute session check:', { session: !!data.session, isDemo, ready });
-      setAuthed(!!data.session);
-      const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-        console.log('Auth state changed:', { session: !!session, isDemo });
-        setAuthed(!!session);
-      });
-      return () => sub.subscription.unsubscribe();
-    };
-    run();
-  }, [isDemo]);
+  console.log('ProtectedRoute render:', { isDemo, ready });
 
-  console.log('ProtectedRoute render:', { isDemo, ready, authed, pathname: loc.pathname });
-
-  if (!ready || authed === null) {
+  if (!ready) {
     console.log('ProtectedRoute: Loading...');
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,13 +40,8 @@ export function ProtectedRoute({ children }: { children: JSX.Element }) {
     return children; // bypass auth in demo mode
   }
   
-  if (!authed) {
-    console.log('ProtectedRoute: Not authenticated - redirecting to auth');
-    return <Navigate to={`/auth?next=${encodeURIComponent(loc.pathname)}`} replace />;
-  }
-  
-  console.log('ProtectedRoute: Authenticated - rendering children');
-  return children;
+  // Fallback to normal auth logic if demo is disabled
+  return <AuthGate>{children}</AuthGate>;
 }
 
 // Demo Banner - visible indicator + read‑only hint
