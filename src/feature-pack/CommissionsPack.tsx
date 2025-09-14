@@ -730,11 +730,13 @@ export function CommissionStatementsPage() {
  * <CommissionsRoutes ProtectedRoute={ProtectedRoute}/>
  */
 export function CommissionsRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{ children: React.ReactNode }> }) {
+  const Wrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
+    ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
   return (
     <React.Fragment>
-      <Route path="/finance/commissions" element={<CommissionSettingsPage />} />
-      <Route path="/finance/commissions/run" element={<CommissionRunPage />} />
-      <Route path="/finance/commissions/statements" element={<CommissionStatementsPage />} />
+      <Route path="/finance/commissions" element={<Wrap><CommissionSettingsPage /></Wrap>} />
+      <Route path="/finance/commissions/run" element={<Wrap><CommissionRunPage /></Wrap>} />
+      <Route path="/finance/commissions/statements" element={<Wrap><CommissionStatementsPage /></Wrap>} />
     </React.Fragment>
   );
 }

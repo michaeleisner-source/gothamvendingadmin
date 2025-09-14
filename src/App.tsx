@@ -119,7 +119,7 @@ const App = () => (
             {/* Feature pack routes with navigation */}
             {MachineOpsRoutes({ ProtectedRoute })}
             {ProcessorStatementsRoutes({ ProtectedRoute })}
-            {CommissionsRoutes({ ProtectedRoute })}
+            <CommissionsRoutes ProtectedRoute={ProtectedRoute} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
