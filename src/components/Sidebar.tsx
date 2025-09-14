@@ -388,13 +388,11 @@ function NavItem({
   return (
     <NavLink
       to={href}
-      className={({ isActive }) => {
-        console.log(`NavItem ${href}: isActive=${isActive}, pathname=${window.location.pathname}`);
-        return `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-muted/50 ${
-          isActive ? "bg-primary text-primary-foreground" : ""
-        }`;
-      }}
-      onClick={() => console.log(`Clicked on ${href}`)}
+      className={({ isActive }) =>
+        `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-neutral-900 ${
+          isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
+        }`
+      }
     >
       <Icon className="size-4" />
       <span>{children}</span>
@@ -442,8 +440,8 @@ function NavChild({ href, children }: { href: string; children: React.ReactNode 
     <NavLink
       to={href}
       className={({ isActive }) =>
-        `block text-sm px-2 py-1.5 rounded-md hover:bg-muted/50 ${
-          isActive ? "bg-primary text-primary-foreground" : ""
+        `block text-sm px-2 py-1.5 rounded-md hover:bg-neutral-900 ${
+          isActive ? "bg-neutral-900 ring-1 ring-neutral-700" : ""
         }`
       }
     >
