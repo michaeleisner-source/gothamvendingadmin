@@ -127,6 +127,12 @@ export default function Sidebar() {
           <NavItem href="/slots" icon={ClipboardList} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
             Slot Planner
           </NavItem>
+          <NavItem href="/machines/finance" icon={DollarSign} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Machine Finance
+          </NavItem>
+          <NavItem href="/machines/maintenance" icon={Settings2} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)}>
+            Machine Maintenance
+          </NavItem>
         </Group>
 
         {/* 3. Supply & Stock */}
