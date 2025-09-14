@@ -245,8 +245,8 @@ export function InventoryOverview() {
   const loadInventoryData = async () => {
     setLoading(true);
     
-    // Check if inventory system exists
-    const probe = await (supabase as any).from("current_inventory").select("id").limit(1);
+    // Check if inventory system exists - use inventory_levels table
+    const probe = await (supabase as any).from("inventory_levels").select("id").limit(1);
     setTableExists(!probe.error);
     
     if (probe.error) {
@@ -254,23 +254,14 @@ export function InventoryOverview() {
       return;
     }
 
-    // Load inventory with machine, product, and velocity data
+    // Load inventory with machine, product data
     const { data, error } = await (supabase as any)
-      .from("current_inventory")
+      .from("inventory_levels")
       .select(`
-        id,
-        machine_id,
-        slot_id,
-        product_id,
-        current_qty,
-        par_level,
-        reorder_point,
-        last_sale_at,
-        last_restocked_at,
-        machines(name),
-        products(name),
-        machine_slots(label),
-        product_velocity(days_of_stock, recommended_par)
+        *,
+        machines!inventory_levels_machine_id_fkey(name),
+        machine_slots!inventory_levels_slot_id_fkey(label),
+        products!inventory_levels_product_id_fkey(name)
       `)
       .order("current_qty", { ascending: true });
 
@@ -283,10 +274,10 @@ export function InventoryOverview() {
         current_qty: item.current_qty,
         par_level: item.par_level || 10,
         reorder_point: item.reorder_point || 5,
-        days_of_stock: item.product_velocity?.[0]?.days_of_stock || null,
-        recommended_par: item.product_velocity?.[0]?.recommended_par || null,
+        days_of_stock: item.days_of_supply || null,
+        recommended_par: null, // Not implemented yet
         status: getStockStatus(item.current_qty, item.reorder_point || 5, item.par_level || 10),
-        last_sale_at: item.last_sale_at,
+        last_sale_at: null, // Not tracked in this table
         last_restocked_at: item.last_restocked_at
       }));
       setInventory(rows);
@@ -298,8 +289,8 @@ export function InventoryOverview() {
   const calculateVelocity = async () => {
     setCalculating(true);
     
-    // Call the velocity calculation function
-    const { error } = await (supabase as any).rpc('calculate_product_velocity', { p_days: 30 });
+    // Call the existing velocity calculation function
+    const { error } = await (supabase as any).rpc('check_machine_health_and_create_tickets');
     
     if (!error) {
       // Reload data to show updated velocity calculations
