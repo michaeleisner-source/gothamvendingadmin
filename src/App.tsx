@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import RestockEntry from "./pages/RestockEntry";
+import SalesEntry from "./pages/SalesEntry";
 import Audit from "./pages/Audit";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/cost-analysis" element={<CostAnalysis />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/restock" element={<RestockEntry />} />
+            <Route path="/sales" element={<SalesEntry />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
