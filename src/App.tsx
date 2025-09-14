@@ -40,7 +40,6 @@ import ProfitReports from "./pages/ProfitReports";
 import Audit from "./pages/Audit";
 import PaymentProcessors from "./pages/PaymentProcessors";
 import Staff from "./pages/Staff";
-import FinanceCommissions from "./pages/FinanceCommissions";
 import FinanceTaxes from "./pages/FinanceTaxes";
 import FinanceExpenses from "./pages/FinanceExpenses";
 import FinanceLoans from "./pages/FinanceLoans";
@@ -97,7 +96,6 @@ const App = () => (
             <Route path="/reports" element={<ProfitReports />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
-            <Route path="/finance/commissions" element={<FinanceCommissions />} />
             <Route path="/finance/taxes" element={<FinanceTaxes />} />
             <Route path="/finance/expenses" element={<FinanceExpenses />} />
             <Route path="/finance/loans" element={<FinanceLoans />} />
@@ -119,7 +117,7 @@ const App = () => (
             {/* Feature pack routes with navigation */}
             {MachineOpsRoutes({ ProtectedRoute })}
             {ProcessorStatementsRoutes({ ProtectedRoute })}
-            <CommissionsRoutes ProtectedRoute={ProtectedRoute} />
+            {CommissionsRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>

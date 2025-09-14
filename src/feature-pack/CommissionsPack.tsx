@@ -732,13 +732,11 @@ export function CommissionStatementsPage() {
 export function CommissionsRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{ children: React.ReactNode }> }) {
   const Wrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
-  return (
-    <React.Fragment>
-      <Route path="/finance/commissions" element={<Wrap><CommissionSettingsPage /></Wrap>} />
-      <Route path="/finance/commissions/run" element={<Wrap><CommissionRunPage /></Wrap>} />
-      <Route path="/finance/commissions/statements" element={<Wrap><CommissionStatementsPage /></Wrap>} />
-    </React.Fragment>
-  );
+  return [
+    <Route key="commissions" path="/finance/commissions" element={<Wrap><CommissionSettingsPage /></Wrap>} />,
+    <Route key="commissions-run" path="/finance/commissions/run" element={<Wrap><CommissionRunPage /></Wrap>} />,
+    <Route key="commissions-statements" path="/finance/commissions/statements" element={<Wrap><CommissionStatementsPage /></Wrap>} />
+  ];
 }
 
 /** ============================== Sidebar Block ============================== */
