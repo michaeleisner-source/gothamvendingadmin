@@ -55,6 +55,8 @@ import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 
+// Force refresh - workflow integration complete
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
