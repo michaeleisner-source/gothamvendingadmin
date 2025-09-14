@@ -14,7 +14,9 @@ import Suppliers from "./pages/Suppliers";
 import Products from "./pages/Products";
 import Machines from "./pages/Machines";
 import MachineDetail from "./pages/MachineDetail";
-import { ProspectsHome, ProspectDetail, PipelineAnalytics } from "./pages/Prospects";
+import Prospects from "./pages/Prospects";
+import ProspectDetail from "./pages/ProspectDetail";
+import PipelineAnalytics from "./pages/PipelineAnalytics";
 import Locations from "./pages/Locations";
 import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
@@ -69,7 +71,7 @@ const App = () => (
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<HomeDashboard />} />
-        <Route path="/prospects" element={<ProspectsHome />} />
+        <Route path="/prospects" element={<Prospects />} />
         <Route path="/prospects/:id" element={<ProspectDetail />} />
         <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
         <Route path="/locations" element={<Locations />} />
