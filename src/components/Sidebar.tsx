@@ -47,6 +47,8 @@ export default function Sidebar() {
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = usePersistentState<boolean>(COLLAPSED_KEY, false);
   
+  console.log("Sidebar rendering, current pathname:", pathname);
+  
   // Toggle state per group
   const [open, setOpen] = usePersistentState<Record<string, boolean>>(STORAGE_KEY, {
     pipeline: true,
@@ -66,7 +68,7 @@ export default function Sidebar() {
 
   return (
     <aside className={cls(
-      "h-screen bg-background border-r flex flex-col transition-all duration-200",
+      "h-screen bg-background border-r flex flex-col transition-all duration-200 relative z-10",
       collapsed ? "w-16" : "w-72"
     )}>
       {/* Brand / Top */}
@@ -323,11 +325,13 @@ function NavItem({
   return (
     <NavLink
       to={href}
-      className={({ isActive }) =>
-        `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-muted/50 ${
+      className={({ isActive }) => {
+        console.log(`NavItem ${href}: isActive=${isActive}, pathname=${window.location.pathname}`);
+        return `flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-muted/50 ${
           isActive ? "bg-primary text-primary-foreground" : ""
-        }`
-      }
+        }`;
+      }}
+      onClick={() => console.log(`Clicked on ${href}`)}
     >
       <Icon className="size-4" />
       <span>{children}</span>
