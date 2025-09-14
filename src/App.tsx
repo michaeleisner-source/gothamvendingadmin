@@ -126,7 +126,7 @@ const App = () => (
             {FlowRefreshRoutes({ ProtectedRoute })}
             {LeanFlowRoutes({ ProtectedRoute })}
             {/* Phase 2 Business Intelligence Reports */}
-            {...Phase2Routes({ ProtectedRoute })}
+            {Phase2Routes({ ProtectedRoute })}
             {/* Inventory Management Routes */}
             {InventoryRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

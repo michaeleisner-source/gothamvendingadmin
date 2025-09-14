@@ -688,9 +688,11 @@ export function Phase2Routes({ ProtectedRoute }: { ProtectedRoute?: React.Compon
   const Wrap: React.FC<{children:React.ReactNode}> = ({ children }) =>
     ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
 
-  return [
-    <Route key="machine-roi" path="/reports/machine-roi" element={<Wrap><MachineROIReport/></Wrap>} />,
-    <Route key="prospect-funnel" path="/reports/prospect-funnel" element={<Wrap><ProspectFunnelReport/></Wrap>} />,
-    <Route key="route-efficiency" path="/reports/route-efficiency" element={<Wrap><RouteEfficiencyReport/></Wrap>} />
-  ];
+  return (
+    <React.Fragment>
+      <Route path="/reports/machine-roi" element={<Wrap><MachineROIReport/></Wrap>} />
+      <Route path="/reports/prospect-funnel" element={<Wrap><ProspectFunnelReport/></Wrap>} />
+      <Route path="/reports/route-efficiency" element={<Wrap><RouteEfficiencyReport/></Wrap>} />
+    </React.Fragment>
+  );
 }
