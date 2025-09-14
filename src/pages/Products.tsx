@@ -23,7 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Pencil, Trash2, Upload, Search, Download } from "lucide-react";
-import { ProductUrlFetch } from "@/components/ProductUrlFetch";
+
 
 type Product = {
   id: string;
@@ -211,18 +211,6 @@ const Products = () => {
     },
   });
 
-  const handleProductFetched = (productData: any) => {
-    // Update form data with fetched product information
-    setFormData(prev => ({
-      ...prev,
-      name: productData.name || prev.name,
-      description: productData.description || prev.description,
-      price: productData.price ? productData.price.toString() : prev.price,
-      image_url: productData.image_url || prev.image_url,
-      category: productData.category || prev.category,
-      sku: productData.sku || prev.sku,
-    }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -450,8 +438,6 @@ const Products = () => {
         />
       </div>
 
-      {/* URL Fetch Component */}
-      <ProductUrlFetch onProductFetched={handleProductFetched} />
 
       {/* Add Product Form */}
       <Card>
