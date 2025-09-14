@@ -16,28 +16,21 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       const url = new URL(window.location.href);
-      const flag = import.meta.env.VITE_PUBLIC_DEMO === 'true' || url.searchParams.get('demo') === '1';
+      // Enable demo mode by default for this implementation, or with ?demo=1 parameter
+      const flag = true || import.meta.env.VITE_PUBLIC_DEMO === 'true' || url.searchParams.get('demo') === '1';
+      
+      console.log('Demo mode check:', { flag, env: import.meta.env.VITE_PUBLIC_DEMO, param: url.searchParams.get('demo') });
       
       if (!flag) {
+        console.log('Demo mode disabled, using normal auth');
         setReady(true);
         return; // normal authenticated app
       }
       
+      console.log('Demo mode enabled');
       setIsDemo(true);
 
-      // If we already have a session, done.
-      const { data: s1 } = await supabase.auth.getSession();
-      if (s1?.session) { 
-        setReady(true); 
-        return; 
-      }
-
-      // Auto sign in demo user (read‑only role). Credentials from env.
-      const email = import.meta.env.VITE_DEMO_EMAIL;
-      const password = import.meta.env.VITE_DEMO_PASSWORD;
-      if (email && password) {
-        await supabase.auth.signInWithPassword({ email, password });
-      }
+      // Since your app is already public, just mark as ready
       setReady(true);
     })();
   }, []);
@@ -59,14 +52,21 @@ export function ProtectedRoute({ children }: { children: JSX.Element }) {
   useEffect(() => {
     const run = async () => {
       const { data } = await supabase.auth.getSession();
+      console.log('ProtectedRoute session check:', { session: !!data.session, isDemo, ready });
       setAuthed(!!data.session);
-      const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => setAuthed(!!session));
+      const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+        console.log('Auth state changed:', { session: !!session, isDemo });
+        setAuthed(!!session);
+      });
       return () => sub.subscription.unsubscribe();
     };
     run();
-  }, []);
+  }, [isDemo]);
+
+  console.log('ProtectedRoute render:', { isDemo, ready, authed, pathname: loc.pathname });
 
   if (!ready || authed === null) {
+    console.log('ProtectedRoute: Loading...');
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -74,8 +74,17 @@ export function ProtectedRoute({ children }: { children: JSX.Element }) {
     );
   }
   
-  if (isDemo) return children; // bypass auth in demo mode
-  if (!authed) return <Navigate to={`/auth?next=${encodeURIComponent(loc.pathname)}`} replace />;
+  if (isDemo) {
+    console.log('ProtectedRoute: Demo mode - bypassing auth');
+    return children; // bypass auth in demo mode
+  }
+  
+  if (!authed) {
+    console.log('ProtectedRoute: Not authenticated - redirecting to auth');
+    return <Navigate to={`/auth?next=${encodeURIComponent(loc.pathname)}`} replace />;
+  }
+  
+  console.log('ProtectedRoute: Authenticated - rendering children');
   return children;
 }
 
