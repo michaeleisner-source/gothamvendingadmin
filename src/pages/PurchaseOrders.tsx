@@ -96,7 +96,7 @@ const PurchaseOrders = () => {
   });
 
   const handleDeletePO = async (po: PurchaseOrder) => {
-    if (confirm(`Are you sure you want to delete PO #${getShortId(po.id)}? This will also delete all associated line items. This action cannot be undone.`)) {
+    if (confirm(`⚠️ Are you sure you want to delete PO #${getShortId(po.id)}?\n\n• This will permanently delete the purchase order\n• All line items will also be deleted\n• This action CANNOT be undone\n\nClick OK to confirm deletion or Cancel to keep the purchase order.`)) {
       deletePurchaseOrderMutation.mutate(po.id);
     }
   };
