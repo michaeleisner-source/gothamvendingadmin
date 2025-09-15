@@ -60,7 +60,7 @@ import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
 import MachineROI from "./pages/reports/MachineROI";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
-import RouteEfficiency from "./pages/RouteEfficiency";
+import RouteEfficiency from "./pages/reports/RouteEfficiency";
 import BusinessFlow from "./pages/BusinessFlow";
 
 const queryClient = new QueryClient();
