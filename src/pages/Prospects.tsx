@@ -1,9 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useProspectAnalytics } from "@/hooks/useProspectAnalytics";
+import { PipelineKPIs } from "@/components/pipeline/PipelineKPIs";
+import { PipelineMetrics } from "@/components/pipeline/PipelineMetrics";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users, Filter, BarChart3, Search, ChevronDown, Plus, Phone, Mail, MapPin, Tags,
-  Clock, CheckCircle2, XCircle, ArrowRight, ClipboardList, Building2, FileText
+  Clock, CheckCircle2, XCircle, ArrowRight, ClipboardList, Building2, FileText,
+  TrendingUp, Target
 } from "lucide-react";
 
 /** =========================================================
@@ -70,6 +76,9 @@ export function ProspectsHome() {
   const [stage, setStage] = useState<string>("all");
   const [source, setSource] = useState<string>("all");
 
+  // Get analytics data
+  const analytics = useProspectAnalytics(rows);
+
   useEffect(() => {
     (async () => {
       setLoading(true); setErr(null);
@@ -104,7 +113,7 @@ export function ProspectsHome() {
     return g;
   }, [filtered]);
 
-  // KPIs
+  // KPIs - removed old implementation, now using useProspectAnalytics hook
   const now = new Date();
   const last7 = new Date(Date.now() - 7 * 864e5);
   const kpis = useMemo(() => {
@@ -125,95 +134,225 @@ export function ProspectsHome() {
   }, [rows]);
 
   return (
-    <div className="p-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold flex items-center gap-2"><Users className="h-5 w-5" /> Prospects</h1>
-        <div className="flex items-center gap-2">
-          <Link to="/reports/pipeline-analytics" className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
-            <BarChart3 className="h-4 w-4" /> Pipeline Analytics
-          </Link>
-          <Link to="/locations" className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
-            Convert to Location <ArrowRight className="h-4 w-4" />
-          </Link>
+    <HelpTooltipProvider>
+      <div className="p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Users className="h-8 w-8" /> 
+              Sales Pipeline
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage prospects and track sales performance
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link 
+              to="/reports/prospect-funnel" 
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-muted transition-colors"
+            >
+              <BarChart3 className="h-4 w-4" /> Funnel Analysis
+            </Link>
+            <Link 
+              to="/reports/pipeline-analytics" 
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-muted transition-colors"
+            >
+              <TrendingUp className="h-4 w-4" /> Advanced Analytics
+            </Link>
+            <Link 
+              to="/prospects/new" 
+              className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-sm hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="h-4 w-4" /> Add Prospect
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* KPI Bar */}
-      <div className="grid gap-2 sm:grid-cols-5">
-        <KPI label="New (7d)" value={kpis.new7} />
-        <KPI label="Active Leads" value={kpis.active} />
-        <KPI label="Overdue Follow-ups" value={kpis.overdue} tone="warn" />
-        <KPI label="Won (this month)" value={kpis.wonThisMonth} />
-        <KPI label="Conversion Rate" value={`${kpis.convRate}%`} />
-      </div>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">Pipeline Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Advanced Analytics</TabsTrigger>
+            <TabsTrigger value="board">Kanban Board</TabsTrigger>
+            <TabsTrigger value="table">Table View</TabsTrigger>
+          </TabsList>
 
-      {/* Filters */}
-      <div className="rounded-xl border border-border bg-card p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, company, contact, email, city…"
-              className="pl-8 pr-3 py-2 text-sm rounded-md bg-background border border-border min-w-[260px]"
+          <TabsContent value="overview" className="space-y-4">
+            {/* Enhanced KPI Dashboard */}
+            <PipelineKPIs data={analytics} />
+
+            {/* Quick Actions & Status */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Quick Actions</span>
+                </div>
+                <div className="space-y-2">
+                  <Link 
+                    to="/prospects/new" 
+                    className="block text-sm hover:underline"
+                  >
+                    Add New Prospect
+                  </Link>
+                  <Link 
+                    to="/locations/new" 
+                    className="block text-sm hover:underline"
+                  >
+                    Convert to Location
+                  </Link>
+                  <Link 
+                    to="/reports/prospect-funnel" 
+                    className="block text-sm hover:underline"
+                  >
+                    View Funnel Report
+                  </Link>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-amber-500" />
+                  <span className="font-medium">Attention Needed</span>
+                  <HelpTooltip content="Items requiring immediate attention" size="sm" />
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Overdue Follow-ups</span>
+                    <span className={analytics.overdueFollowups > 0 ? "text-amber-600 font-medium" : "text-muted-foreground"}>
+                      {analytics.overdueFollowups}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Stalled Prospects</span>
+                    <span className={analytics.stalledProspects > 5 ? "text-amber-600 font-medium" : "text-muted-foreground"}>
+                      {analytics.stalledProspects}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Next 30 Days</span>
+                    <span className="text-muted-foreground">{analytics.next30DaysFollowups}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="font-medium">This Month</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Won Prospects</span>
+                    <span className="font-medium text-green-600">{analytics.wonThisMonth}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Growth Rate</span>
+                    <span className={analytics.monthlyGrowth > 0 ? "text-green-600" : analytics.monthlyGrowth < 0 ? "text-red-600" : "text-muted-foreground"}>
+                      {analytics.monthlyGrowth > 0 ? "+" : ""}{analytics.monthlyGrowth.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Sales Velocity</span>
+                    <span className="text-muted-foreground">{analytics.salesVelocity.toFixed(1)}/day</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <PipelineMetrics 
+              topSources={analytics.topSources}
+              stageDistribution={analytics.stageDistribution}
+              stalledList={analytics.stalledList}
+              monthlyGrowth={analytics.monthlyGrowth}
             />
-          </div>
-          <Select value={stage} onChange={setStage} label="Stage" options={["all", ...stages]} />
-          <Select value={source} onChange={setSource} label="Source" options={["all", ...Array.from(new Set(rows.map(r => (r.source || "").toLowerCase()).filter(Boolean)))]} />
-          <div className="ml-auto text-xs text-muted-foreground flex items-center gap-2">
-            <Filter className="h-4 w-4" /> {filtered.length} shown / {rows.length} total
-          </div>
-        </div>
-      </div>
+          </TabsContent>
 
-      {/* Grouped "Boards" */}
-      <div className="grid gap-3 lg:grid-cols-3">
-        {["new", "contacted", "qualified"].map((st) => (
-          <StageColumn key={st} title={title(st)} items={grouped[st]} emptyHint="No leads here yet." />
-        ))}
-      </div>
+          <TabsContent value="board" className="space-y-4">
+            {/* Filters */}
+            <div className="rounded-xl border border-border bg-card p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Search name, company, contact, email, city…"
+                    className="pl-8 pr-3 py-2 text-sm rounded-md bg-background border border-border min-w-[260px]"
+                  />
+                </div>
+                <Select value={stage} onChange={setStage} label="Stage" options={["all", ...stages]} />
+                <Select value={source} onChange={setSource} label="Source" options={["all", ...Array.from(new Set(rows.map(r => (r.source || "").toLowerCase()).filter(Boolean)))]} />
+                <div className="ml-auto text-xs text-muted-foreground flex items-center gap-2">
+                  <Filter className="h-4 w-4" /> {filtered.length} shown / {rows.length} total
+                </div>
+              </div>
+            </div>
 
-      {/* Pipeline tail: proposal, won, lost */}
-      <div className="grid gap-3 lg:grid-cols-3">
-        {["proposal", "won", "lost"].map((st) => (
-          <StageColumn key={st} title={title(st)} items={grouped[st]} emptyHint="—" />
-        ))}
-      </div>
+            {/* Grouped "Boards" */}
+            <div className="grid gap-3 lg:grid-cols-3">
+              {["new", "contacted", "qualified"].map((st) => (
+                <StageColumn key={st} title={title(st)} items={grouped[st]} emptyHint="No leads here yet." />
+              ))}
+            </div>
 
-      {/* Table view (alternative) */}
-      <div className="rounded-xl border border-border overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted">
-            <tr>
-              <th className="px-3 py-2 text-left">Lead</th>
-              <th className="px-3 py-2 text-left">Contact</th>
-              <th className="px-3 py-2 text-left">Source</th>
-              <th className="px-3 py-2 text-left">Stage</th>
-              <th className="px-3 py-2 text-left">Next Follow-up</th>
-              <th className="px-3 py-2 text-left">Location</th>
-              <th className="px-3 py-2 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => <ProspectRow key={p.id} p={p} />)}
-          </tbody>
-        </table>
+            {/* Pipeline tail: proposal, won, lost */}
+            <div className="grid gap-3 lg:grid-cols-3">
+              {["proposal", "won", "lost"].map((st) => (
+                <StageColumn key={st} title={title(st)} items={grouped[st]} emptyHint="—" />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="table">
+            {/* Filters */}
+            <div className="rounded-xl border border-border bg-card p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Search name, company, contact, email, city…"
+                    className="pl-8 pr-3 py-2 text-sm rounded-md bg-background border border-border min-w-[260px]"
+                  />
+                </div>
+                <Select value={stage} onChange={setStage} label="Stage" options={["all", ...stages]} />
+                <Select value={source} onChange={setSource} label="Source" options={["all", ...Array.from(new Set(rows.map(r => (r.source || "").toLowerCase()).filter(Boolean)))]} />
+                <div className="ml-auto text-xs text-muted-foreground flex items-center gap-2">
+                  <Filter className="h-4 w-4" /> {filtered.length} shown / {rows.length} total
+                </div>
+              </div>
+            </div>
+
+            {/* Table view */}
+            <div className="rounded-xl border border-border overflow-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Lead</th>
+                    <th className="px-3 py-2 text-left">Contact</th>
+                    <th className="px-3 py-2 text-left">Source</th>
+                    <th className="px-3 py-2 text-left">Stage</th>
+                    <th className="px-3 py-2 text-left">Next Follow-up</th>
+                    <th className="px-3 py-2 text-left">Location</th>
+                    <th className="px-3 py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p) => <ProspectRow key={p.id} p={p} />)}
+                </tbody>
+              </table>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </HelpTooltipProvider>
   );
 }
 
-function KPI({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "warn" | "ok" }) {
-  const toneClass = tone === "warn" ? "text-amber-500" : tone === "ok" ? "text-emerald-500" : "text-foreground";
-  return (
-    <div className="rounded-xl border border-border bg-card p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-lg font-semibold ${toneClass}`}>{value}</div>
-    </div>
-  );
-}
 
 function Select({ value, onChange, label, options }: { value: string; onChange: (v: string) => void; label: string; options: string[] }) {
   return (
