@@ -73,45 +73,38 @@ export function useFeeRuleCache() {
       setLoading(true);
       setError(null);
       try {
-        // 1) mapping: machine -> processor
-        const mapRes = await supabase
+        // Get machine processor mappings with fee overrides and processor defaults
+        const { data: mappings, error: mappingError } = await supabase
           .from("machine_processor_mappings")
-          .select("machine_id, processor_id");
-        if (mapRes.error) throw mapRes.error;
-        const maps = mapRes.data || [];
-        if (!maps.length) {
-          setRulesByMachine({});
-          setLoading(false);
-          return;
-        }
+          .select(`
+            machine_id,
+            processor_id,
+            percent_fee,
+            fixed_fee,
+            payment_processors (
+              default_percent_fee,
+              default_fixed_fee
+            )
+          `);
 
-        // 2) Get processor defaults
-        const procIds = Array.from(new Set(maps.map((m: any) => m.processor_id).filter(Boolean)));
-        let rulesByProc = new Map<string, FeeRule>();
+        if (mappingError) throw mappingError;
         
-        if (procIds.length) {
-          const procRes = await supabase
-            .from("payment_processors")
-            .select("id, default_percent_fee, default_fixed_fee")
-            .in("id", procIds);
-          
-          if (procRes.error) throw procRes.error;
-          
-          for (const p of (procRes.data || [])) {
-            const rule: FeeRule = {
-              processor_id: p.id,
-              percent_bps: Math.round((p.default_percent_fee || 0) * 100), // Convert % to bps
-              fixed_cents: Math.round((p.default_fixed_fee || 0) * 100), // Convert $ to cents
-            };
-            rulesByProc.set(p.id, rule);
-          }
-        }
-
-        // 3) build machine->rule
         const mapping: Record<string, FeeRule | null> = {};
-        for (const m of maps) {
-          const r = rulesByProc.get(m.processor_id) || null;
-          mapping[m.machine_id] = r;
+        for (const m of mappings || []) {
+          const processor = Array.isArray(m.payment_processors) 
+            ? m.payment_processors[0] 
+            : m.payment_processors;
+          
+          // Use machine-specific fees or fall back to processor defaults
+          const percentFee = m.percent_fee ?? processor?.default_percent_fee ?? 0;
+          const fixedFee = m.fixed_fee ?? processor?.default_fixed_fee ?? 0;
+          
+          const rule: FeeRule = {
+            processor_id: m.processor_id,
+            percent_bps: Math.round(percentFee * 100), // Convert % to basis points
+            fixed_cents: Math.round(fixedFee * 100), // Convert $ to cents
+          };
+          mapping[m.machine_id] = rule;
         }
         setRulesByMachine(mapping);
       } catch (e: any) {
