@@ -4,7 +4,7 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp
+  Box, Wrench, TrendingUp, Smartphone
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
@@ -30,7 +30,8 @@ export function SimplifiedSidebar() {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
         {/* Dashboard */}
-        <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
+        <NavItem to="/" icon={LayoutDashboard} label="Mission Control" />
+        <NavItem to="/dashboard" icon={BarChart3} label="Classic Dashboard" />
 
         {/* Pipeline */}
         <NavItem to="/prospects" icon={MapPinned} label="Pipeline" />
@@ -81,6 +82,7 @@ export function SimplifiedSidebar() {
         <div className="pt-4 border-t border-sidebar-border space-y-2">
           <QuickAction to="/restock" icon={Box} label="Quick Restock" />
           <QuickAction to="/sales" icon={TrendingUp} label="Record Sale" />
+          <QuickAction to="/mobile" icon={Smartphone} label="Field Actions" />
         </div>
 
         {/* Admin */}

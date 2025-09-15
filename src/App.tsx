@@ -52,6 +52,8 @@ import HelpArticle from "./pages/HelpArticle";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
+import EnhancedDashboard from "./pages/EnhancedDashboard";
+import MobileQuickActions from "./components/MobileQuickActions";
 
 const queryClient = new QueryClient();
 
@@ -68,7 +70,9 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<HomeDashboard />} />
+            <Route path="/" element={<EnhancedDashboard />} />
+            <Route path="/dashboard" element={<HomeDashboard />} />
+            <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
@@ -91,6 +95,7 @@ const App = () => (
             <Route path="/cost-analysis" element={<CostAnalysis />} />
             <Route path="/restock" element={<RestockEntry />} />
             <Route path="/sales" element={<SalesEntry />} />
+            <Route path="/mobile" element={<MobileQuickActions />} />
             <Route path="/setup" element={<MachineSetup />} />
             <Route path="/slots" element={<SlotPlanner />} />
             <Route path="/reports" element={<EnhancedReports />} />
