@@ -73,7 +73,18 @@ const EnhancedReports = () => {
           </TabsContent>
 
           <TabsContent value="sales">
-            <SalesSummary7d />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Sales Performance
+                  <HelpTooltip content="Weekly sales summary showing trends, top products, and performance metrics across your vending network." />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SalesSummary7d />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="alerts">

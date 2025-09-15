@@ -36,6 +36,9 @@ export function SimplifiedSidebar() {
         {/* Pipeline */}
         <NavItem to="/prospects" icon={MapPinned} label="Pipeline" />
         
+        {/* Business Flow Guide */}
+        <NavItem to="/business-flow" icon={Building2} label="Business Flow" />
+        
         {/* Operations - Expandable */}
         <ExpandableGroup
           label="Operations"
@@ -46,6 +49,8 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/machines" label="Machines" />
           <SubNavItem to="/inventory" label="Inventory" />
           <SubNavItem to="/locations" label="Locations" />
+          <SubNavItem to="/setup" label="Machine Setup" />
+          <SubNavItem to="/slots" label="Slot Planner" />
         </ExpandableGroup>
 
         {/* Supply Chain - Expandable */}
@@ -75,6 +80,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports/product-profitability-net" label="Product Profitability (Net)" />
           <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
           <SubNavItem to="/reports/prospect-funnel" label="Prospect Funnel" />
+          <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />
         </ExpandableGroup>
 
         {/* Support - Expandable */}
@@ -87,6 +93,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/tickets" label="Tickets" />
           <SubNavItem to="/delivery-routes" label="Delivery Routes" />
           <SubNavItem to="/staff" label="Staff" />
+          <SubNavItem to="/audit" label="Audit Logs" />
         </ExpandableGroup>
 
         {/* Quick Actions */}

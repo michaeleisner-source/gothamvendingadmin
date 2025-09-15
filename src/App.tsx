@@ -60,6 +60,8 @@ import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
 import MachineROI from "./pages/reports/MachineROI";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
+import RouteEfficiency from "./pages/RouteEfficiency";
+import BusinessFlow from "./pages/BusinessFlow";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +115,7 @@ const App = () => (
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
+            <Route path="/reports/route-efficiency" element={<RouteEfficiency />} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
@@ -122,6 +125,7 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
             <Route path="/workflow" element={<Workflow />} />
+            <Route path="/business-flow" element={<BusinessFlow />} />
             {/* Feature pack routes with navigation */}
             {MachineOpsRoutes({ ProtectedRoute })}
             {ProcessorStatementsRoutes({ ProtectedRoute })}
