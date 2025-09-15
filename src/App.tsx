@@ -59,6 +59,7 @@ import ConvertProspect from "./pages/pipeline/ConvertProspect";
 import LocationContract from "./pages/contracts/LocationContract";
 import NewLocation from "./pages/NewLocation";
 import CommissionDashboard from "./pages/CommissionDashboard";
+import CommissionStatements from "./pages/CommissionStatements";
 import ContractManagement from "./pages/ContractManagement";
 import LocationPerformance from "./pages/LocationPerformance";
 import QALauncher from "./pages/QALauncher";
@@ -130,6 +131,7 @@ const App = () => (
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
             <Route path="/finance/commissions" element={<CommissionDashboard />} />
+            <Route path="/finance/commission-statements" element={<CommissionStatements />} />
             <Route path="/contracts" element={<ContractManagement />} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
