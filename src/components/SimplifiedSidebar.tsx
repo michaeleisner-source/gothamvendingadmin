@@ -73,6 +73,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports" label="All Reports" />
           <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
           <SubNavItem to="/reports/product-profitability-net" label="Product Profitability (Net)" />
+          <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
         </ExpandableGroup>
 
         {/* Support - Expandable */}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, NavLink } from "react-router-dom";
-import { DollarSign, Wrench, TrendingUp, BarChart3 } from "lucide-react";
+import { DollarSign, Wrench, Landmark, BarChart3 } from "lucide-react";
 import MachineFinance from "@/pages/MachineFinance";
 import MachineRoi from "@/pages/MachineRoi";
 import MachineMaintenance from "@/pages/MachineMaintenance";
@@ -80,7 +80,7 @@ export function MachineOpsSidebarMachines({ collapsed, onExpandSidebar }: { coll
 export function MachineOpsSidebarReports({ collapsed, onExpandSidebar }: { collapsed: boolean; onExpandSidebar: () => void }) {
   return (
     <>
-      <NavItem to="/reports/machine-roi" icon={TrendingUp} collapsed={collapsed} onExpandSidebar={onExpandSidebar}>
+      <NavItem to="/reports/machine-roi" icon={Landmark} collapsed={collapsed} onExpandSidebar={onExpandSidebar}>
         Machine ROI
       </NavItem>
       <NavItem to="/reports/maintenance-backlog" icon={BarChart3} collapsed={collapsed} onExpandSidebar={onExpandSidebar}>
