@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, CreditCard, Receipt, Building, Calculator, TrendingUp } from 'lucide-react';
 import { HelpTooltip, HelpTooltipProvider } from '@/components/ui/HelpTooltip';
 import PaymentProcessors from './PaymentProcessors';
-import ProductProfitabilityNet from './ProductProfitabilityNet';
+import ProductProfitabilityNet from './reports/ProductProfitabilityNet';
 
 const FinanceManagement = () => {
   return (

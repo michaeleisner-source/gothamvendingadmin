@@ -55,7 +55,7 @@ import HelpArticle from "./pages/HelpArticle";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
-import ProductProfitabilityNet from "./pages/ProductProfitabilityNet";
+import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 
