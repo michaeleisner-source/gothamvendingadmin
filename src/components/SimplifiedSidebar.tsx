@@ -4,7 +4,7 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play
+  Box, Wrench, TrendingUp, Smartphone, Play, Route
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
