@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NextActionBar } from '@/feature-pack/VendingWorkflowPack';
 import { supabase } from '@/integrations/supabase/client';
+import { HelpTooltip, HelpTooltipProvider } from '@/components/ui/HelpTooltip';
 import { 
   AlertTriangle, TrendingUp, DollarSign, Package, 
   Clock, Battery, MapPin, Target, Activity, Zap 
@@ -174,154 +175,170 @@ const EnhancedDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Mission Control</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Activity className="w-4 h-4" />
-          Last updated: {new Date().toLocaleTimeString()}
-        </div>
-      </div>
-      
-      <NextActionBar />
-
-      {/* Critical Alerts Banner */}
-      {(metrics.alerts.critical > 0 || metrics.inventory.outOfStock > 0) && (
-        <Card className="border-destructive bg-destructive/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-destructive font-medium">
-              <AlertTriangle className="w-5 h-5" />
-              Immediate Attention Required
-            </div>
-            <div className="mt-2 text-sm">
-              {metrics.alerts.critical > 0 && `${metrics.alerts.critical} critical alerts • `}
-              {metrics.inventory.outOfStock > 0 && `${metrics.inventory.outOfStock} machines out of stock`}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="health">System Health</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {/* Revenue Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-700">Today's Revenue</p>
-                    <p className="text-2xl font-bold text-green-800">
-                      ${metrics.revenue.today.toFixed(0)}
-                    </p>
-                    <RevenueChange current={metrics.revenue.today} previous={metrics.revenue.yesterday} />
-                  </div>
-                  <DollarSign className="w-8 h-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Week Revenue</p>
-                    <p className="text-2xl font-semibold">${metrics.revenue.week.toFixed(0)}</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Month Revenue</p>
-                    <p className="text-2xl font-semibold">${metrics.revenue.month.toFixed(0)}</p>
-                  </div>
-                  <Target className="w-8 h-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Inventory Value</p>
-                    <p className="text-2xl font-semibold">${metrics.inventory.totalValue.toFixed(0)}</p>
-                  </div>
-                  <Package className="w-8 h-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">Mission Control</h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Activity className="w-4 h-4" />
+            Last updated: {new Date().toLocaleTimeString()}
           </div>
+        </div>
+        
+        <NextActionBar />
 
-          {/* Machine Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Fleet Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{metrics.machines.online}</div>
-                  <div className="text-sm text-muted-foreground">Online</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{metrics.machines.offline}</div>
-                  <div className="text-sm text-muted-foreground">Offline</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{metrics.inventory.lowStock}</div>
-                  <div className="text-sm text-muted-foreground">Low Stock</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-800">{metrics.inventory.outOfStock}</div>
-                  <div className="text-sm text-muted-foreground">Out of Stock</div>
-                </div>
+        {/* Critical Alerts Banner */}
+        {(metrics.alerts.critical > 0 || metrics.inventory.outOfStock > 0) && (
+          <Card className="border-destructive bg-destructive/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-destructive font-medium">
+                <AlertTriangle className="w-5 h-5" />
+                Immediate Attention Required
+                <HelpTooltip content="Critical alerts that need immediate action. These could indicate machines down, out-of-stock situations, or system failures." />
               </div>
-
-              <div className="mt-4 flex gap-2">
-                {metrics.machines.offline > 0 && (
-                  <Button variant="outline" size="sm" className="text-red-600 border-red-200">
-                    <AlertTriangle className="w-4 h-4 mr-1" />
-                    {metrics.machines.offline} Machines Need Attention
-                  </Button>
-                )}
-                {metrics.inventory.outOfStock > 0 && (
-                  <Button variant="outline" size="sm" className="text-orange-600 border-orange-200">
-                    <Package className="w-4 h-4 mr-1" />
-                    {metrics.inventory.outOfStock} Urgent Restocks
-                  </Button>
-                )}
+              <div className="mt-2 text-sm">
+                {metrics.alerts.critical > 0 && `${metrics.alerts.critical} critical alerts • `}
+                {metrics.inventory.outOfStock > 0 && `${metrics.inventory.outOfStock} machines out of stock`}
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-        <TabsContent value="performance">
-          <div className="text-center py-8 text-muted-foreground">
-            Performance analytics coming soon - revenue trends, machine efficiency, and profitability analysis.
-          </div>
-        </TabsContent>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="health">System Health</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="health">
-          <div className="text-center py-8 text-muted-foreground">
-            System health monitoring coming soon - uptime tracking, error rates, and maintenance schedules.
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Revenue Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-700 flex items-center gap-1">
+                        Today's Revenue
+                        <HelpTooltip content="Total gross revenue from all sales transactions today, before deducting costs or fees." />
+                      </p>
+                      <p className="text-2xl font-bold text-green-800">
+                        ${metrics.revenue.today.toFixed(0)}
+                      </p>
+                      <RevenueChange current={metrics.revenue.today} previous={metrics.revenue.yesterday} />
+                    </div>
+                    <DollarSign className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        Week Revenue
+                        <HelpTooltip content="Total revenue from all sales in the last 7 days. Useful for tracking weekly performance trends." />
+                      </p>
+                      <p className="text-2xl font-semibold">${metrics.revenue.week.toFixed(0)}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        Month Revenue
+                        <HelpTooltip content="Total revenue from all sales in the last 30 days. Key metric for monthly performance tracking." />
+                      </p>
+                      <p className="text-2xl font-semibold">${metrics.revenue.month.toFixed(0)}</p>
+                    </div>
+                    <Target className="w-8 h-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        Inventory Value
+                        <HelpTooltip content="Total dollar value of all products currently in stock across all machines, based on cost price." />
+                      </p>
+                      <p className="text-2xl font-semibold">${metrics.inventory.totalValue.toFixed(0)}</p>
+                    </div>
+                    <Package className="w-8 h-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Machine Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Fleet Status
+                  <HelpTooltip content="Real-time overview of your vending machine network health, including connectivity and stock levels." />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{metrics.machines.online}</div>
+                    <div className="text-sm text-muted-foreground">Online</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">{metrics.machines.offline}</div>
+                    <div className="text-sm text-muted-foreground">Offline</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">{metrics.inventory.lowStock}</div>
+                    <div className="text-sm text-muted-foreground">Low Stock</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-800">{metrics.inventory.outOfStock}</div>
+                    <div className="text-sm text-muted-foreground">Out of Stock</div>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  {metrics.machines.offline > 0 && (
+                    <Button variant="outline" size="sm" className="text-red-600 border-red-200">
+                      <AlertTriangle className="w-4 h-4 mr-1" />
+                      {metrics.machines.offline} Machines Need Attention
+                    </Button>
+                  )}
+                  {metrics.inventory.outOfStock > 0 && (
+                    <Button variant="outline" size="sm" className="text-orange-600 border-orange-200">
+                      <Package className="w-4 h-4 mr-1" />
+                      {metrics.inventory.outOfStock} Urgent Restocks
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <div className="text-center py-8 text-muted-foreground">
+              Performance analytics coming soon - revenue trends, machine efficiency, and profitability analysis.
+            </div>
+          </TabsContent>
+
+          <TabsContent value="health">
+            <div className="text-center py-8 text-muted-foreground">
+              System health monitoring coming soon - uptime tracking, error rates, and maintenance schedules.
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </HelpTooltipProvider>
   );
 };
 
