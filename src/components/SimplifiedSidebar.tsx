@@ -4,7 +4,7 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone
+  Box, Wrench, TrendingUp, Smartphone, Play
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
@@ -88,6 +88,7 @@ export function SimplifiedSidebar() {
         <div className="pt-4 border-t border-sidebar-border">
           <NavItem to="/account" icon={Settings} label="Settings" />
           <NavItem to="/admin/review-snapshot" icon={BarChart3} label="Review Snapshot" />
+          <NavItem to="/admin/kickstart" icon={Play} label="Ops Kickstart" />
           {isDemo && (
             <NavItem to="/qa" icon={Wrench} label="QA Tools" />
           )}
