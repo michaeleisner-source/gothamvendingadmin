@@ -79,9 +79,17 @@ async function ensureMachine(code: string, location_id: string, say: (s: string)
 
 async function recordSale(machine_id: string, product_id: string, qty: number, priceCents: number, costCents: number, say: (s: string)=>void) {
   const ins = await supabase.from("sales").insert({
-    machine_id, product_id, qty, unit_price_cents: priceCents, unit_cost_cents: costCents, occurred_at: iso(new Date()), payment_method: "card"
+    machine_id, 
+    product_id, 
+    qty, 
+    unit_price_cents: priceCents, 
+    unit_cost_cents: costCents, 
+    occurred_at: iso(new Date()), 
+    payment_method: "card",
+    org_id: "00000000-0000-0000-0000-000000000000" // QA test org_id
   });
-  if (ins.error) throw ins.error; say(`✔ Recorded sale ${qty} × ${money(priceCents)}.`);
+  if (ins.error) throw ins.error; 
+  say(`✔ Recorded sale ${qty} × ${money(priceCents)}.`);
 }
 
 /** ---------- Page ---------- */
