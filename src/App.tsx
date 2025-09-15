@@ -17,6 +17,7 @@ import { Phase3Routes } from "@/feature-pack/Phase3OpsPack";
 import { Phase4Routes } from "@/feature-pack/Phase4PolishPack";
 import { ReviewSnapshotRoutes } from "@/feature-pack/ReviewSnapshot";
 import { OpsKickstartRoutes } from "@/feature-pack/OpsKickstart";
+import OpsKickstartPage from "@/feature-pack/OpsKickstart";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/health" element={<Health />} />
             <Route path="/qa" element={<QALauncher />} />
+            <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
             <Route path="/workflow" element={<Workflow />} />
@@ -126,8 +128,8 @@ const App = () => (
             {Phase4Routes({ ProtectedRoute })}
             {/* Review Snapshot Diagnostic Tool */}
             {ReviewSnapshotRoutes({ ProtectedRoute })}
-            {/* Ops Kickstart Tool */}
-            {OpsKickstartRoutes({ ProtectedRoute })}
+            {/* Ops Kickstart Tool - using direct route instead */}
+            {/* {OpsKickstartRoutes({ ProtectedRoute })} */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
