@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Save, CheckCircle2 } from "lucide-react";
+import { FileText, Save, CheckCircle2, Edit3, Eye } from "lucide-react";
 
 type Any = Record<string, any>;
 
@@ -24,6 +24,10 @@ export default function ConvertProspect() {
   const [flatCents, setFlatCents] = useState<number>(0);
   const [minCents, setMinCents] = useState<number>(0);
   const [notes, setNotes] = useState("");
+
+  // Contract editing
+  const [isEditingContract, setIsEditingContract] = useState(false);
+  const [customContractHTML, setCustomContractHTML] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -51,13 +55,20 @@ export default function ConvertProspect() {
     return [addressLine1, city, state, postalCode].filter(Boolean).join(", ");
   }, [addressLine1, city, state, postalCode]);
 
-  const contractHTML = useMemo(() => {
+  const templateContractHTML = useMemo(() => {
     return renderContractHTML({
       locationName: name || "(Location Name)",
       address: fullAddress || "(Address)",
       commissionModel, pctBps, flatCents, minCents,
     });
   }, [name, fullAddress, commissionModel, pctBps, flatCents, minCents]);
+
+  const contractHTML = useMemo(() => {
+    if (isEditingContract && customContractHTML.trim()) {
+      return customContractHTML;
+    }
+    return templateContractHTML;
+  }, [isEditingContract, customContractHTML, templateContractHTML]);
 
   async function handleCreate() {
     setErr(null);
@@ -216,10 +227,66 @@ export default function ConvertProspect() {
           </div>
         </div>
 
-        {/* Right: live contract preview */}
-        <div className="rounded-xl border border-border bg-white text-black p-6 overflow-auto max-h-[800px]">
-          <div dangerouslySetInnerHTML={{ __html: contractHTML }} />
-          <div className="mt-4 text-xs text-neutral-600 flex items-center gap-1">
+        {/* Right: contract editor/preview */}
+        <div className="space-y-4">
+          {/* Contract mode toggle */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">Contract Preview</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsEditingContract(!isEditingContract)}
+                className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs ${
+                  isEditingContract
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card hover:bg-muted"
+                }`}
+              >
+                {isEditingContract ? (
+                  <>
+                    <Eye className="h-3 w-3" /> Preview Mode
+                  </>
+                ) : (
+                  <>
+                    <Edit3 className="h-3 w-3" /> Edit Contract
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {isEditingContract ? (
+            /* Contract Editor */
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Edit the contract HTML. Dynamic values like location name and commission details will be inserted when you create the contract.
+              </div>
+              <textarea
+                value={customContractHTML || templateContractHTML}
+                onChange={(e) => setCustomContractHTML(e.target.value)}
+                className="w-full h-[600px] font-mono text-sm bg-background border border-border rounded-md p-4 resize-none"
+                placeholder="Enter contract HTML..."
+              />
+              <div className="flex gap-2 text-xs">
+                <button
+                  onClick={() => setCustomContractHTML(templateContractHTML)}
+                  className="text-primary hover:underline"
+                >
+                  Reset to Template
+                </button>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground">
+                  Use placeholders like {"{locationName}"} and {"{commissionText}"} for dynamic content
+                </span>
+              </div>
+            </div>
+          ) : (
+            /* Contract Preview */
+            <div className="rounded-xl border border-border bg-white text-black p-6 overflow-auto max-h-[600px]">
+              <div dangerouslySetInnerHTML={{ __html: contractHTML }} />
+            </div>
+          )}
+          
+          <div className="text-xs text-neutral-600 flex items-center gap-1 bg-muted/30 p-3 rounded-md">
             <CheckCircle2 className="h-3 w-3" />
             Use your browser's <strong>Print → Save as PDF</strong> to export this draft after creation.
           </div>
