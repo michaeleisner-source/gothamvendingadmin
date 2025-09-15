@@ -68,12 +68,39 @@ const fetchCostAnalysis = async (): Promise<{
 
   if (productsError) throw productsError;
 
-  // Calculate margins and profitability
+  // Fetch sales data for the last 90 days to get actual performance metrics
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: salesData, error: salesError } = await supabase
+    .from('sales')
+    .select('product_id, qty, unit_price_cents, unit_cost_cents, occurred_at')
+    .gte('occurred_at', ninetyDaysAgo);
+
+  if (salesError) console.warn('Sales data not available:', salesError);
+
+  // Group sales by product
+  const salesByProduct: Record<string, { qty: number; revenue: number; cost: number; orders: number }> = {};
+  (salesData || []).forEach(sale => {
+    if (!salesByProduct[sale.product_id]) {
+      salesByProduct[sale.product_id] = { qty: 0, revenue: 0, cost: 0, orders: 0 };
+    }
+    const productSales = salesByProduct[sale.product_id];
+    productSales.qty += sale.qty;
+    productSales.revenue += sale.qty * sale.unit_price_cents;
+    productSales.cost += sale.qty * (sale.unit_cost_cents || 0);
+    productSales.orders += 1;
+  });
+
+  // Calculate margins and profitability with real sales data
   const productAnalysis: ProductAnalysis[] = (products || []).map(product => {
     const cost = product.cost || 0;
     const price = product.price || 0;
     const marginAmount = price - cost;
-    const marginPercent = cost > 0 ? (marginAmount / cost) * 100 : 0;
+    const marginPercent = price > 0 ? (marginAmount / price) * 100 : 0; // Use price as denominator for true margin %
+    
+    const sales = salesByProduct[product.id] || { qty: 0, revenue: 0, cost: 0, orders: 0 };
+    const actualTotalRevenue = sales.revenue / 100; // Convert from cents
+    const actualTotalCost = sales.cost / 100;
+    const actualTotalProfit = actualTotalRevenue - actualTotalCost;
 
     return {
       product_id: product.id,
@@ -83,15 +110,15 @@ const fetchCostAnalysis = async (): Promise<{
       price,
       margin_amount: marginAmount,
       margin_percent: marginPercent,
-      qty_sold: 0, // TODO: Get from sales data
-      total_revenue: 0,
-      total_cost: 0,
-      total_profit: 0,
+      qty_sold: sales.qty,
+      total_revenue: actualTotalRevenue,
+      total_cost: actualTotalCost,
+      total_profit: actualTotalProfit,
       category: product.category || 'Uncategorized',
     };
   });
 
-  // Group by category
+  // Group by category with real sales data
   const categoryMap = new Map<string, CategoryAnalysis>();
   productAnalysis.forEach(product => {
     const category = product.category || 'Uncategorized';
@@ -106,6 +133,8 @@ const fetchCostAnalysis = async (): Promise<{
     }
     const cat = categoryMap.get(category)!;
     cat.product_count++;
+    cat.total_revenue += product.total_revenue;
+    cat.total_profit += product.total_profit;
   });
 
   // Calculate category averages
@@ -117,7 +146,10 @@ const fetchCostAnalysis = async (): Promise<{
   const categories = Array.from(categoryMap.values()).sort((a, b) => b.avg_margin_percent - a.avg_margin_percent);
 
   // Calculate metrics
-  const validMargins = productAnalysis.filter(p => p.cost > 0);
+  const validMargins = productAnalysis.filter(p => p.price > 0);
+  const totalRevenue = productAnalysis.reduce((sum, p) => sum + p.total_revenue, 0);
+  const totalProfit = productAnalysis.reduce((sum, p) => sum + p.total_profit, 0);
+  
   const metrics: ProfitabilityMetrics = {
     total_products: productAnalysis.length,
     avg_margin_percent: validMargins.length > 0 
@@ -130,8 +162,8 @@ const fetchCostAnalysis = async (): Promise<{
       ? validMargins.reduce((min, p) => p.margin_percent < min.margin_percent ? p : min).product_name
       : 'N/A',
     most_profitable_category: categories.length > 0 ? categories[0].category : 'N/A',
-    total_revenue: 0,
-    total_profit: 0,
+    total_revenue: totalRevenue,
+    total_profit: totalProfit,
   };
 
   return { products: productAnalysis, categories, metrics };
@@ -317,7 +349,9 @@ const CostAnalysis = () => {
                           <TableHead className="text-right">Price</TableHead>
                           <TableHead className="text-right">Margin $</TableHead>
                           <TableHead className="text-right">Margin %</TableHead>
-                          <TableHead>Performance</TableHead>
+                           <TableHead>Revenue (90d)</TableHead>
+                           <TableHead>Profit (90d)</TableHead>
+                           <TableHead>Qty Sold (90d)</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -335,12 +369,18 @@ const CostAnalysis = () => {
                                 ${product.margin_amount.toFixed(2)}
                               </span>
                             </TableCell>
-                            <TableCell className="text-right font-bold">
-                              <span className={product.margin_percent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                                {product.margin_percent.toFixed(1)}%
-                              </span>
-                            </TableCell>
-                            <TableCell>{getMarginBadge(product.margin_percent)}</TableCell>
+                             <TableCell className="text-right font-bold">
+                               <span className={product.margin_percent >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                 {product.margin_percent.toFixed(1)}%
+                               </span>
+                             </TableCell>
+                             <TableCell className="text-right">${product.total_revenue.toFixed(2)}</TableCell>
+                             <TableCell className="text-right font-medium">
+                               <span className={product.total_profit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                 ${product.total_profit.toFixed(2)}
+                               </span>
+                             </TableCell>
+                             <TableCell className="text-right">{product.qty_sold}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -372,8 +412,9 @@ const CostAnalysis = () => {
                         <TableRow>
                           <TableHead>Category</TableHead>
                           <TableHead className="text-right">Products</TableHead>
-                          <TableHead className="text-right">Avg Margin %</TableHead>
-                          <TableHead>Performance</TableHead>
+                           <TableHead className="text-right">Revenue (90d)</TableHead>
+                           <TableHead className="text-right">Profit (90d)</TableHead>
+                           <TableHead>Performance</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -381,12 +422,18 @@ const CostAnalysis = () => {
                           <TableRow key={category.category}>
                             <TableCell className="font-medium">{category.category}</TableCell>
                             <TableCell className="text-right">{category.product_count}</TableCell>
-                            <TableCell className="text-right font-bold">
-                              <span className={category.avg_margin_percent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                                {category.avg_margin_percent.toFixed(1)}%
-                              </span>
-                            </TableCell>
-                            <TableCell>{getMarginBadge(category.avg_margin_percent)}</TableCell>
+                             <TableCell className="text-right font-bold">
+                               <span className={category.avg_margin_percent >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                 {category.avg_margin_percent.toFixed(1)}%
+                               </span>
+                             </TableCell>
+                             <TableCell className="text-right">${category.total_revenue.toFixed(2)}</TableCell>
+                             <TableCell className="text-right font-medium">
+                               <span className={category.total_profit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                 ${category.total_profit.toFixed(2)}
+                               </span>
+                             </TableCell>
+                             <TableCell>{getMarginBadge(category.avg_margin_percent)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

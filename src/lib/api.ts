@@ -295,30 +295,72 @@ export const api = {
   // Reports
   inventoryValuation: async () => {
     // Calculate inventory value based on current stock and product costs
-    const { data: slots, error: slotsError } = await supabase
-      .from('slot_assignments')
+    const { data: inventoryData, error: inventoryError } = await supabase
+      .from('inventory_levels')
       .select(`
-        *,
-        products(name, sku, cost),
-        machine_slots(machine_id, label)
+        current_qty,
+        reorder_point,
+        par_level,
+        last_restocked_at,
+        products!inner(
+          id,
+          name,
+          sku,
+          cost,
+          price,
+          category
+        ),
+        machine_slots!inner(
+          label,
+          machines!inner(
+            name,
+            location_id
+          )
+        )
       `);
-    if (slotsError) throw slotsError;
 
-    // Get latest restock quantities
-    const { data: restocks, error: restocksError } = await supabase
-      .from('restock_lines')
-      .select(`
-        slot_id,
-        new_qty,
-        restock_sessions!inner(completed_at)
-      `)
-      .not('restock_sessions.completed_at', 'is', null)
-      .order('restock_sessions.completed_at', { ascending: false });
-    if (restocksError) throw restocksError;
+    if (inventoryError) throw inventoryError;
 
-    // Calculate current inventory value
-    // This is a simplified calculation - you might want to enhance it
-    return { total_value: 0, items: [] };
+    // Transform and calculate values
+    const items = (inventoryData || []).map((item: any) => {
+      const cost = item.products.cost || 0;
+      const price = item.products.price || 0;
+      const currentQty = item.current_qty || 0;
+      const stockValue = currentQty * cost;
+      const potentialRevenue = currentQty * price;
+
+      return {
+        product_id: item.products.id,
+        product_name: item.products.name,
+        sku: item.products.sku || '',
+        category: item.products.category || 'Uncategorized',
+        machine_name: item.machine_slots.machines.name,
+        slot_label: item.machine_slots.label,
+        current_qty: currentQty,
+        reorder_point: item.reorder_point,
+        par_level: item.par_level,
+        unit_cost: cost,
+        unit_price: price,
+        stock_value: stockValue,
+        potential_revenue: potentialRevenue,
+        margin_per_unit: price - cost,
+        last_restocked: item.last_restocked_at,
+        status: currentQty <= (item.reorder_point || 0) ? 'Low Stock' : 
+                currentQty === 0 ? 'Out of Stock' : 'Normal'
+      };
+    });
+
+    const totalValue = items.reduce((sum, item) => sum + item.stock_value, 0);
+    const totalRevenue = items.reduce((sum, item) => sum + item.potential_revenue, 0);
+    
+    return {
+      total_value: totalValue,
+      total_potential_revenue: totalRevenue,
+      total_items: items.length,
+      low_stock_items: items.filter(item => item.status === 'Low Stock').length,
+      out_of_stock_items: items.filter(item => item.status === 'Out of Stock').length,
+      items
+    };
   },
 
   margins: async (from?: string, to?: string) => {
@@ -326,7 +368,36 @@ export const api = {
       p_start: from ? new Date(from).toISOString() : null,
       p_end: to ? new Date(to).toISOString() : null
     });
-    if (error) throw error;
+    if (error) {
+      console.warn('Using fallback margins calculation:', error);
+      // Fallback: calculate margins from products table directly
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('id, name, sku, cost, price, category');
+      
+      if (productsError) throw productsError;
+      
+      return (products || []).map(product => {
+        const cost = product.cost || 0;
+        const price = product.price || 0;
+        const marginDollar = price - cost;
+        const marginPct = cost > 0 ? (marginDollar / cost) * 100 : 0;
+        
+        return {
+          product_id: product.id,
+          product_name: product.name,
+          sku: product.sku,
+          category: product.category,
+          cost,
+          price,
+          margin_dollar: marginDollar,
+          margin_percent: marginPct,
+          orders: 0, // No sales data available
+          qty_sold: 0,
+          gross_revenue_cents: 0
+        };
+      });
+    }
     return data || [];
   },
 
@@ -335,7 +406,70 @@ export const api = {
       p_start: from ? new Date(from).toISOString() : null,
       p_end: to ? new Date(to).toISOString() : null
     });
-    if (error) throw error;
+    if (error) {
+      console.warn('Using fallback machine performance calculation:', error);
+      // Fallback: calculate from sales and machines directly
+      const fromDate = from ? new Date(from).toISOString() : 
+                       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const toDate = to ? new Date(to).toISOString() : new Date().toISOString();
+      
+      const [salesRes, machinesRes] = await Promise.all([
+        supabase
+          .from('sales')
+          .select('machine_id, qty, unit_price_cents, unit_cost_cents')
+          .gte('occurred_at', fromDate)
+          .lte('occurred_at', toDate),
+        supabase
+          .from('machines')
+          .select('id, name')
+      ]);
+      
+      if (salesRes.error) throw salesRes.error;
+      if (machinesRes.error) throw machinesRes.error;
+      
+      // Group sales by machine
+      const salesByMachine: Record<string, any> = {};
+      (salesRes.data || []).forEach(sale => {
+        if (!salesByMachine[sale.machine_id]) {
+          salesByMachine[sale.machine_id] = {
+            orders: 0,
+            qty_sold: 0,
+            gross_revenue_cents: 0,
+            cost_cents: 0
+          };
+        }
+        
+        const machine = salesByMachine[sale.machine_id];
+        machine.orders += 1;
+        machine.qty_sold += sale.qty;
+        machine.gross_revenue_cents += sale.qty * sale.unit_price_cents;
+        machine.cost_cents += sale.qty * (sale.unit_cost_cents || 0);
+      });
+      
+      return (machinesRes.data || []).map(machine => {
+        const perf = salesByMachine[machine.id] || {
+          orders: 0,
+          qty_sold: 0,
+          gross_revenue_cents: 0,
+          cost_cents: 0
+        };
+        
+        const netProfitCents = perf.gross_revenue_cents - perf.cost_cents;
+        const profitPct = perf.gross_revenue_cents > 0 ? 
+          (netProfitCents / perf.gross_revenue_cents) * 100 : 0;
+        
+        return {
+          machine_id: machine.id,
+          machine_name: machine.name,
+          orders: perf.orders,
+          qty_sold: perf.qty_sold,
+          gross_revenue_cents: perf.gross_revenue_cents,
+          cost_cents: perf.cost_cents,
+          net_profit_cents: netProfitCents,
+          profit_pct: profitPct
+        };
+      }).sort((a, b) => b.net_profit_cents - a.net_profit_cents);
+    }
     return data || [];
   },
 

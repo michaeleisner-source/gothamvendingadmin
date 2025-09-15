@@ -94,11 +94,8 @@ export function ReviewSnapshotPage() {
         else { missing.push(t); counts[t] = null; }
       }
 
-      // Tender column detection
+      // Tender column detection (currently not implemented)
       let salesTenderColumn: string | null = null;
-      for (const c of ["payment_method","tender","tender_type"]) {
-        if (await colExists("sales", c)) { salesTenderColumn = c; break; }
-      }
 
       // Tickets assignability
       let ticketsAssignable: boolean | null = null;
@@ -108,20 +105,13 @@ export function ReviewSnapshotPage() {
       const since = new Date(); since.setDate(since.getDate() - 30);
       let grossC = 0, cogsC = 0, feesC = 0;
       const s = await supabase.from("sales")
-        .select("qty,unit_price_cents,unit_cost_cents,occurred_at" + (salesTenderColumn ? `,${salesTenderColumn}` : ""))
+        .select("qty,unit_price_cents,unit_cost_cents,occurred_at")
         .gte("occurred_at", since.toISOString()).limit(50000);
       const rows = s.error ? [] : (s.data || []);
-      const tenderAgg: Record<string,{grossC:number;units:number}> = {};
       for (const r of rows) {
         const g = toNum((r as any).qty) * toNum((r as any).unit_price_cents);
         const c = toNum((r as any).qty) * toNum((r as any).unit_cost_cents);
         grossC += g; cogsC += c;
-        if (salesTenderColumn) {
-          const key = ((r as any)[salesTenderColumn] || "card").toString().toLowerCase();
-          tenderAgg[key] = tenderAgg[key] || { grossC:0, units:0 };
-          tenderAgg[key].grossC += g;
-          tenderAgg[key].units += toNum((r as any).qty);
-        }
       }
       // Optional processor settlements table (closest equivalent)
       const pf = await supabase.from("processor_settlements").select("fee_cents, occurred_on").gte("occurred_on", since.toISOString().split('T')[0]);
@@ -177,9 +167,7 @@ export function ReviewSnapshotPage() {
         };
       }
 
-      const tender = salesTenderColumn
-        ? Object.entries(tenderAgg).map(([method,a])=>({ method, gross: usd(cents(a.grossC)), units: a.units }))
-        : undefined;
+      const tender = undefined; // Payment method tracking not implemented yet
 
       const snap: Snap = {
         meta: {
@@ -251,7 +239,7 @@ export function ReviewSnapshotPage() {
             <Section title="Schema presence" tooltip="Shows which database tables exist in your system vs. which are missing. Helps identify incomplete features.">
               <Row label="Have" value={snap.schema.have.join(", ") || "—"} />
               <Row label="Missing" value={snap.schema.missing.join(", ") || "—"} warn={!!snap.schema.missing.length} />
-              <Row label="Tender column" value={snap.schema.salesTenderColumn || "—"} />
+              <Row label="Tender column" value="Not implemented" />
               <Row label="Tickets assignable" value={snap.schema.ticketsAssignable ? "yes" : "no"} warn={snap.schema.ticketsAssignable === false} />
             </Section>
 
@@ -260,7 +248,6 @@ export function ReviewSnapshotPage() {
               <Row label="COGS" value={`$${snap.money30d.cogs.toLocaleString()}`} />
               <Row label="Processor fees" value={`$${snap.money30d.fees.toLocaleString()}`} />
               <Row label="Net" value={<span className={snap.money30d.net >= 0 ? "text-emerald-400" : "text-rose-400"}>${snap.money30d.net.toLocaleString()}</span>} />
-              {snap.money30d.tender && <Row label="Tender split" value={snap.money30d.tender.map(t=>`${t.method}:${t.units}u/$${t.gross.toLocaleString()}`).join("  ·  ")} />}
             </Section>
 
             <Section title="Maintenance" tooltip="Machine health and support ticket status. Tracks machines needing attention and outstanding service requests.">

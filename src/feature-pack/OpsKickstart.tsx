@@ -90,9 +90,7 @@ export default function OpsKickstartPage() {
       setHasStaff(await tableExists("staff"));
 
       // tender column detection
-      for (const c of ["payment_method", "tender", "tender_type"]) {
-        if (await colExists("sales", c)) { setTenderCol(c); break; }
-      }
+      setTenderCol(null); // No tender columns needed for basic functionality
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -180,7 +178,7 @@ export default function OpsKickstartPage() {
         occurred_at: new Date().toISOString(),
         org_id: await getCurrentOrgId()
       };
-      if (tenderCol) payload[tenderCol] = "card"; // set tender if available
+      if (tenderCol) payload[tenderCol] = "card"; // set tender if available (currently none exist)
       const ins = await supabase.from("sales").insert(payload).select("id").single();
       if (ins.error) throw ins.error;
       say("✔ Sale recorded.");
@@ -341,7 +339,7 @@ export default function OpsKickstartPage() {
         />
         <ActionCard
           icon={<DollarSign className="h-4 w-4" />} title="Record Sale"
-          desc={`Insert qty 1 at $2.00 price, $0.70 cost. ${tenderCol ? `(${tenderCol}=card)` : "(add tender column via SQL for Card vs Cash)"}`}
+          desc={`Insert qty 1 at $2.00 price, $0.70 cost. Basic sale recording without payment method tracking.`}
           onClick={recordSale} busy={busy}
         />
         <ActionCard
