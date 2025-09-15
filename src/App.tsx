@@ -115,7 +115,7 @@ const App = () => (
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
-            <Route path="/reports/route-efficiency" element={<RouteEfficiency />} />
+            <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
