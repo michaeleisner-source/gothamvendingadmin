@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart3, RefreshCw, TrendingUp, DollarSign, Activity, Target } from "lucide-react";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 type Row = { 
   machine_id: string; 
@@ -146,7 +147,13 @@ export default function SalesSummary7d() {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Sales Summary</h1>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            Sales Summary
+            <HelpTooltip 
+              content="Shows revenue, profit, and transaction metrics for the last 7 days. Net profit is calculated by deducting cost of goods sold from gross revenue."
+              size="md"
+            />
+          </h1>
           <p className="text-muted-foreground">Revenue analysis for the last 7 days</p>
         </div>
         <Button variant="outline" onClick={() => window.location.reload()}>
@@ -161,7 +168,10 @@ export default function SalesSummary7d() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-700">Total Revenue</p>
+                <p className="text-sm text-green-700 flex items-center gap-2">
+                  Total Revenue
+                  <HelpTooltip content="Total gross revenue from all sales in the last 7 days before any deductions" size="sm" />
+                </p>
                 <p className="text-2xl font-bold text-green-800">${kpiMetrics.totalGross.toFixed(0)}</p>
                 <p className="text-xs text-green-600">7-day gross sales</p>
               </div>
@@ -174,7 +184,10 @@ export default function SalesSummary7d() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Net Profit</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  Net Profit
+                  <HelpTooltip content="Profit after deducting cost of goods sold (COGS) from gross revenue" size="sm" />
+                </p>
                 <p className="text-2xl font-bold">${kpiMetrics.totalNet.toFixed(0)}</p>
                 <p className="text-xs text-blue-600">{kpiMetrics.profitMargin.toFixed(1)}% margin</p>
               </div>

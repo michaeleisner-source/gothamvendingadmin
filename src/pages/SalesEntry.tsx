@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Building2, AlertCircle, CheckCircle, DollarSign, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 export default function SalesEntry() {
   const { toast } = useToast();
@@ -218,6 +219,10 @@ export default function SalesEntry() {
       <div className="flex items-center gap-2">
         <ShoppingCart className="w-6 h-6" />
         <h1 className="text-2xl font-bold">Sales Entry</h1>
+        <HelpTooltip 
+          content="Manually record product sales for tracking revenue and inventory. Select machine and slot, or enter product SKU directly. System will automatically deduct from inventory levels."
+          size="md"
+        />
       </div>
       <p className="text-muted-foreground">
         Record product sales by machine slot or product SKU

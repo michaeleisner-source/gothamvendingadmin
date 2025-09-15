@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, DollarSign, Percent, Calendar, Trophy, AlertTriangle, Target, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 interface MachineROIData {
   machine_id: string;
@@ -175,16 +176,23 @@ export default function MachineROI() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <TrendingUp className="h-6 w-6" />
         <h1 className="text-2xl font-bold">Machine ROI Analysis</h1>
+        <HelpTooltip 
+          content="Calculate return on investment for each vending machine. ROI is calculated as (Net Profit ÷ Total Investment) × 100. Data shows last 30 days of performance including revenue, costs, and payback periods."
+          size="md"
+        />
       </div>
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Investment</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Total Investment
+              <HelpTooltip content="Sum of all machine purchase prices and one-time setup costs" size="sm" />
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -197,7 +205,10 @@ export default function MachineROI() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Net Profit</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Total Net Profit
+              <HelpTooltip content="Revenue minus all costs (COGS, financing, insurance, software) for the last 30 days" size="sm" />
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -210,7 +221,10 @@ export default function MachineROI() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average ROI</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Average ROI
+              <HelpTooltip content="Average return on investment across all machines. Positive ROI indicates profitable operations" size="sm" />
+            </CardTitle>
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -223,7 +237,10 @@ export default function MachineROI() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Payback Period</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Avg Payback Period
+              <HelpTooltip content="Average time in months to recover the initial investment at current profit rates" size="sm" />
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

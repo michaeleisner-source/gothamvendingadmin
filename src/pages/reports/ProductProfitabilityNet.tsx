@@ -4,6 +4,7 @@ import { useFeeRuleCache, aggregateWithFees, money, pct } from "@/utils/fees";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, BarChart3, Info, Package, TrendingUp, DollarSign, Activity } from "lucide-react";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 /**
  * Product Profitability (Net) — last 30 days
@@ -197,9 +198,17 @@ export default function ProductProfitabilityNet() {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Product Profitability (Net)</h1>
-          <p className="text-muted-foreground">Detailed profit analysis for the last 30 days</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              Product Profitability (Net)
+              <HelpTooltip 
+                content="Shows net profit for each product after deducting costs of goods sold (COGS), payment processing fees, and other expenses. Based on last 30 days of sales data."
+                size="md"
+              />
+            </h1>
+            <p className="text-muted-foreground">Detailed profit analysis for the last 30 days</p>
+          </div>
         </div>
         <Button variant="outline" onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -213,7 +222,10 @@ export default function ProductProfitabilityNet() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Products Sold</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  Products Sold
+                  <HelpTooltip content="Number of unique products that generated sales in the last 30 days" size="sm" />
+                </p>
                 <p className="text-2xl font-bold">{kpiMetrics.totalProducts}</p>
                 <p className="text-xs text-blue-600">Active SKUs</p>
               </div>
@@ -226,7 +238,10 @@ export default function ProductProfitabilityNet() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-700">Net Revenue</p>
+                <p className="text-sm text-green-700 flex items-center gap-2">
+                  Net Revenue
+                  <HelpTooltip content="Total revenue after deducting COGS, payment processing fees, and other expenses" size="sm" />
+                </p>
                 <p className="text-2xl font-bold text-green-800">{fmt(kpiMetrics.totalNet)}</p>
                 <p className="text-xs text-green-600">After fees & costs</p>
               </div>
@@ -239,7 +254,10 @@ export default function ProductProfitabilityNet() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg Net Margin</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  Avg Net Margin
+                  <HelpTooltip content="Average net profit margin across all products. Calculated as (Net Profit ÷ Gross Revenue) × 100" size="sm" />
+                </p>
                 <p className="text-2xl font-bold">{kpiMetrics.avgNetMargin.toFixed(1)}%</p>
                 <p className="text-xs text-purple-600">Profitability</p>
               </div>

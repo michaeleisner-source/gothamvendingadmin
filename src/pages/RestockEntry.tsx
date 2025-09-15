@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Package, Truck, AlertCircle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 export default function RestockEntry() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -153,6 +154,10 @@ export default function RestockEntry() {
       <div className="flex items-center gap-2">
         <Truck className="w-6 h-6" />
         <h1 className="text-2xl font-bold">Restock Entry</h1>
+        <HelpTooltip 
+          content="Record inventory restocks to maintain accurate stock levels. Select machine and slot, or enter product SKU. System will update inventory levels and track restock history."
+          size="md"
+        />
       </div>
       <p className="text-muted-foreground">
         Record inventory restocks by machine slot or product SKU

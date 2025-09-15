@@ -11,7 +11,13 @@ const FinanceManagement = () => {
     <HelpTooltipProvider>
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Finance Management</h1>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            Finance Management
+            <HelpTooltip 
+              content="Comprehensive financial management hub for payment processors, commissions, taxes, and profitability analysis. Monitor all financial aspects of your vending operations."
+              size="md"
+            />
+          </h1>
         </div>
 
         <Tabs defaultValue="processors" className="space-y-6">
