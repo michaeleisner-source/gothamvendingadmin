@@ -14,6 +14,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { Edit, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Supplier = {
   id: string;
@@ -62,6 +69,8 @@ const Suppliers = () => {
     name: "",
     contact: "",
   });
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const {
     data: suppliers = [],
@@ -84,6 +93,47 @@ const Suppliers = () => {
     },
   });
 
+  const updateSupplierMutation = useMutation({
+    mutationFn: async (supplier: Supplier) => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .update({ name: supplier.name, contact: supplier.contact })
+        .eq("id", supplier.id)
+        .select()
+        .single();
+      
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      setShowEditDialog(false);
+      setEditingSupplier(null);
+      toast.success("Supplier updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Error updating supplier: ${error.message}`);
+    },
+  });
+
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (supplierId: string) => {
+      const { error } = await supabase
+        .from("suppliers")
+        .delete()
+        .eq("id", supplierId);
+      
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      toast.success("Supplier deleted successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Error deleting supplier: ${error.message}`);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -100,6 +150,25 @@ const Suppliers = () => {
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveSupplier = () => {
+    if (!editingSupplier?.name.trim()) {
+      toast.error("Supplier name is required");
+      return;
+    }
+    updateSupplierMutation.mutate(editingSupplier);
+  };
+
+  const handleDeleteSupplier = (supplier: Supplier) => {
+    if (confirm(`Are you sure you want to delete supplier "${supplier.name}"?`)) {
+      deleteSupplierMutation.mutate(supplier.id);
+    }
   };
 
   if (error) {
@@ -182,6 +251,7 @@ const Suppliers = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Contact</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -189,6 +259,25 @@ const Suppliers = () => {
                     <TableRow key={supplier.id}>
                       <TableCell className="font-medium">{supplier.name}</TableCell>
                       <TableCell>{supplier.contact || "-"}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditSupplier(supplier)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteSupplier(supplier)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -197,6 +286,47 @@ const Suppliers = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Supplier Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Supplier</DialogTitle>
+          </DialogHeader>
+          {editingSupplier && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={editingSupplier.name}
+                  onChange={(e) =>
+                    setEditingSupplier({ ...editingSupplier, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-contact">Contact</Label>
+                <Input
+                  id="edit-contact"
+                  value={editingSupplier.contact || ""}
+                  onChange={(e) =>
+                    setEditingSupplier({ ...editingSupplier, contact: e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveSupplier} disabled={updateSupplierMutation.isPending}>
+                  {updateSupplierMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

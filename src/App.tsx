@@ -47,7 +47,7 @@ import MachineSetup from "./pages/MachineSetup";
 import SlotPlanner from "./pages/SlotPlanner";
 import Audit from "./pages/Audit";
 import PaymentProcessors from "./pages/PaymentProcessors";
-import Staff from "./pages/Staff";
+import StaffEnhanced from "./pages/StaffEnhanced";
 import FinanceManagement from "./pages/FinanceManagement";
 import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
@@ -107,7 +107,7 @@ const App = () => (
             <Route path="/finance/processors" element={<PaymentProcessors />} />
             <Route path="/finance/profitability" element={<ProductProfitabilityNet />} />
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
-            <Route path="/staff" element={<Staff />} />
+            <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/health" element={<Health />} />

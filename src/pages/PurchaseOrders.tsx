@@ -19,7 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Download, Filter, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Plus, Search, Download, Filter, Trash2, Edit } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Textarea,
+} from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -76,6 +86,8 @@ const PurchaseOrders = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const deletePurchaseOrderMutation = useMutation({
     mutationFn: async (poId: string) => {
@@ -95,9 +107,43 @@ const PurchaseOrders = () => {
     },
   });
 
+  const updatePurchaseOrderMutation = useMutation({
+    mutationFn: async (po: PurchaseOrder) => {
+      const { error } = await supabase
+        .from("purchase_orders")
+        .update({
+          status: po.status,
+          notes: po.notes,
+        })
+        .eq("id", po.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      setShowEditDialog(false);
+      setEditingPO(null);
+      toast.success("Purchase order updated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Error updating purchase order");
+    },
+  });
+
   const handleDeletePO = async (po: PurchaseOrder) => {
     if (confirm(`⚠️ Are you sure you want to delete PO #${getShortId(po.id)}?\n\n• This will permanently delete the purchase order\n• All line items will also be deleted\n• This action CANNOT be undone\n\nClick OK to confirm deletion or Cancel to keep the purchase order.`)) {
       deletePurchaseOrderMutation.mutate(po.id);
+    }
+  };
+
+  const handleEditPO = (po: PurchaseOrder) => {
+    setEditingPO(po);
+    setShowEditDialog(true);
+  };
+
+  const handleSavePO = () => {
+    if (editingPO) {
+      updatePurchaseOrderMutation.mutate(editingPO);
     }
   };
 
@@ -316,18 +362,30 @@ const PurchaseOrders = () => {
                           </Link>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleDeletePO(po);
-                            }}
-                            className="text-destructive hover:text-destructive"
-                            disabled={deletePurchaseOrderMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleEditPO(po);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeletePO(po);
+                              }}
+                              className="text-destructive hover:text-destructive"
+                              disabled={deletePurchaseOrderMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -351,6 +409,56 @@ const PurchaseOrders = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Purchase Order Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Purchase Order #{editingPO ? getShortId(editingPO.id) : ""}</DialogTitle>
+          </DialogHeader>
+          {editingPO && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-status">Status</Label>
+                <Select
+                  value={editingPO.status}
+                  onValueChange={(value) => setEditingPO({ ...editingPO, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OPEN">Open</SelectItem>
+                    <SelectItem value="SUBMITTED">Submitted</SelectItem>
+                    <SelectItem value="RECEIVED">Received</SelectItem>
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  value={editingPO.notes || ""}
+                  onChange={(e) => setEditingPO({ ...editingPO, notes: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSavePO}
+                  disabled={updatePurchaseOrderMutation.isPending}
+                >
+                  {updatePurchaseOrderMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
