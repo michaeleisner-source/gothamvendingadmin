@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 type Supplier = {
   id: string;
@@ -173,16 +174,23 @@ const Suppliers = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">Suppliers</h1>
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-2xl font-bold">Suppliers</h1>
+          <HelpTooltip content="Manage your product suppliers and vendor relationships. Add new suppliers, update contact information, and track supplier performance. Create purchase orders directly from supplier profiles." />
+        </div>
         <p className="text-destructive">Error loading suppliers: {error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Suppliers</h1>
+    <HelpTooltipProvider>
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-2xl font-bold">Suppliers</h1>
+          <HelpTooltip content="Manage your product suppliers and vendor relationships. Add new suppliers, update contact information, and track supplier performance. Create purchase orders directly from supplier profiles." />
+        </div>
 
       {/* Add Supplier Form */}
       <Card className="mb-8">
@@ -327,7 +335,8 @@ const Suppliers = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </HelpTooltipProvider>
   );
 };
 

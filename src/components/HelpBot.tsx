@@ -103,10 +103,11 @@ export default function HelpBot() {
           setShowEscalation(false);
           setLoading(false);
         }}
-        className="fixed bottom-6 right-6 z-40 size-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
-        aria-label="Open HelpBot"
+        className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-xl hover:bg-primary/90 hover:scale-105 transition-all duration-200 flex items-center justify-center border-2 border-primary-foreground/20"
+        aria-label="Open HelpBot - Get help with any feature"
+        title="Need help? Ask me anything!"
       >
-        <MessageCircle className="size-5" />
+        <MessageCircle className="size-6" />
       </button>
 
       {/* Modal */}

@@ -30,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 type Location = {
   id: string;
@@ -137,7 +138,7 @@ const Locations = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="p-6">
         <ErrorState 
           title="Failed to Load Locations"
           message="Unable to load location data. Please check your connection and try again."
@@ -148,28 +149,32 @@ const Locations = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <MapPin className="h-8 w-8" />
-              Locations
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your vending machine locations
-            </p>
+    <HelpTooltipProvider>
+      <div className="p-6">
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <MapPin className="h-8 w-8" />
+                  Locations
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  Manage your vending machine locations
+                </p>
+              </div>
+              <HelpTooltip content="Manage all your vending machine locations. Track performance, view contracts, manage contact information, and monitor commission structures. Click on any location to view detailed analytics and performance metrics." />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button asChild>
+                <Link to="/locations/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Location
+                </Link>
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex gap-2">
-            <Button asChild>
-              <Link to="/locations/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Location
-              </Link>
-            </Button>
-          </div>
-        </div>
         
         <div className="flex justify-between">
           {/* Search Input */}
@@ -403,8 +408,9 @@ const Locations = () => {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
-    </div>
+    </HelpTooltipProvider>
   );
 };
 

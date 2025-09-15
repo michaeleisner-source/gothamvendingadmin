@@ -18,7 +18,7 @@ export function Insurance() {
   const [activeTab, setActiveTab] = useState("policies");
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <PageHeader title="Insurance Management" />
       <p className="text-muted-foreground -mt-4 mb-2">
         Manage policies, allocations, and calculate insurance costs
