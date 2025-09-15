@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
+import LocationKPIs from "@/components/kpis/LocationKPIs";
 
 export default function SlotPlanner() {
   const [machines, setMachines] = useState<Machine[]>([]);
@@ -278,7 +279,15 @@ export default function SlotPlanner() {
             </SelectContent>
           </Select>
         </CardContent>
-      </Card>
+        </Card>
+
+      {/* Location KPIs - show when machine with location is selected */}
+      {selectedMachineId && (() => {
+        const selectedMachine = machines.find(m => m.id === selectedMachineId);
+        return selectedMachine?.location_id ? (
+          <LocationKPIs locationId={selectedMachine.location_id} />
+        ) : null;
+      })()}
 
       {selectedMachineId && (
         <Tabs defaultValue="layout" className="space-y-6">
