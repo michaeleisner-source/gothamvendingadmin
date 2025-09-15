@@ -55,6 +55,7 @@ import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
 import ContractView from "./pages/ContractView"; // Contract viewing component
+import ConvertProspect from "./pages/ConvertProspect";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -84,6 +85,7 @@ const App = () => (
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/new" element={<NewProspect />} />
+            <Route path="/prospects/convert" element={<ConvertProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/prospects/funnel" element={<ProspectFunnel />} />
             <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
