@@ -54,7 +54,7 @@ import FinanceManagement from "./pages/FinanceManagement";
 import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
-import ContractView from "./pages/ContractView";
+import ContractView from "./pages/ContractView"; // Contract viewing component
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
