@@ -72,6 +72,7 @@ import MobileQuickActions from "./components/MobileQuickActions";
 import RouteEfficiency from "./pages/reports/RouteEfficiency";
 import LocationCommission from "./pages/reports/LocationCommission";
 import BusinessFlow from "./pages/BusinessFlow";
+import DailyOps from "./pages/DailyOps";
 
 const queryClient = new QueryClient();
 
@@ -146,6 +147,7 @@ const App = () => (
             {/* Feature Pack Routes */}
             <Route path="/workflow" element={<Workflow />} />
             <Route path="/business-flow" element={<BusinessFlow />} />
+            <Route path="/ops" element={<DailyOps />} />
             {/* Feature pack routes with navigation */}
             {MachineOpsRoutes({ ProtectedRoute })}
             {ProcessorStatementsRoutes({ ProtectedRoute })}
