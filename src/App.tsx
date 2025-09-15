@@ -78,6 +78,7 @@ import BusinessFlow from "./pages/BusinessFlow";
 import DailyOps from "./pages/DailyOps";
 import { Insurance } from "./pages/Insurance";
 import SmokeTest from "./pages/qa/SmokeTest";
+import VerifySmoke from "./pages/qa/VerifySmoke";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +153,7 @@ const App = () => (
           <Route path="/reports/processor-reconciliation" element={<ProcessorReconciliation />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/qa/smoke" element={<ProtectedRoute><SmokeTest /></ProtectedRoute>} />
+            <Route path="/qa/verify" element={<VerifySmoke />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
