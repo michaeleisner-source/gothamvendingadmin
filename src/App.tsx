@@ -15,6 +15,7 @@ import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
 // Phase3 Advanced Reports
 import { Phase3Routes } from "@/feature-pack/Phase3OpsPack";
 import { Phase4Routes } from "@/feature-pack/Phase4PolishPack";
+import { ReviewSnapshotRoutes } from "@/feature-pack/ReviewSnapshot";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
@@ -122,6 +123,8 @@ const App = () => (
             {Phase3Routes({ ProtectedRoute })}
             {/* Phase 4 Polish & System Health */}
             {Phase4Routes({ ProtectedRoute })}
+            {/* Review Snapshot Diagnostic Tool */}
+            {ReviewSnapshotRoutes({ ProtectedRoute })}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
