@@ -102,6 +102,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
           <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
           <SubNavItem to="/reports/location-performance" label="Location Performance" />
+          <SubNavItem to="/reports/location-commissions" label="Location Commissions" />
           <SubNavItem to="/reports/product-profitability-net" label="Product Profitability" />
           <SubNavItem to="/reports/prospect-funnel" label="Prospect Funnel" />
           <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />

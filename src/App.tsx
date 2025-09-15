@@ -70,6 +70,7 @@ import MachineROI from "./pages/reports/MachineROI";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 import RouteEfficiency from "./pages/reports/RouteEfficiency";
+import LocationCommission from "./pages/reports/LocationCommission";
 import BusinessFlow from "./pages/BusinessFlow";
 
 const queryClient = new QueryClient();
@@ -130,6 +131,7 @@ const App = () => (
             <Route path="/reports/machine-roi" element={<MachineROI />} />
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
+            <Route path="/reports/location-commissions" element={<ProtectedRoute><LocationCommission /></ProtectedRoute>} />
             <Route path="/finance/commissions" element={<CommissionDashboard />} />
             <Route path="/finance/commission-statements" element={<CommissionStatements />} />
             <Route path="/contracts" element={<ContractManagement />} />

@@ -3,7 +3,7 @@ import { Link, Route } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
   ShieldAlert, CheckCircle2, AlertTriangle, Info, Wrench, Timer,
-  BarChart3, Gauge, TrendingUp, Landmark
+  BarChart3, Gauge, TrendingUp, Landmark, Receipt
 } from "lucide-react";
 
 /* ───────────────────────────────── helpers ───────────────────────────────── */
@@ -490,6 +490,7 @@ export function ExecutiveOverview() {
           <Link className="underline" to="/reports/machine-roi"><Landmark className="inline h-4 w-4 mr-1" />Machine ROI</Link>
           <Link className="underline" to="/reports/prospect-funnel"><TrendingUp className="inline h-4 w-4 mr-1" />Prospect Funnel</Link>
           <Link className="underline" to="/reports/route-efficiency"><Gauge className="inline h-4 w-4 mr-1" />Route Efficiency</Link>
+          <Link className="underline" to="/reports/location-commissions"><Receipt className="inline h-4 w-4 mr-1" />Location Commissions</Link>
           <Link className="underline" to="/reports/low-stock"><Wrench className="inline h-4 w-4 mr-1" />Low Stock</Link>
           <Link className="underline" to="/reports/location-profitability"><BarChart3 className="inline h-4 w-4 mr-1" />Location P&L</Link>
         </div>
