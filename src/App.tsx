@@ -28,6 +28,7 @@ import ProductsEnhanced from "./pages/ProductsEnhanced";
 import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
+import NewProspect from "./pages/NewProspect";
 import ProspectDetail from "./pages/ProspectDetail";
 import ProspectFunnel from "./pages/reports/ProspectFunnel";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/" element={<EnhancedDashboard />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
+            <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/prospects/funnel" element={<ProspectFunnel />} />
             <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
