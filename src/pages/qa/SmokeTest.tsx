@@ -107,6 +107,22 @@ export default function SmokeTest() {
     clear(); setBusy(true);
     try {
       say("Starting QA Smoke…");
+      
+      // Check authentication first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        say("❌ ERROR: Not authenticated. Please sign in first.");
+        return;
+      }
+      say(`✓ Authenticated as: ${user.email}`);
+      
+      // Check if org exists
+      const { data: profile } = await supabase.from("profiles").select("org_id").single();
+      if (!profile?.org_id) {
+        say("❌ ERROR: No organization found. Please create an organization first.");
+        return;
+      }
+      say(`✓ Organization context: ${profile.org_id}`);
       const productId  = await ensureProduct("QA-SODA-12", "QA Soda 12oz", 50);
       const locationId = await ensureLocation("QA Test Site", {
         commission_model: "percent_gross",
