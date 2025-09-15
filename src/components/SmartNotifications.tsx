@@ -48,10 +48,10 @@ export function SmartNotifications() {
           title: `${silentMachines.length} Silent Machines Detected`,
           message: 'Machines haven\'t recorded sales in 48+ hours',
           action: {
-            label: 'View Details',
-            handler: () => window.location.href = '/reports'
+            label: 'View Machines',
+            handler: () => window.location.href = '/machines'
           },
-          dismissible: false,
+          dismissible: true,
           timestamp: new Date()
         });
       }
