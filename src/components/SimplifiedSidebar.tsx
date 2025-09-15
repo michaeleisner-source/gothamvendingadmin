@@ -4,12 +4,13 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play, Route
+  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
   const { isDemo } = useDemo();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    pipeline: false,
     operations: false,
     supply: false,
     reports: false,
@@ -33,8 +34,16 @@ export function SimplifiedSidebar() {
         {/* Dashboard */}
         <NavItem to="/" icon={LayoutDashboard} label="Mission Control" />
 
-        {/* Pipeline */}
-        <NavItem to="/prospects" icon={MapPinned} label="Pipeline" />
+        {/* Pipeline - Expandable */}
+        <ExpandableGroup
+          label="Pipeline"
+          icon={MapPinned}
+          isOpen={openGroups.pipeline}
+          onClick={() => toggleGroup('pipeline')}
+        >
+          <SubNavItem to="/prospects" label="All Prospects" />
+          <SubNavItem to="/prospects/convert" label="Convert Prospect → Contract" />
+        </ExpandableGroup>
         
         {/* Business Flow Guide */}
         <NavItem to="/business-flow" icon={Building2} label="Business Flow" />
