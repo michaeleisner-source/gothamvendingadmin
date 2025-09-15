@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart3, Users, CheckCircle2, XCircle } from "lucide-react";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 type Prospect = {
   id: string;
@@ -27,11 +28,14 @@ function pickStage(p: Prospect) {
   return normalized[s] || "new";
 }
 
-function Tile({ title, value, icon }: { title: string; value: React.ReactNode; icon?: React.ReactNode }) {
+function Tile({ title, value, icon, tooltip }: { title: string; value: React.ReactNode; icon?: React.ReactNode; tooltip?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">{title}</div>
+        <div className="text-sm text-muted-foreground flex items-center gap-1">
+          {title}
+          {tooltip && <HelpTooltip content={tooltip} size="sm" />}
+        </div>
         {icon}
       </div>
       <div className="text-lg font-semibold">{value}</div>
@@ -118,15 +122,18 @@ export default function PipelineAnalytics() {
   }, [rows]);
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" /> Pipeline Analytics
-        </h1>
-        <Link to="/prospects" className="rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
-          Back to Prospects
-        </Link>
-      </div>
+    <HelpTooltipProvider>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" /> 
+            Pipeline Analytics
+            <HelpTooltip content="Analyze prospect pipeline performance including conversion rates, lead sources, and pipeline aging to optimize your sales process." />
+          </h1>
+          <Link to="/prospects" className="rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
+            Back to Prospects
+          </Link>
+        </div>
 
       {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {err && <div className="text-sm text-red-400">Error: {err}</div>}
@@ -134,9 +141,24 @@ export default function PipelineAnalytics() {
       {!loading && !err && (
         <>
           <div className="grid gap-2 sm:grid-cols-3">
-            <Tile title="Total Leads" value={rows.length.toLocaleString()} icon={<Users className="h-4 w-4" />} />
-            <Tile title="Conversion Rate" value={`${convRate.toFixed(1)}%`} icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />} />
-            <Tile title="Lost (%)" value={`${((rows.filter((p) => pickStage(p) === "lost").length / (rows.length || 1)) * 100).toFixed(1)}%`} icon={<XCircle className="h-4 w-4 text-rose-500" />} />
+            <Tile 
+              title="Total Leads" 
+              value={rows.length.toLocaleString()} 
+              icon={<Users className="h-4 w-4" />} 
+              tooltip="Total number of prospects in your pipeline database"
+            />
+            <Tile 
+              title="Conversion Rate" 
+              value={`${convRate.toFixed(1)}%`} 
+              icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+              tooltip="Percentage of prospects that have been successfully converted to customers"
+            />
+            <Tile 
+              title="Lost (%)" 
+              value={`${((rows.filter((p) => pickStage(p) === "lost").length / (rows.length || 1)) * 100).toFixed(1)}%`} 
+              icon={<XCircle className="h-4 w-4 text-rose-500" />}
+              tooltip="Percentage of prospects that were lost or disqualified during the sales process"
+            />
           </div>
 
           <div className="grid gap-3 lg:grid-cols-2">
@@ -157,5 +179,6 @@ export default function PipelineAnalytics() {
         </>
       )}
     </div>
+    </HelpTooltipProvider>
   );
 }

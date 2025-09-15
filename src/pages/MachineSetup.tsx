@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Monitor, Plus, Building2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 export default function MachineSetup() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -236,14 +237,18 @@ export default function MachineSetup() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Machine Setup</h1>
-          <p className="text-muted-foreground">
-            Manage locations and vending machines in one place
-          </p>
-        </div>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              Machine Setup
+              <HelpTooltip content="Set up new vending machines and locations. Create location profiles and machine records with all necessary configuration including financial terms and connectivity settings." />
+            </h1>
+            <p className="text-muted-foreground">
+              Manage locations and vending machines in one place
+            </p>
+          </div>
         <Button onClick={loadData} variant="outline" disabled={loading}>
           {loading ? (
             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -261,6 +266,7 @@ export default function MachineSetup() {
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               Create Location
+              <HelpTooltip content="Add new vending machine locations with contact information and estimated traffic data for business planning." size="sm" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -373,6 +379,7 @@ export default function MachineSetup() {
             <CardTitle className="flex items-center gap-2">
               <Monitor className="w-5 h-5" />
               Create Machine
+              <HelpTooltip content="Register new vending machines with technical specifications, financial terms, and location assignments." size="sm" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -656,6 +663,7 @@ export default function MachineSetup() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </HelpTooltipProvider>
   );
 }

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, CheckCircle, Download, Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 // ======== TYPES (matching actual Supabase schema) ========
 export type Product = {
@@ -495,14 +496,18 @@ export default function AuditDashboard() {
   const totalIssues = results ? Object.values(results.issues).reduce((sum, issues) => sum + issues.length, 0) : 0;
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Advanced System Audit</h1>
-          <p className="text-muted-foreground">
-            Comprehensive analysis of data integrity, profitability, and operational efficiency
-          </p>
-        </div>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              Advanced System Audit
+              <HelpTooltip content="Comprehensive system analysis that checks data integrity, identifies profitability issues, validates inventory configurations, and flags operational inefficiencies across your entire vending operation." />
+            </h1>
+            <p className="text-muted-foreground">
+              Comprehensive analysis of data integrity, profitability, and operational efficiency
+            </p>
+          </div>
         <div className="flex gap-2">
           <Button onClick={loadAll} disabled={loading}>
             {loading ? (
@@ -518,7 +523,10 @@ export default function AuditDashboard() {
       {/* Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Audit Configuration</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Audit Configuration
+            <HelpTooltip content="Configure audit sensitivity settings to customize which issues are flagged based on your business requirements." size="sm" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
@@ -562,7 +570,10 @@ export default function AuditDashboard() {
           {/* Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Audit Summary</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Audit Summary
+                <HelpTooltip content="Overview of all detected issues organized by category. Each issue type includes specific recommendations for resolution." size="sm" />
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -630,6 +641,7 @@ export default function AuditDashboard() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </HelpTooltipProvider>
   );
 }

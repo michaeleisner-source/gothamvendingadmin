@@ -20,6 +20,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 export default function SlotPlanner() {
   const [machines, setMachines] = useState<Machine[]>([]);
@@ -238,14 +239,18 @@ export default function SlotPlanner() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Grid3X3 className="w-6 h-6" />
-        <h1 className="text-2xl font-bold">Slot Planner</h1>
-      </div>
-      <p className="text-muted-foreground">
-        Configure machine slot layouts and assign products to each slot
-      </p>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center gap-2">
+          <Grid3X3 className="w-6 h-6" />
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            Slot Planner
+            <HelpTooltip content="Configure machine slot layouts by creating grids and assigning products to each slot. Essential for organizing inventory and optimizing product placement." />
+          </h1>
+        </div>
+        <p className="text-muted-foreground">
+          Configure machine slot layouts and assign products to each slot
+        </p>
 
       {/* Machine Selection */}
       <Card>
@@ -253,6 +258,7 @@ export default function SlotPlanner() {
           <CardTitle className="flex items-center gap-2">
             <Monitor className="w-5 h-5" />
             Select Machine
+            <HelpTooltip content="Choose which vending machine to configure slot layouts for. Each machine can have a unique slot grid arrangement." size="sm" />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -448,5 +454,6 @@ export default function SlotPlanner() {
         </Tabs>
       )}
     </div>
+    </HelpTooltipProvider>
   );
 }
