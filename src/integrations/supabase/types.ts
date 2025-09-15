@@ -1010,7 +1010,22 @@ export type Database = {
           term_months?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "machine_finance_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: true
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_finance_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: true
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+        ]
       }
       machine_processor_mappings: {
         Row: {
