@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { KPIBar, KPI } from "@/components/machine-ops/KPI";
+import { KPIBar, KPI } from "@/components/ui/KPI";
 import { useFeeRuleCache, aggregateWithFees, money as fmtMoney } from "@/utils/fees";
 import { Wrench, AlertTriangle, Truck, FilePlus2, ChevronRight, Plus, RefreshCw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -80,8 +80,12 @@ export default function DailyOps() {
           setProspects(stuck);
         }
 
-        // Tickets open (placeholder - no tickets table yet)
-        setTicketsOpen(0);
+        // Tickets open
+        const t = await supabase.from("tickets").select("id,status").limit(10000);
+        if (!t.error) {
+          const open = (t.data||[]).filter((x:any)=>!x.status || !/closed|resolved/i.test(String(x.status))).length;
+          setTicketsOpen(open);
+        }
 
         // Low stock placeholder (shows once inventory system is implemented)
         setLowStock([]);
