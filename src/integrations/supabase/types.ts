@@ -919,10 +919,14 @@ export type Database = {
           address_line2: string | null
           city: string | null
           commission_flat_cents: number | null
+          commission_min_cents: number | null
           commission_model: string | null
+          commission_notes: string | null
+          commission_pct_bps: number | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          contract_id: string | null
           contract_signed_at: string | null
           contract_url: string | null
           contract_version: string | null
@@ -944,10 +948,14 @@ export type Database = {
           address_line2?: string | null
           city?: string | null
           commission_flat_cents?: number | null
+          commission_min_cents?: number | null
           commission_model?: string | null
+          commission_notes?: string | null
+          commission_pct_bps?: number | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_id?: string | null
           contract_signed_at?: string | null
           contract_url?: string | null
           contract_version?: string | null
@@ -969,10 +977,14 @@ export type Database = {
           address_line2?: string | null
           city?: string | null
           commission_flat_cents?: number | null
+          commission_min_cents?: number | null
           commission_model?: string | null
+          commission_notes?: string | null
+          commission_pct_bps?: number | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_id?: string | null
           contract_signed_at?: string | null
           contract_url?: string | null
           contract_version?: string | null
@@ -990,6 +1002,13 @@ export type Database = {
           traffic_monthly_est?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "locations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "locations_from_prospect_id_fkey"
             columns: ["from_prospect_id"]
