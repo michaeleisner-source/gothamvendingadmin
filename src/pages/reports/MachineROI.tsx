@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, DollarSign, Percent, Calendar } from "lucide-react";
+import { TrendingUp, DollarSign, Percent, Calendar, Trophy, AlertTriangle, Target, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface MachineROIData {
@@ -154,8 +154,24 @@ export default function MachineROI() {
 
   const totalInvestment = machineROIData?.reduce((sum, machine) => sum + machine.total_investment, 0) || 0;
   const totalNetProfit = machineROIData?.reduce((sum, machine) => sum + machine.net_profit, 0) || 0;
+  const totalRevenue = machineROIData?.reduce((sum, machine) => sum + machine.monthly_revenue, 0) || 0;
   const averageROI = machineROIData?.length ? 
     machineROIData.reduce((sum, machine) => sum + machine.roi_percentage, 0) / machineROIData.length : 0;
+  
+  // Advanced KPIs
+  const bestPerformingMachine = machineROIData?.reduce((best, machine) => 
+    machine.roi_percentage > (best?.roi_percentage || -Infinity) ? machine : best, null);
+  const worstPerformingMachine = machineROIData?.reduce((worst, machine) => 
+    machine.roi_percentage < (worst?.roi_percentage || Infinity) ? machine : worst, null);
+  
+  const profitableMachines = machineROIData?.filter(m => m.status === 'positive').length || 0;
+  const unprofitableMachines = machineROIData?.filter(m => m.status === 'negative').length || 0;
+  const breakEvenMachines = machineROIData?.filter(m => m.status === 'breaking_even').length || 0;
+  
+  const averagePayback = machineROIData?.filter(m => isFinite(m.payback_months) && m.payback_months > 0)
+    .reduce((sum, machine, _, arr) => sum + machine.payback_months / arr.length, 0) || 0;
+  
+  const averageRevenuePerMachine = machineROIData?.length ? totalRevenue / machineROIData.length : 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -164,7 +180,7 @@ export default function MachineROI() {
         <h1 className="text-2xl font-bold">Machine ROI Analysis</h1>
       </div>
 
-      {/* Summary Cards */}
+      {/* Primary KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -173,6 +189,9 @@ export default function MachineROI() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalInvestment)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Across {machineROIData?.length || 0} machines
+            </p>
           </CardContent>
         </Card>
 
@@ -183,6 +202,9 @@ export default function MachineROI() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalNetProfit)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Monthly performance
+            </p>
           </CardContent>
         </Card>
 
@@ -193,19 +215,102 @@ export default function MachineROI() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatPercentage(averageROI)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Portfolio average
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Machines Analyzed</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Avg Payback Period</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{machineROIData?.length || 0}</div>
+            <div className="text-2xl font-bold">
+              {averagePayback > 0 ? `${averagePayback.toFixed(1)}mo` : '—'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Time to break even
+            </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Performance KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Best Performer</CardTitle>
+            <Trophy className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">
+              {bestPerformingMachine ? formatPercentage(bestPerformingMachine.roi_percentage) : '—'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {bestPerformingMachine?.machine_name || 'No data'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Worst Performer</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">
+              {worstPerformingMachine ? formatPercentage(worstPerformingMachine.roi_percentage) : '—'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {worstPerformingMachine?.machine_name || 'No data'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Revenue per Machine</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">{formatCurrency(averageRevenuePerMachine)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Monthly average
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Machine Status Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Machine Performance Distribution</CardTitle>
+          <CardDescription>
+            Breakdown of machine profitability status
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950">
+              <div className="text-2xl font-bold text-green-600">{profitableMachines}</div>
+              <p className="text-sm text-green-700 dark:text-green-300">Profitable Machines</p>
+              <p className="text-xs text-muted-foreground mt-1">ROI {'>'} 5%</p>
+            </div>
+            <div className="text-center p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950">
+              <div className="text-2xl font-bold text-yellow-600">{breakEvenMachines}</div>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">Break-Even Machines</p>
+              <p className="text-xs text-muted-foreground mt-1">ROI -5% to 5%</p>
+            </div>
+            <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950">
+              <div className="text-2xl font-bold text-red-600">{unprofitableMachines}</div>
+              <p className="text-sm text-red-700 dark:text-red-300">Unprofitable Machines</p>
+              <p className="text-xs text-muted-foreground mt-1">ROI {'<'} -5%</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Machine ROI Table */}
       <Card>
