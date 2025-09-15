@@ -81,6 +81,7 @@ const App = () => (
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/prospects/funnel" element={<ProspectFunnel />} />
+            <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <Route path="/locations" element={<LocationsEnhanced />} />
             <Route path="/locations/:id" element={<LocationDetail />} />
