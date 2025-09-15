@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+// Contract view component for displaying contract details
+
 export default function ContractView() {
   const { id } = useParams(); // /contracts/:id
   const [row, setRow] = useState<any>(null);
