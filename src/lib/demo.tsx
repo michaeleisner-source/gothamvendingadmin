@@ -42,10 +42,17 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Protected Route - bypasses login (all routes are now public)
+// Protected Route - handles both demo mode and real authentication
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
-  // Always return children without authentication check
-  return children;
+  const { isDemo } = useDemo();
+  
+  // In demo mode, bypass auth
+  if (isDemo) {
+    return children;
+  }
+  
+  // In normal mode, use proper authentication
+  return <AuthGate>{children}</AuthGate>;
 }
 
 // Demo Banner - visible indicator + read‑only hint
