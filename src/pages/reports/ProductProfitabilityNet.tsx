@@ -49,6 +49,7 @@ type ProductAgg = {
 const fmt = (n: number) => money(Number.isFinite(n) ? n : 0);
 
 export default function ProductProfitabilityNet() {
+  console.log('ProductProfitabilityNet component loaded');
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<SaleRow[]>([]);
   const [products, setProducts] = useState<Record<string, ProductRow>>({});
@@ -61,28 +62,37 @@ export default function ProductProfitabilityNet() {
   const { feeFor, loading: feeLoading, error: feeError } = useFeeRuleCache();
 
   useEffect(() => {
+    console.log('ProductProfitabilityNet useEffect triggered');
     (async () => {
       setLoading(true);
       setError(null);
+      console.log('Starting data fetch...');
       try {
         // 1) sales rows (last 30d)
+        console.log('Fetching sales data since:', sinceISO);
         const s = await supabase
           .from("sales")
           .select("machine_id,product_id,qty,unit_price_cents,unit_cost_cents,occurred_at")
           .gte("occurred_at", sinceISO)
           .limit(50000);
         if (s.error) throw s.error;
+        console.log('Sales data fetched:', s.data?.length || 0, 'rows');
         setRows((s.data || []) as SaleRow[]);
 
         // 2) products lookup (select all to avoid missing-column errors)
+        console.log('Fetching products data...');
         const p = await supabase.from("products").select("*").limit(10000);
         if (p.error) throw p.error;
+        console.log('Products data fetched:', p.data?.length || 0, 'products');
         const map: Record<string, ProductRow> = {};
         (p.data || []).forEach((r: any) => { map[r.id] = r as ProductRow; });
         setProducts(map);
+        console.log('Data fetch completed successfully');
       } catch (e: any) {
+        console.error('Error fetching data:', e);
         setError(e?.message || String(e));
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     })();
@@ -171,8 +181,10 @@ export default function ProductProfitabilityNet() {
   }, [aggs]);
 
   if (loading || feeLoading) {
+    console.log('Showing loading state - loading:', loading, 'feeLoading:', feeLoading);
     return (
       <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold mb-4">Loading Product Profitability...</h1>
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-48"></div>
           <div className="grid grid-cols-4 gap-4">
@@ -186,14 +198,18 @@ export default function ProductProfitabilityNet() {
   }
 
   if (error || feeError) {
+    console.log('Showing error state - error:', error, 'feeError:', feeError);
     return (
       <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold mb-4 text-red-600">Error Loading Data</h1>
         <div className="text-sm text-rose-400">
           {(error || feeError) ?? "Unknown error"}
         </div>
       </div>
     );
   }
+
+  console.log('Rendering main component - aggs:', aggs.length, 'kpiMetrics:', kpiMetrics);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
