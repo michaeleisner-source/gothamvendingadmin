@@ -3299,6 +3299,13 @@ export type Database = {
             referencedRelation: "v_machine_health"
             referencedColumns: ["machine_id"]
           },
+          {
+            foreignKeyName: "tickets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
