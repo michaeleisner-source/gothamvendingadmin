@@ -409,9 +409,8 @@ export default function SlotPlanner() {
                                   <SelectTrigger className="w-64">
                                     <SelectValue placeholder="Select product..." />
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="">No product</SelectItem>
-                                    {products.map((product) => (
+                                   <SelectContent>
+                                     {products.map((product) => (
                                       <SelectItem key={product.id} value={product.id}>
                                         {product.name} ({product.sku})
                                       </SelectItem>
