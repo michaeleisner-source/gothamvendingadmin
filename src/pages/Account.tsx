@@ -79,50 +79,52 @@ const Account = () => {
   }
 
   return (
-    <div className="container max-w-2xl mx-auto mt-16 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>
-            Manage your account and organization settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">User Information</h3>
-            <p className="text-muted-foreground">
-              Email: <span className="font-mono">{user.email}</span>
-            </p>
-            <p className="text-muted-foreground">
-              User ID: <span className="font-mono text-xs">{user.id}</span>
-            </p>
-          </div>
+    <div className="p-6">
+      <div className="max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Settings</CardTitle>
+            <CardDescription>
+              Manage your account and organization settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">User Information</h3>
+              <p className="text-muted-foreground">
+                Email: <span className="font-mono">{user.email}</span>
+              </p>
+              <p className="text-muted-foreground">
+                User ID: <span className="font-mono text-xs">{user.id}</span>
+              </p>
+            </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Organization</h3>
-            <p className="text-sm text-muted-foreground">
-              Initialize your organization to start using the multi-tenant features.
-            </p>
-            <Button 
-              onClick={handleInitializeOrg} 
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? "Initializing..." : "Initialize My Org"}
-            </Button>
-          </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Organization</h3>
+              <p className="text-sm text-muted-foreground">
+                Initialize your organization to start using the multi-tenant features.
+              </p>
+              <Button 
+                onClick={handleInitializeOrg} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Initializing..." : "Initialize My Org"}
+              </Button>
+            </div>
 
-          <div className="pt-4 border-t">
-            <Button 
-              onClick={handleSignOut} 
-              variant="outline"
-              className="w-full"
-            >
-              Sign out
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleSignOut} 
+                variant="outline"
+                className="w-full"
+              >
+                Sign out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
