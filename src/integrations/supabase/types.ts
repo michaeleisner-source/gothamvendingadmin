@@ -3156,16 +3156,62 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_sla_policies: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          minutes_to_ack: number
+          minutes_to_resolve: number
+          org_id: string
+          priority: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          minutes_to_ack: number
+          minutes_to_resolve: number
+          org_id: string
+          priority: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          minutes_to_ack?: number
+          minutes_to_resolve?: number
+          org_id?: string
+          priority?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sla_policies_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
+          acknowledged_at: string | null
           assigned_to: string | null
           category: string | null
+          closed_at: string | null
           created_at: string
           created_by: string | null
           description: string | null
+          due_at: string | null
+          first_response_at: string | null
           id: string
           labor_cost_cents: number | null
           labor_hours: number | null
+          location_id: string | null
           machine_id: string | null
           org_id: string
           parts_cost_cents: number | null
@@ -3177,14 +3223,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acknowledged_at?: string | null
           assigned_to?: string | null
           category?: string | null
+          closed_at?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          due_at?: string | null
+          first_response_at?: string | null
           id?: string
           labor_cost_cents?: number | null
           labor_hours?: number | null
+          location_id?: string | null
           machine_id?: string | null
           org_id: string
           parts_cost_cents?: number | null
@@ -3196,14 +3247,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acknowledged_at?: string | null
           assigned_to?: string | null
           category?: string | null
+          closed_at?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          due_at?: string | null
+          first_response_at?: string | null
           id?: string
           labor_cost_cents?: number | null
           labor_hours?: number | null
+          location_id?: string | null
           machine_id?: string | null
           org_id?: string
           parts_cost_cents?: number | null
@@ -3220,6 +3276,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
           {
