@@ -21,6 +21,7 @@ import { Header } from '@/components/ui/Header';
 import { InventoryKPIs, InventoryStockDistribution } from '@/components/inventory/InventoryKPIs';
 import { TopPerformingMachines, VelocityTrends, CriticalItemsAlert } from '@/components/inventory/InventoryMetrics';
 import { useInventoryAnalytics } from '@/hooks/useInventoryAnalytics';
+import { InventoryWorkflow, InventoryActionGuide } from '@/components/inventory/InventoryWorkflow';
 
 interface InventoryLevel {
   id: string;
@@ -55,6 +56,7 @@ const Inventory = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [activeWorkflowStep, setActiveWorkflowStep] = useState(1);
   const [machines, setMachines] = useState<Array<{ id: string; name: string }>>([]);
   const [stats, setStats] = useState<InventoryStats>({
     total_items: 0,
@@ -284,139 +286,281 @@ const Inventory = () => {
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
-          {/* Filters and Search */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-wrap gap-4">
-                <div className="relative flex-1 min-w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by product, machine, slot, or SKU..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Machine:</label>
-                  <Select value={filterMachine} onValueChange={setFilterMachine}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Machines</SelectItem>
-                      {machines.map(machine => (
-                        <SelectItem key={machine.id} value={machine.id}>
-                          {machine.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Status:</label>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="out">Out of Stock</SelectItem>
-                      <SelectItem value="low">Low Stock</SelectItem>
-                      <SelectItem value="medium">Medium Stock</SelectItem>
-                      <SelectItem value="good">Good Stock</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Inventory Grid */}
-          <div className="space-y-4">
-            {filteredInventory.length === 0 ? (
+          {/* Workflow Guide */}
+          <InventoryWorkflow 
+            currentStep={activeWorkflowStep}
+            onStepChange={setActiveWorkflowStep}
+            totalItems={inventory.length}
+            filteredItems={filteredInventory.length}
+            alertItems={filteredInventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length}
+          />
+          
+          {/* Action Guide for Current Step */}
+          <InventoryActionGuide currentStep={activeWorkflowStep} />
+          
+          {/* Step-based Content */}
+          {activeWorkflowStep === 1 && (
+            <>
+              {/* Filters and Search */}
               <Card>
-                <CardContent className="p-8 text-center">
-                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No inventory found</h3>
-                  <p className="text-muted-foreground">
-                    {inventory.length === 0 
-                      ? "No inventory data available. Inventory levels are created automatically when you restock machines."
-                      : "No items match the current filters."
-                    }
-                  </p>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Step 1: Filter & Search Inventory
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="relative flex-1 min-w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by product, machine, slot, or SKU..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium">Machine:</label>
+                      <Select value={filterMachine} onValueChange={setFilterMachine}>
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Machines</SelectItem>
+                          {machines.map(machine => (
+                            <SelectItem key={machine.id} value={machine.id}>
+                              {machine.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium">Status:</label>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="out">Out of Stock</SelectItem>
+                          <SelectItem value="low">Low Stock</SelectItem>
+                          <SelectItem value="medium">Medium Stock</SelectItem>
+                          <SelectItem value="good">Good Stock</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={() => setActiveWorkflowStep(2)} className="ml-auto">
+                      Next: Analyze Status →
+                    </Button>
+                  </div>
+                  
+                  {/* Quick Stats */}
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <div className="text-lg font-semibold">{filteredInventory.length}</div>
+                      <div className="text-xs text-muted-foreground">Items Found</div>
+                    </div>
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <div className="text-lg font-semibold">{new Set(filteredInventory.map(i => i.machine_id)).size}</div>
+                      <div className="text-xs text-muted-foreground">Machines</div>
+                    </div>
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <div className="text-lg font-semibold">{filteredInventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length}</div>
+                      <div className="text-xs text-muted-foreground">Need Attention</div>
+                    </div>
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <div className="text-lg font-semibold">
+                        ${filteredInventory.reduce((sum, item) => sum + (item.current_qty * (item.products.cost || 0)), 0).toFixed(0)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Total Value</div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filteredInventory.map((item) => {
-                  const status = getStockStatus(item);
-                  const fillPercentage = Math.min((item.current_qty / item.par_level) * 100, 100);
-                  
-                  return (
-                    <Card key={item.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium">{item.products.name}</h3>
-                              <Badge variant="secondary" className="text-xs">
-                                {item.products.sku}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="w-4 h-4" />
-                              <span>{item.machines.name}</span>
-                              <span>•</span>
-                              <span>Slot {item.machine_slots.label}</span>
-                            </div>
-                          </div>
-                          <Badge className={getStockStatusColor(status)}>
-                            {getStockStatusText(status)}
-                          </Badge>
-                        </div>
+            </>
+          )}
 
-                        <div className="space-y-3">
+          {(activeWorkflowStep === 2 || activeWorkflowStep === 3 || activeWorkflowStep === 4) && (
+            <>
+              {/* Navigation between steps */}
+              <div className="flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveWorkflowStep(Math.max(1, activeWorkflowStep - 1))}
+                  disabled={activeWorkflowStep <= 1}
+                >
+                  ← Previous Step
+                </Button>
+                <Badge variant="secondary">
+                  Step {activeWorkflowStep} of 4: {activeWorkflowStep === 2 ? 'Analyze' : activeWorkflowStep === 3 ? 'Review Alerts' : 'Plan Actions'}
+                </Badge>
+                <Button 
+                  onClick={() => setActiveWorkflowStep(Math.min(4, activeWorkflowStep + 1))}
+                  disabled={activeWorkflowStep === 4}
+                >
+                  Next Step →
+                </Button>
+              </div>
+
+              {/* Inventory Grid with enhanced presentation */}
+              <div className="space-y-4">
+                {filteredInventory.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No inventory found</h3>
+                      <p className="text-muted-foreground">
+                        {inventory.length === 0 
+                          ? "No inventory data available. Inventory levels are created automatically when you restock machines."
+                          : "No items match the current filters. Try adjusting your search criteria."
+                        }
+                      </p>
+                      <Button variant="outline" className="mt-4" onClick={() => setActiveWorkflowStep(1)}>
+                        ← Back to Filters
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Summary header */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-center">
                           <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Current Stock</span>
-                              <span className="font-medium">
-                                {item.current_qty} / {item.par_level}
-                              </span>
-                            </div>
-                            <Progress value={fillPercentage} className="h-2" />
+                            <h3 className="font-semibold mb-1">
+                              {activeWorkflowStep === 2 ? 'Stock Level Analysis' : 
+                               activeWorkflowStep === 3 ? 'Alert Review' : 
+                               'Action Planning'}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Showing {filteredInventory.length} items • {filteredInventory.filter(i => getStockStatus(i) === 'out').length} out of stock • {filteredInventory.filter(i => getStockStatus(i) === 'low').length} low stock
+                            </p>
                           </div>
-
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Reorder Point</p>
-                              <p className="font-medium">{item.reorder_point}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Sales/Day</p>
-                              <p className="font-medium">{item.sales_velocity.toFixed(1)}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Days Supply</p>
-                              <p className="font-medium">
-                                {item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply)}
-                              </p>
-                            </div>
+                          <div className="flex gap-2">
+                            <Button onClick={exportInventoryCSV} variant="outline" size="sm">
+                              <Download className="w-4 h-4 mr-2" />
+                              Export
+                            </Button>
+                            <Button onClick={recalculateVelocity} variant="outline" size="sm">
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                              Refresh
+                            </Button>
                           </div>
-
-                          {item.last_restocked_at && (
-                            <div className="text-xs text-muted-foreground">
-                              Last restocked: {new Date(item.last_restocked_at).toLocaleDateString()}
-                            </div>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })}
+
+                    {/* Enhanced Inventory Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {filteredInventory
+                        .sort((a, b) => {
+                          // Prioritize by urgency in steps 3 and 4
+                          if (activeWorkflowStep >= 3) {
+                            const aStatus = getStockStatus(a);
+                            const bStatus = getStockStatus(b);
+                            if (aStatus === 'out' && bStatus !== 'out') return -1;
+                            if (bStatus === 'out' && aStatus !== 'out') return 1;
+                            if (aStatus === 'low' && bStatus === 'medium') return -1;
+                            if (bStatus === 'low' && aStatus === 'medium') return 1;
+                          }
+                          return a.products.name.localeCompare(b.products.name);
+                        })
+                        .map((item) => {
+                          const status = getStockStatus(item);
+                          const fillPercentage = Math.min((item.current_qty / item.par_level) * 100, 100);
+                          const isUrgent = status === 'out' || (status === 'low' && item.days_of_supply < 3);
+                          
+                          return (
+                            <Card key={item.id} className={`${isUrgent && activeWorkflowStep >= 3 ? 'ring-2 ring-orange-200 shadow-lg' : ''}`}>
+                              <CardContent className="p-6">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h3 className="font-medium">{item.products.name}</h3>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {item.products.sku}
+                                      </Badge>
+                                      {isUrgent && activeWorkflowStep >= 3 && (
+                                        <Badge variant="destructive" className="text-xs">
+                                          <AlertTriangle className="w-3 h-3 mr-1" />
+                                          Urgent
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <MapPin className="w-4 h-4" />
+                                      <span>{item.machines.name}</span>
+                                      <span>•</span>
+                                      <span>Slot {item.machine_slots.label}</span>
+                                    </div>
+                                  </div>
+                                  <Badge className={getStockStatusColor(status)}>
+                                    {getStockStatusText(status)}
+                                  </Badge>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <div>
+                                    <div className="flex justify-between text-sm mb-1">
+                                      <span>Current Stock</span>
+                                      <span className="font-medium">{item.current_qty} / {item.par_level}</span>
+                                    </div>
+                                    <Progress value={fillPercentage} className="h-2" />
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <div className="text-muted-foreground">Reorder Point</div>
+                                      <div className="font-medium">{item.reorder_point}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-muted-foreground">Days Supply</div>
+                                      <div className={`font-medium ${item.days_of_supply < 3 ? 'text-red-600' : item.days_of_supply < 7 ? 'text-orange-600' : ''}`}>
+                                        {item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply)}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="text-muted-foreground">Velocity</div>
+                                      <div className="font-medium">{item.sales_velocity.toFixed(1)}/day</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-muted-foreground">Stock Value</div>
+                                      <div className="font-medium">${(item.current_qty * (item.products.cost || 0)).toFixed(0)}</div>
+                                    </div>
+                                  </div>
+
+                                  {activeWorkflowStep === 4 && isUrgent && (
+                                    <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                                      <p className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">
+                                        Recommended Action:
+                                      </p>
+                                      <p className="text-xs text-orange-700 dark:text-orange-300">
+                                        {status === 'out' 
+                                          ? 'Immediate restock required - machine may be generating complaints'
+                                          : `Restock within ${Math.max(1, Math.floor(item.days_of_supply))} days to avoid stockout`
+                                        }
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {item.last_restocked_at && (
+                                    <div className="text-xs text-muted-foreground pt-2 border-t">
+                                      Last restocked: {new Date(item.last_restocked_at).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                    </div>
+                  </>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-6">
@@ -543,4 +687,5 @@ const Inventory = () => {
     </div>
   );
 };
+
 export default Inventory;
