@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useScope } from "@/context/Scope";
+import { usePageSEO } from "@/hooks/usePageSEO";
 import { AlertTriangle, Package, Download, RefreshCw, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -26,6 +27,12 @@ function csvEscape(s: string) {
 
 export default function InventoryHealth() {
   const scope = useScope();
+  
+  usePageSEO({
+    title: "Inventory Health Report",
+    description: "Monitor vending machine inventory levels, track PAR deficits, and identify restock priorities across your entire network.",
+    keywords: "inventory health, PAR levels, restock alerts, vending machine inventory, deficit tracking"
+  });
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
