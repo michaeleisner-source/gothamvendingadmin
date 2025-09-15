@@ -54,6 +54,7 @@ import FinanceManagement from "./pages/FinanceManagement";
 import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
+import ContractView from "./pages/ContractView";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -121,6 +122,7 @@ const App = () => (
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
+            <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
