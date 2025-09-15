@@ -137,11 +137,9 @@ export function SimplifiedSidebar() {
           <NavItem to="/account" icon={Settings} label="Settings" />
           <NavItem to="/admin/review-snapshot" icon={BarChart3} label="Review Snapshot" />
           <NavItem to="/admin/kickstart" icon={Play} label="Ops Kickstart" />
+          <NavItem to="/qa/smoke" icon={Play} label="QA Smoke Test" />
           {isDemo && (
-            <>
-              <NavItem to="/qa" icon={Wrench} label="QA Tools" />
-              <NavItem to="/qa/smoke" icon={Play} label="QA Smoke Test" />
-            </>
+            <NavItem to="/qa" icon={Wrench} label="QA Tools" />
           )}
         </div>
       </nav>
