@@ -4,7 +4,7 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt
+  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt, Scale
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
@@ -101,7 +101,6 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports" label="All Reports" />
           <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
           <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
-          <SubNavItem to="/reports/processor-reconciliation" label="Processor Reconciliation" />
           <SubNavItem to="/reports/location-performance" label="Location Performance" />
           <SubNavItem to="/reports/location-commissions" label="Location Commissions" />
           <SubNavItem to="/reports/product-profitability-net" label="Product Profitability" />
@@ -109,6 +108,9 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />
           <SubNavItem to="/reports/inventory-health" label="Inventory Health" />
         </ExpandableGroup>
+
+        {/* Processor Reconciliation - Standalone */}
+        <NavItem to="/reports/processor-reconciliation" icon={Scale} label="Processor Reconciliation" />
 
         {/* Support - Expandable */}
         <ExpandableGroup
