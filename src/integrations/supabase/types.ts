@@ -876,6 +876,80 @@ export type Database = {
           },
         ]
       }
+      inventory_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          location_id: string | null
+          machine_id: string | null
+          occurred_at: string
+          org_id: string
+          product_id: string
+          qty_change: number
+          reason: string
+          ref_id: string | null
+          ref_type: string | null
+          slot_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          machine_id?: string | null
+          occurred_at?: string
+          org_id: string
+          product_id: string
+          qty_change: number
+          reason: string
+          ref_id?: string | null
+          ref_type?: string | null
+          slot_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          machine_id?: string | null
+          occurred_at?: string
+          org_id?: string
+          product_id?: string
+          qty_change?: number
+          reason?: string
+          ref_id?: string | null
+          ref_type?: string | null
+          slot_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transactions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_commissions: {
         Row: {
           created_at: string
@@ -1261,6 +1335,61 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      machine_slot_pars: {
+        Row: {
+          created_at: string
+          id: string
+          machine_id: string
+          org_id: string
+          par_qty: number
+          product_id: string | null
+          slot_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          machine_id: string
+          org_id: string
+          par_qty?: number
+          product_id?: string | null
+          slot_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          machine_id?: string
+          org_id?: string
+          par_qty?: number
+          product_id?: string | null
+          slot_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_slot_pars_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_slot_pars_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
+            foreignKeyName: "machine_slot_pars_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       machine_slots: {
         Row: {
