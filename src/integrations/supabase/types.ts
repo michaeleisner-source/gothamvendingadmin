@@ -921,6 +921,8 @@ export type Database = {
           acquisition_type: string
           apr: number | null
           balloon_payment: number | null
+          cc_processing_fee_cents: number | null
+          cc_processing_fee_percent: number | null
           created_at: string
           data_plan_monthly: number | null
           depreciation_method: string | null
@@ -934,8 +936,10 @@ export type Database = {
           life_months: number | null
           machine_id: string
           monthly_payment: number | null
+          monthly_software_cost: number | null
           notes: string | null
           org_id: string
+          other_onetime_costs: number | null
           purchase_price: number | null
           purchased_at: string | null
           salvage_value: number | null
@@ -948,6 +952,8 @@ export type Database = {
           acquisition_type: string
           apr?: number | null
           balloon_payment?: number | null
+          cc_processing_fee_cents?: number | null
+          cc_processing_fee_percent?: number | null
           created_at?: string
           data_plan_monthly?: number | null
           depreciation_method?: string | null
@@ -961,8 +967,10 @@ export type Database = {
           life_months?: number | null
           machine_id: string
           monthly_payment?: number | null
+          monthly_software_cost?: number | null
           notes?: string | null
           org_id: string
+          other_onetime_costs?: number | null
           purchase_price?: number | null
           purchased_at?: string | null
           salvage_value?: number | null
@@ -975,6 +983,8 @@ export type Database = {
           acquisition_type?: string
           apr?: number | null
           balloon_payment?: number | null
+          cc_processing_fee_cents?: number | null
+          cc_processing_fee_percent?: number | null
           created_at?: string
           data_plan_monthly?: number | null
           depreciation_method?: string | null
@@ -988,8 +998,10 @@ export type Database = {
           life_months?: number | null
           machine_id?: string
           monthly_payment?: number | null
+          monthly_software_cost?: number | null
           notes?: string | null
           org_id?: string
+          other_onetime_costs?: number | null
           purchase_price?: number | null
           purchased_at?: string | null
           salvage_value?: number | null
@@ -1157,30 +1169,39 @@ export type Database = {
           id: string
           location: string | null
           location_id: string | null
+          manufacturer: string | null
           name: string
           org_id: string | null
           search_tsv: unknown | null
+          serial_number: string | null
           status: string | null
+          wifi_type: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
           name: string
           org_id?: string | null
           search_tsv?: unknown | null
+          serial_number?: string | null
           status?: string | null
+          wifi_type?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
           name?: string
           org_id?: string | null
           search_tsv?: unknown | null
+          serial_number?: string | null
           status?: string | null
+          wifi_type?: string | null
         }
         Relationships: [
           {

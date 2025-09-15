@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, Machine, Location } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +34,26 @@ export default function MachineSetup() {
   const [newMachine, setNewMachine] = useState({
     name: "",
     location_id: "",
-    status: "ONLINE"
+    status: "ONLINE",
+    manufacturer: "",
+    serial_number: "",
+    wifi_type: "local"
+  });
+
+  // Machine finance form state
+  const [machineFinance, setMachineFinance] = useState({
+    acquisition_type: "purchase",
+    purchase_price: "",
+    monthly_payment: "",
+    monthly_software_cost: "",
+    cc_processing_fee_cents: "",
+    cc_processing_fee_percent: "",
+    other_onetime_costs: "",
+    term_months: "",
+    apr: "",
+    insurance_monthly: "",
+    telemetry_monthly: "",
+    data_plan_monthly: ""
   });
 
   const loadData = async () => {
@@ -75,7 +95,24 @@ export default function MachineSetup() {
     setNewMachine({
       name: "",
       location_id: "",
-      status: "ONLINE"
+      status: "ONLINE",
+      manufacturer: "",
+      serial_number: "",
+      wifi_type: "local"
+    });
+    setMachineFinance({
+      acquisition_type: "purchase",
+      purchase_price: "",
+      monthly_payment: "",
+      monthly_software_cost: "",
+      cc_processing_fee_cents: "",
+      cc_processing_fee_percent: "",
+      other_onetime_costs: "",
+      term_months: "",
+      apr: "",
+      insurance_monthly: "",
+      telemetry_monthly: "",
+      data_plan_monthly: ""
     });
   };
 
@@ -120,14 +157,56 @@ export default function MachineSetup() {
     try {
       const machineData: any = {
         name: newMachine.name.trim(),
-        status: newMachine.status
+        status: newMachine.status,
+        manufacturer: newMachine.manufacturer.trim() || null,
+        serial_number: newMachine.serial_number.trim() || null,
+        wifi_type: newMachine.wifi_type
       };
 
       if (newMachine.location_id) {
         machineData.location_id = newMachine.location_id;
       }
 
-      await api.createMachine(machineData);
+      const machine = await api.createMachine(machineData);
+      
+      // Create machine finance record if financial data is provided
+      const hasFinanceData = machineFinance.purchase_price || 
+                            machineFinance.monthly_payment || 
+                            machineFinance.monthly_software_cost ||
+                            machineFinance.cc_processing_fee_cents ||
+                            machineFinance.cc_processing_fee_percent ||
+                            machineFinance.other_onetime_costs;
+
+      if (hasFinanceData && machine.id) {
+        const financeData: any = {
+          machine_id: machine.id,
+          acquisition_type: machineFinance.acquisition_type
+        };
+
+        // Add numeric fields only if they have values
+        if (machineFinance.purchase_price) financeData.purchase_price = parseFloat(machineFinance.purchase_price);
+        if (machineFinance.monthly_payment) financeData.monthly_payment = parseFloat(machineFinance.monthly_payment);
+        if (machineFinance.monthly_software_cost) financeData.monthly_software_cost = parseFloat(machineFinance.monthly_software_cost);
+        if (machineFinance.cc_processing_fee_cents) financeData.cc_processing_fee_cents = parseInt(machineFinance.cc_processing_fee_cents);
+        if (machineFinance.cc_processing_fee_percent) financeData.cc_processing_fee_percent = parseFloat(machineFinance.cc_processing_fee_percent);
+        if (machineFinance.other_onetime_costs) financeData.other_onetime_costs = parseFloat(machineFinance.other_onetime_costs);
+        if (machineFinance.term_months) financeData.term_months = parseInt(machineFinance.term_months);
+        if (machineFinance.apr) financeData.apr = parseFloat(machineFinance.apr);
+        if (machineFinance.insurance_monthly) financeData.insurance_monthly = parseFloat(machineFinance.insurance_monthly);
+        if (machineFinance.telemetry_monthly) financeData.telemetry_monthly = parseFloat(machineFinance.telemetry_monthly);
+        if (machineFinance.data_plan_monthly) financeData.data_plan_monthly = parseFloat(machineFinance.data_plan_monthly);
+
+        // Create finance record using direct supabase call since api.ts doesn't have this method
+        const { error: financeError } = await supabase
+          .from('machine_finance')
+          .insert([financeData]);
+
+        if (financeError) {
+          console.error('Error creating machine finance:', financeError);
+          toast.error('Machine created but failed to save financial data');
+        }
+      }
+
       toast.success("Machine created successfully!");
       resetMachineForm();
       loadData();
@@ -296,53 +375,229 @@ export default function MachineSetup() {
               Create Machine
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="machineName">Machine Name *</Label>
-              <Input
-                id="machineName"
-                placeholder="e.g., Vending Machine #1"
-                value={newMachine.name}
-                onChange={(e) => setNewMachine({ ...newMachine, name: e.target.value })}
-              />
+          <CardContent className="space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Basic Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="machineName">Machine Name *</Label>
+                  <Input
+                    id="machineName"
+                    placeholder="e.g., Vending Machine #1"
+                    value={newMachine.name}
+                    onChange={(e) => setNewMachine({ ...newMachine, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="machineStatus">Status</Label>
+                  <Select value={newMachine.status} onValueChange={(value) => setNewMachine({ ...newMachine, status: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ONLINE">Online</SelectItem>
+                      <SelectItem value="OFFLINE">Offline</SelectItem>
+                      <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturer">Manufacturer</Label>
+                  <Input
+                    id="manufacturer"
+                    placeholder="e.g., Coca-Cola, Pepsi"
+                    value={newMachine.manufacturer}
+                    onChange={(e) => setNewMachine({ ...newMachine, manufacturer: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="serialNumber">Serial Number</Label>
+                  <Input
+                    id="serialNumber"
+                    placeholder="Machine serial number"
+                    value={newMachine.serial_number}
+                    onChange={(e) => setNewMachine({ ...newMachine, serial_number: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="machineLocation">Location</Label>
+                  <Select value={newMachine.location_id} onValueChange={(value) => setNewMachine({ ...newMachine, location_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a location (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          <div className="flex items-center gap-2">
+                            <Building2 className="w-4 h-4" />
+                            <span>{location.name}</span>
+                            {location.city && location.state && (
+                              <span className="text-muted-foreground text-xs">
+                                • {location.city}, {location.state}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wifiType">Connectivity</Label>
+                  <Select value={newMachine.wifi_type} onValueChange={(value) => setNewMachine({ ...newMachine, wifi_type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local">Local WiFi</SelectItem>
+                      <SelectItem value="cellular">Cellular Data</SelectItem>
+                      <SelectItem value="wifi_card">WiFi Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="machineLocation">Location</Label>
-              <Select value={newMachine.location_id} onValueChange={(value) => setNewMachine({ ...newMachine, location_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a location (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4" />
-                        <span>{location.name}</span>
-                        {location.city && location.state && (
-                          <span className="text-muted-foreground text-xs">
-                            • {location.city}, {location.state}
-                          </span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Separator />
 
-            <div className="space-y-2">
-              <Label htmlFor="machineStatus">Status</Label>
-              <Select value={newMachine.status} onValueChange={(value) => setNewMachine({ ...newMachine, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ONLINE">Online</SelectItem>
-                  <SelectItem value="OFFLINE">Offline</SelectItem>
-                  <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Financial Information */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="acquisitionType">Acquisition Type</Label>
+                  <Select value={machineFinance.acquisition_type} onValueChange={(value) => setMachineFinance({ ...machineFinance, acquisition_type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="purchase">Purchase</SelectItem>
+                      <SelectItem value="lease">Lease</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="purchasePrice">Purchase/Lease Price ($)</Label>
+                  <Input
+                    id="purchasePrice"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.purchase_price}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, purchase_price: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="monthlyPayment">Monthly Payment ($)</Label>
+                  <Input
+                    id="monthlyPayment"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.monthly_payment}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, monthly_payment: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="monthlySoftware">Monthly Software Cost ($)</Label>
+                  <Input
+                    id="monthlySoftware"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.monthly_software_cost}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, monthly_software_cost: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ccFeeCents">CC Processing Fee (¢ per transaction)</Label>
+                  <Input
+                    id="ccFeeCents"
+                    type="number"
+                    placeholder="30"
+                    value={machineFinance.cc_processing_fee_cents}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, cc_processing_fee_cents: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ccFeePercent">CC Processing Fee (%)</Label>
+                  <Input
+                    id="ccFeePercent"
+                    type="number"
+                    step="0.01"
+                    placeholder="2.5"
+                    value={machineFinance.cc_processing_fee_percent}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, cc_processing_fee_percent: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="onetimeCosts">Other One-time Costs ($)</Label>
+                  <Input
+                    id="onetimeCosts"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.other_onetime_costs}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, other_onetime_costs: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="termMonths">Finance Term (months)</Label>
+                  <Input
+                    id="termMonths"
+                    type="number"
+                    placeholder="60"
+                    value={machineFinance.term_months}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, term_months: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apr">APR (%)</Label>
+                  <Input
+                    id="apr"
+                    type="number"
+                    step="0.01"
+                    placeholder="5.99"
+                    value={machineFinance.apr}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, apr: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="insuranceMonthly">Insurance Monthly ($)</Label>
+                  <Input
+                    id="insuranceMonthly"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.insurance_monthly}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, insurance_monthly: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telemetryMonthly">Telemetry Monthly ($)</Label>
+                  <Input
+                    id="telemetryMonthly"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.telemetry_monthly}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, telemetry_monthly: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dataPlanMonthly">Data Plan Monthly ($)</Label>
+                  <Input
+                    id="dataPlanMonthly"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={machineFinance.data_plan_monthly}
+                    onChange={(e) => setMachineFinance({ ...machineFinance, data_plan_monthly: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 pt-4">
