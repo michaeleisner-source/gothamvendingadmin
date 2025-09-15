@@ -10,15 +10,28 @@ export default function AppLayout() {
   useRouterLinkInterceptor();
   
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <GlobalSearch />
+    <div className="flex h-screen">
+      {/* sidebar */}
+      <aside>
+        <Sidebar />
+      </aside>
+
+      {/* main area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* header */}
+        <header>
+          <GlobalSearch />
+        </header>
+
+        {/* global scope bar */}
         <ScopeBar />
-        <main className="flex-1 bg-background">
+
+        {/* page outlet */}
+        <main className="flex-1 min-w-0 overflow-auto bg-background">
           <Outlet />
         </main>
       </div>
+      
       <HelpBot />
     </div>
   );
