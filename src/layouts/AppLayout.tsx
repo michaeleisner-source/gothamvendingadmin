@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import GlobalSearch from "../components/GlobalSearch";
 import HelpBot from "../components/HelpBot";
+import ScopeBar from "@/components/ScopeBar";
 import { useRouterLinkInterceptor } from "../hooks/useRouterLinkInterceptor";
 
 export default function AppLayout() {
@@ -13,6 +14,7 @@ export default function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <GlobalSearch />
+        <ScopeBar />
         <main className="flex-1 bg-background">
           <Outlet />
         </main>
