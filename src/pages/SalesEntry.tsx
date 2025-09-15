@@ -8,9 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Building2, AlertCircle, CheckCircle, DollarSign, Package } from "lucide-react";
+import { ShoppingCart, Building2, AlertCircle, CheckCircle, DollarSign, Package, AlertTriangle, TrendingDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
+import { 
+  validateInventoryForSale, 
+  validatePricing, 
+  validateTransactionDate, 
+  updateInventoryAfterSale,
+  type ValidationResult,
+  type InventoryCheck,
+  type PricingCheck,
+  type InventoryValidationResult,
+  type PricingValidationResult
+} from "@/lib/business-rules";
 
 export default function SalesEntry() {
   const { toast } = useToast();
@@ -28,6 +39,11 @@ export default function SalesEntry() {
   const [loading, setLoading] = useState(false);
   const [currentInventory, setCurrentInventory] = useState<any>(null);
   const [showInventoryImpact, setShowInventoryImpact] = useState(false);
+  
+  // Business validation states
+  const [inventoryValidation, setInventoryValidation] = useState<InventoryValidationResult | null>(null);
+  const [pricingValidation, setPricingValidation] = useState<PricingValidationResult | null>(null);
+  const [dateValidation, setDateValidation] = useState<ValidationResult | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -104,28 +120,42 @@ export default function SalesEntry() {
     if (slotProduct && slotProduct.price && unitPrice === 0) {
       setUnitPrice(slotProduct.price);
     }
-    if (selectedSlotId) {
-      checkCurrentInventory(selectedSlotId);
-    }
+    // Inventory validation is now handled by the business rules hook below
   }, [slotProduct, unitPrice, selectedSlotId]);
 
-  const checkCurrentInventory = async (slotId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('inventory_levels')
-        .select('*')
-        .eq('slot_id', slotId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      setCurrentInventory(data);
-      setShowInventoryImpact(!!data);
-    } catch (error) {
-      console.error('Error checking inventory:', error);
+  // Validate business rules when values change
+  useEffect(() => {
+    if (selectedSlotId && quantity > 0) {
+      validateInventoryForSale(selectedSlotId, quantity).then(result => {
+        setInventoryValidation(result);
+        setCurrentInventory(result.inventory || null);
+        setShowInventoryImpact(!!result.inventory);
+      });
+    } else {
+      setInventoryValidation(null);
       setCurrentInventory(null);
       setShowInventoryImpact(false);
     }
-  };
+  }, [selectedSlotId, quantity]);
+
+  useEffect(() => {
+    if (unitPrice > 0) {
+      const cost = slotProduct?.cost || selectedProduct?.cost || 0;
+      const result = validatePricing(unitPrice, cost);
+      setPricingValidation(result);
+    } else {
+      setPricingValidation(null);
+    }
+  }, [unitPrice, slotProduct, selectedProduct]);
+
+  useEffect(() => {
+    if (occurredAt) {
+      const result = validateTransactionDate(occurredAt);
+      setDateValidation(result);
+    } else {
+      setDateValidation(null);
+    }
+  }, [occurredAt]);
 
   const resetForm = () => {
     setSelectedSlotId("");
@@ -152,6 +182,7 @@ export default function SalesEntry() {
       return;
     }
 
+    // Validate required fields
     if (!selectedMachineId) {
       toast({
         title: "Machine selection required",
@@ -179,6 +210,34 @@ export default function SalesEntry() {
       return;
     }
 
+    // Check business rule validations
+    if (inventoryValidation?.validation.severity === 'error') {
+      toast({
+        title: "Inventory validation failed",
+        description: inventoryValidation.validation.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (pricingValidation?.validation.severity === 'error') {
+      toast({
+        title: "Pricing validation failed", 
+        description: pricingValidation.validation.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (dateValidation?.severity === 'error') {
+      toast({
+        title: "Date validation failed",
+        description: dateValidation.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const saleData = {
@@ -194,11 +253,37 @@ export default function SalesEntry() {
 
       await api.recordSale(saleData);
       
+      // Update inventory if slot-based sale
+      if (selectedSlotId) {
+        try {
+          await updateInventoryAfterSale(selectedSlotId, quantity);
+        } catch (invError: any) {
+          console.warn('Inventory update failed:', invError.message);
+          // Don't fail the sale, just warn
+          toast({
+            title: "Sale recorded, inventory warning",
+            description: "Sale was recorded but inventory may not be updated correctly",
+            variant: "default"
+          });
+        }
+      }
+      
       const productName = slotProduct?.name || selectedProduct?.name;
       const total = (quantity * unitPrice).toFixed(2);
+      
+      // Show success with any warnings
+      let description = `${quantity}x ${productName} for $${total}`;
+      if (inventoryValidation?.validation.severity === 'warning') {
+        description += ` (${inventoryValidation.validation.message})`;
+      }
+      if (pricingValidation?.validation.severity === 'warning') {
+        description += ` (${pricingValidation.validation.message})`;
+      }
+      
       toast({
         title: "Sale recorded successfully",
-        description: `${quantity}x ${productName} for $${total}`
+        description,
+        variant: "default"
       });
 
       resetForm();
@@ -365,44 +450,122 @@ export default function SalesEntry() {
         </Card>
       </div>
 
-      {/* Inventory Impact Alert */}
-      {showInventoryImpact && currentInventory && (
+      {/* Business Validation Alerts */}
+      {(inventoryValidation?.validation.severity === 'warning' || 
+        pricingValidation?.validation.severity === 'warning' || 
+        dateValidation?.severity === 'warning') && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-800">Business Rule Warnings</span>
+            </div>
+            <div className="space-y-2 text-sm text-yellow-700">
+              {inventoryValidation?.validation.severity === 'warning' && (
+                <div>• {inventoryValidation.validation.message}</div>
+              )}
+              {pricingValidation?.validation.severity === 'warning' && (
+                <div>• {pricingValidation.validation.message}</div>
+              )}
+              {dateValidation?.severity === 'warning' && (
+                <div>• {dateValidation.message}</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {(inventoryValidation?.validation.severity === 'error' || 
+        pricingValidation?.validation.severity === 'error' || 
+        dateValidation?.severity === 'error') && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-medium text-red-800">Validation Errors</span>
+            </div>
+            <div className="space-y-2 text-sm text-red-700">
+              {inventoryValidation?.validation.severity === 'error' && (
+                <div>• {inventoryValidation.validation.message}</div>
+              )}
+              {pricingValidation?.validation.severity === 'error' && (
+                <div>• {pricingValidation.validation.message}</div>
+              )}
+              {dateValidation?.severity === 'error' && (
+                <div>• {dateValidation.message}</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pricing Analysis Card */}
+      {pricingValidation?.pricing && unitPrice > 0 && (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Package className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">Current Inventory Impact</span>
+              <TrendingDown className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Pricing Analysis</span>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-blue-600">Current Stock:</span>
-                <span className="font-medium ml-2">{currentInventory.current_qty}</span>
+                <span className="text-blue-600">Unit Price:</span>
+                <span className="font-medium ml-2">${pricingValidation.pricing.unitPrice.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-blue-600">After Sale:</span>
-                <span className="font-medium ml-2">
-                  {Math.max(0, currentInventory.current_qty - quantity)}
-                </span>
+                <span className="text-blue-600">Unit Cost:</span>
+                <span className="font-medium ml-2">${pricingValidation.pricing.unitCost.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-blue-600">Reorder Point:</span>
-                <span className="font-medium ml-2">{currentInventory.reorder_point}</span>
+                <span className="text-blue-600">Margin:</span>
+                <span className="font-medium ml-2">${pricingValidation.pricing.margin.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-blue-600">Days of Supply:</span>
-                <span className="font-medium ml-2">
-                  {currentInventory.sales_velocity > 0 
-                    ? Math.round((currentInventory.current_qty - quantity) / currentInventory.sales_velocity)
-                    : '∞'
-                  }
+                <span className="text-blue-600">Margin %:</span>
+                <span className={`font-medium ml-2 ${
+                  pricingValidation.pricing.marginPercent < 0.15 ? 'text-red-600' : 
+                  pricingValidation.pricing.marginPercent < 0.25 ? 'text-yellow-600' : 'text-green-600'
+                }`}>
+                  {(pricingValidation.pricing.marginPercent * 100).toFixed(1)}%
                 </span>
               </div>
             </div>
-            {currentInventory.current_qty - quantity <= currentInventory.reorder_point && (
-              <div className="mt-2 p-2 bg-orange-100 rounded text-orange-800 text-sm">
-                ⚠️ This sale will trigger a restock alert!
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Inventory Impact Alert */}
+      {showInventoryImpact && inventoryValidation?.inventory && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Package className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Inventory Impact</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-green-600">Current Stock:</span>
+                <span className="font-medium ml-2">{inventoryValidation.inventory.currentStock}</span>
               </div>
-            )}
+              <div>
+                <span className="text-green-600">After Sale:</span>
+                <span className={`font-medium ml-2 ${
+                  inventoryValidation.inventory.afterTransaction <= inventoryValidation.inventory.reorderPoint ? 'text-orange-600' : ''
+                }`}>
+                  {inventoryValidation.inventory.afterTransaction}
+                </span>
+              </div>
+              <div>
+                <span className="text-green-600">Reorder Point:</span>
+                <span className="font-medium ml-2">{inventoryValidation.inventory.reorderPoint}</span>
+              </div>
+              <div>
+                <span className="text-green-600">Status:</span>
+                <Badge variant={inventoryValidation.inventory.belowReorderPoint ? "destructive" : "default"} className="ml-2">
+                  {inventoryValidation.inventory.belowReorderPoint ? "Needs Restock" : "OK"}
+                </Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

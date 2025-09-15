@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Package, Truck, AlertCircle, CheckCircle } from "lucide-react";
+import { Package, Truck, AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
+import { updateInventoryAfterRestock, validatePricing, type PricingValidationResult } from "@/lib/business-rules";
 
 export default function RestockEntry() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,6 +25,9 @@ export default function RestockEntry() {
   const [note, setNote] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  
+  // Business validation
+  const [costValidation, setCostValidation] = useState<PricingValidationResult | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -74,16 +78,25 @@ export default function RestockEntry() {
   const selectedSlotAssignment = assignments.find(a => a.slot_id === selectedSlotId);
   const slotProduct = selectedSlotAssignment ? products.find(p => p.id === selectedSlotAssignment.product_id) : null;
 
-  // Auto-fill unit cost when product is selected
+  // Auto-fill unit cost when product is selected and validate
   useEffect(() => {
     if (selectedProduct && selectedProduct.cost && unitCost === 0) {
       setUnitCost(selectedProduct.cost);
     }
-  }, [selectedProduct, unitCost]);
+    if (unitCost > 0) {
+      const currentCost = slotProduct?.cost || selectedProduct?.cost || 0;
+      if (currentCost > 0) {
+        setCostValidation(validatePricing(currentCost, unitCost));
+      }
+    }
+  }, [selectedProduct, unitCost, slotProduct]);
 
   useEffect(() => {
     if (slotProduct && slotProduct.cost && unitCost === 0) {
       setUnitCost(slotProduct.cost);
+    }
+    if (unitCost > 0 && slotProduct?.cost) {
+      setCostValidation(validatePricing(slotProduct.cost, unitCost));
     }
   }, [slotProduct, unitCost]);
 
