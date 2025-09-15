@@ -325,10 +325,162 @@ const EnhancedDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="performance">
-            <div className="text-center py-8 text-muted-foreground">
-              Performance analytics coming soon - revenue trends, machine efficiency, and profitability analysis.
+          <TabsContent value="performance" className="space-y-6">
+            {/* Revenue Performance */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Revenue Trend
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Today</span>
+                      <span className="font-semibold">${metrics.revenue.today.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Yesterday</span>
+                      <span className="font-semibold">${metrics.revenue.yesterday.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">7-Day Avg</span>
+                      <span className="font-semibold">${(metrics.revenue.week / 7).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">30-Day Avg</span>
+                      <span className="font-semibold">${(metrics.revenue.month / 30).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Machine Efficiency
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Uptime</span>
+                      <span className="font-semibold">
+                        {metrics.machines.total > 0 ? 
+                          ((metrics.machines.online / metrics.machines.total) * 100).toFixed(1) + '%' : 
+                          '0%'
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Online Machines</span>
+                      <span className="font-semibold text-green-600">
+                        {metrics.machines.online}/{metrics.machines.total}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Revenue per Machine</span>
+                      <span className="font-semibold">
+                        ${metrics.machines.online > 0 ? 
+                          (metrics.revenue.month / metrics.machines.online).toFixed(0) : 
+                          '0'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5" />
+                    Inventory Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Stock Health</span>
+                      <Badge variant={metrics.inventory.outOfStock > 0 ? "destructive" : 
+                                    metrics.inventory.lowStock > 0 ? "secondary" : "default"}>
+                        {metrics.inventory.outOfStock > 0 ? "Critical" : 
+                         metrics.inventory.lowStock > 0 ? "Attention Needed" : "Good"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total Value</span>
+                      <span className="font-semibold">${metrics.inventory.totalValue.toFixed(0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Low Stock Items</span>
+                      <span className="font-semibold text-orange-600">{metrics.inventory.lowStock}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Out of Stock</span>
+                      <span className="font-semibold text-red-600">{metrics.inventory.outOfStock}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Performance Indicators */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Key Performance Indicators
+                  <HelpTooltip content="Essential metrics for monitoring business performance and operational efficiency." />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {metrics.revenue.today > metrics.revenue.yesterday ? '+' : ''}
+                      {metrics.revenue.yesterday > 0 ? 
+                        (((metrics.revenue.today - metrics.revenue.yesterday) / metrics.revenue.yesterday) * 100).toFixed(1) : 
+                        '0'
+                      }%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Daily Growth</div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      ${metrics.revenue.week > 0 ? (metrics.revenue.week / 7).toFixed(0) : '0'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Avg Daily Revenue</div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {metrics.machines.total > 0 ? 
+                        ((metrics.machines.online / metrics.machines.total) * 100).toFixed(0) : '0'
+                      }%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Fleet Uptime</div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {((metrics.inventory.lowStock + metrics.inventory.outOfStock) === 0) ? 
+                        '✓' : `${metrics.inventory.lowStock + metrics.inventory.outOfStock}`
+                      }
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {((metrics.inventory.lowStock + metrics.inventory.outOfStock) === 0) ? 
+                        'Stock Healthy' : 'Stock Issues'
+                      }
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="health">
