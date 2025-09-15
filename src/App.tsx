@@ -126,7 +126,6 @@ const App = () => (
             <Route path="/finance" element={<FinanceManagement />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
             <Route path="/finance/profitability" element={<ProductProfitabilityNet />} />
-            <Route path="/test-route" element={<div><h1>TEST ROUTE WORKS</h1></div>} />
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
