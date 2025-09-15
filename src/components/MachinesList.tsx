@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 import { toast } from "sonner";
 
 type Machine = {
@@ -222,6 +223,318 @@ export const MachinesList = () => {
 
   if (!machines || machines.length === 0) {
     return (
+      <HelpTooltipProvider>
+        <div className="container mx-auto py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground">Machines</h1>
+            <p className="text-muted-foreground">
+              Manage and monitor your machine inventory
+            </p>
+          </div>
+          
+          <div className="mb-6 rounded-md border p-6">
+            <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Basic Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="flex items-center gap-2">
+                      Name *
+                      <HelpTooltip content="A unique name to identify this machine (e.g., 'Lobby Snack Machine', 'Break Room Drinks')" />
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => updateFormData("name", e.target.value)}
+                      placeholder="Enter machine name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="flex items-center gap-2">
+                      Location
+                      <HelpTooltip content="Physical location or building where this machine is installed" />
+                    </Label>
+                    <Input
+                      id="location"
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => updateFormData("location", e.target.value)}
+                      placeholder="Enter location"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="flex items-center gap-2">
+                      Status
+                      <HelpTooltip content="Current operational status of the machine" />
+                    </Label>
+                    <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ONLINE">ONLINE</SelectItem>
+                        <SelectItem value="OFFLINE">OFFLINE</SelectItem>
+                        <SelectItem value="SERVICE">SERVICE</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manufacturer" className="flex items-center gap-2">
+                      Manufacturer
+                      <HelpTooltip content="Company that manufactured this vending machine (e.g., Coca-Cola, Pepsi, Crane)" />
+                    </Label>
+                    <Input
+                      id="manufacturer"
+                      type="text"
+                      value={formData.manufacturer}
+                      onChange={(e) => updateFormData("manufacturer", e.target.value)}
+                      placeholder="e.g., Coca-Cola, Pepsi"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="serial_number" className="flex items-center gap-2">
+                      Serial Number
+                      <HelpTooltip content="Unique serial number found on the machine for identification and warranty purposes" />
+                    </Label>
+                    <Input
+                      id="serial_number"
+                      type="text"
+                      value={formData.serial_number}
+                      onChange={(e) => updateFormData("serial_number", e.target.value)}
+                      placeholder="Machine serial number"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="wifi_type" className="flex items-center gap-2">
+                      Connectivity
+                      <HelpTooltip content="How the machine connects to the internet for telemetry and payments" />
+                    </Label>
+                    <Select value={formData.wifi_type} onValueChange={(value) => updateFormData("wifi_type", value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="local">Local WiFi</SelectItem>
+                        <SelectItem value="cellular">Cellular Data</SelectItem>
+                        <SelectItem value="wifi_card">WiFi Card</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Information */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="acquisition_type" className="flex items-center gap-2">
+                      Acquisition Type
+                      <HelpTooltip content="How you acquired this machine - affects depreciation calculations and ROI reporting" />
+                    </Label>
+                    <Select value={machineFinance.acquisition_type} onValueChange={(value) => updateFinanceData("acquisition_type", value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="purchase">Purchase</SelectItem>
+                        <SelectItem value="lease">Lease</SelectItem>
+                        <SelectItem value="finance">Finance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="purchase_price" className="flex items-center gap-2">
+                      Purchase/Lease Price ($)
+                      <HelpTooltip content="Total cost of the machine or lease price - used for ROI and depreciation calculations" />
+                    </Label>
+                    <Input
+                      id="purchase_price"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.purchase_price}
+                      onChange={(e) => updateFinanceData("purchase_price", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_payment" className="flex items-center gap-2">
+                      Monthly Payment ($)
+                      <HelpTooltip content="Monthly loan/lease payment for financed machines - tracked for expense reporting" />
+                    </Label>
+                    <Input
+                      id="monthly_payment"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.monthly_payment}
+                      onChange={(e) => updateFinanceData("monthly_payment", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_software_cost" className="flex items-center gap-2">
+                      Monthly Software Cost ($)
+                      <HelpTooltip content="Monthly cost for vending management software, telemetry services, or remote monitoring" />
+                    </Label>
+                    <Input
+                      id="monthly_software_cost"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.monthly_software_cost}
+                      onChange={(e) => updateFinanceData("monthly_software_cost", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cc_processing_fee_cents" className="flex items-center gap-2">
+                      CC Processing Fee (¢ per transaction)
+                      <HelpTooltip content="Fixed fee charged per credit card transaction (e.g., 30 cents per swipe)" />
+                    </Label>
+                    <Input
+                      id="cc_processing_fee_cents"
+                      type="number"
+                      value={machineFinance.cc_processing_fee_cents}
+                      onChange={(e) => updateFinanceData("cc_processing_fee_cents", e.target.value)}
+                      placeholder="30"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cc_processing_fee_percent" className="flex items-center gap-2">
+                      CC Processing Fee (%)
+                      <HelpTooltip content="Percentage fee charged on each credit card transaction (e.g., 2.5% of transaction amount)" />
+                    </Label>
+                    <Input
+                      id="cc_processing_fee_percent"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.cc_processing_fee_percent}
+                      onChange={(e) => updateFinanceData("cc_processing_fee_percent", e.target.value)}
+                      placeholder="2.5"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="other_onetime_costs" className="flex items-center gap-2">
+                      Other One-time Costs ($)
+                      <HelpTooltip content="Installation, setup, initial stocking, or other one-time costs associated with this machine" />
+                    </Label>
+                    <Input
+                      id="other_onetime_costs"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.other_onetime_costs}
+                      onChange={(e) => updateFinanceData("other_onetime_costs", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="term_months" className="flex items-center gap-2">
+                      Finance Term (months)
+                      <HelpTooltip content="Length of financing agreement in months (e.g., 60 months for a 5-year loan)" />
+                    </Label>
+                    <Input
+                      id="term_months"
+                      type="number"
+                      value={machineFinance.term_months}
+                      onChange={(e) => updateFinanceData("term_months", e.target.value)}
+                      placeholder="60"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="apr" className="flex items-center gap-2">
+                      APR (%)
+                      <HelpTooltip content="Annual Percentage Rate for financed machines - used for interest calculations" />
+                    </Label>
+                    <Input
+                      id="apr"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.apr}
+                      onChange={(e) => updateFinanceData("apr", e.target.value)}
+                      placeholder="5.99"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="insurance_monthly" className="flex items-center gap-2">
+                      Insurance Monthly ($)
+                      <HelpTooltip content="Monthly insurance premium for theft, damage, or liability coverage for this machine" />
+                    </Label>
+                    <Input
+                      id="insurance_monthly"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.insurance_monthly}
+                      onChange={(e) => updateFinanceData("insurance_monthly", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="telemetry_monthly" className="flex items-center gap-2">
+                      Telemetry Monthly ($)
+                      <HelpTooltip content="Monthly cost for remote monitoring, sales tracking, and diagnostic services" />
+                    </Label>
+                    <Input
+                      id="telemetry_monthly"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.telemetry_monthly}
+                      onChange={(e) => updateFinanceData("telemetry_monthly", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="data_plan_monthly" className="flex items-center gap-2">
+                      Data Plan Monthly ($)
+                      <HelpTooltip content="Monthly cellular data plan cost for machines using cellular connectivity" />
+                    </Label>
+                    <Input
+                      id="data_plan_monthly"
+                      type="number"
+                      step="0.01"
+                      value={machineFinance.data_plan_monthly}
+                      onChange={(e) => updateFinanceData("data_plan_monthly", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button type="submit" disabled={addMachineMutation.isPending}>
+                  {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          <div className="flex items-center justify-center p-8">
+            <div className="text-muted-foreground">No machines found</div>
+          </div>
+        </div>
+      </HelpTooltipProvider>
+    );
+  }
+
+  return (
+    <HelpTooltipProvider>
       <div className="container mx-auto py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Machines</h1>
@@ -238,7 +551,10 @@ export const MachinesList = () => {
               <h4 className="font-medium text-sm">Basic Information</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name" className="flex items-center gap-2">
+                    Name *
+                    <HelpTooltip content="A unique name to identify this machine (e.g., 'Lobby Snack Machine', 'Break Room Drinks')" />
+                  </Label>
                   <Input
                     id="name"
                     type="text"
@@ -249,7 +565,10 @@ export const MachinesList = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location" className="flex items-center gap-2">
+                    Location
+                    <HelpTooltip content="Physical location or building where this machine is installed" />
+                  </Label>
                   <Input
                     id="location"
                     type="text"
@@ -260,7 +579,10 @@ export const MachinesList = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status" className="flex items-center gap-2">
+                    Status
+                    <HelpTooltip content="Current operational status of the machine" />
+                  </Label>
                   <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -274,7 +596,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="manufacturer">Manufacturer</Label>
+                  <Label htmlFor="manufacturer" className="flex items-center gap-2">
+                    Manufacturer
+                    <HelpTooltip content="Company that manufactured this vending machine (e.g., Coca-Cola, Pepsi, Crane)" />
+                  </Label>
                   <Input
                     id="manufacturer"
                     type="text"
@@ -285,7 +610,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="serial_number">Serial Number</Label>
+                  <Label htmlFor="serial_number" className="flex items-center gap-2">
+                    Serial Number
+                    <HelpTooltip content="Unique serial number found on the machine for identification and warranty purposes" />
+                  </Label>
                   <Input
                     id="serial_number"
                     type="text"
@@ -296,7 +624,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="wifi_type">Connectivity</Label>
+                  <Label htmlFor="wifi_type" className="flex items-center gap-2">
+                    Connectivity
+                    <HelpTooltip content="How the machine connects to the internet for telemetry and payments" />
+                  </Label>
                   <Select value={formData.wifi_type} onValueChange={(value) => updateFormData("wifi_type", value)}>
                     <SelectTrigger>
                       <SelectValue />
@@ -316,7 +647,10 @@ export const MachinesList = () => {
               <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="acquisition_type">Acquisition Type</Label>
+                  <Label htmlFor="acquisition_type" className="flex items-center gap-2">
+                    Acquisition Type
+                    <HelpTooltip content="How you acquired this machine - affects depreciation calculations and ROI reporting" />
+                  </Label>
                   <Select value={machineFinance.acquisition_type} onValueChange={(value) => updateFinanceData("acquisition_type", value)}>
                     <SelectTrigger>
                       <SelectValue />
@@ -330,7 +664,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="purchase_price">Purchase/Lease Price ($)</Label>
+                  <Label htmlFor="purchase_price" className="flex items-center gap-2">
+                    Purchase/Lease Price ($)
+                    <HelpTooltip content="Total cost of the machine or lease price - used for ROI and depreciation calculations" />
+                  </Label>
                   <Input
                     id="purchase_price"
                     type="number"
@@ -342,7 +679,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="monthly_payment">Monthly Payment ($)</Label>
+                  <Label htmlFor="monthly_payment" className="flex items-center gap-2">
+                    Monthly Payment ($)
+                    <HelpTooltip content="Monthly loan/lease payment for financed machines - tracked for expense reporting" />
+                  </Label>
                   <Input
                     id="monthly_payment"
                     type="number"
@@ -354,7 +694,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="monthly_software_cost">Monthly Software Cost ($)</Label>
+                  <Label htmlFor="monthly_software_cost" className="flex items-center gap-2">
+                    Monthly Software Cost ($)
+                    <HelpTooltip content="Monthly cost for vending management software, telemetry services, or remote monitoring" />
+                  </Label>
                   <Input
                     id="monthly_software_cost"
                     type="number"
@@ -366,7 +709,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cc_processing_fee_cents">CC Processing Fee (¢ per transaction)</Label>
+                  <Label htmlFor="cc_processing_fee_cents" className="flex items-center gap-2">
+                    CC Processing Fee (¢ per transaction)
+                    <HelpTooltip content="Fixed fee charged per credit card transaction (e.g., 30 cents per swipe)" />
+                  </Label>
                   <Input
                     id="cc_processing_fee_cents"
                     type="number"
@@ -377,7 +723,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cc_processing_fee_percent">CC Processing Fee (%)</Label>
+                  <Label htmlFor="cc_processing_fee_percent" className="flex items-center gap-2">
+                    CC Processing Fee (%)
+                    <HelpTooltip content="Percentage fee charged on each credit card transaction (e.g., 2.5% of transaction amount)" />
+                  </Label>
                   <Input
                     id="cc_processing_fee_percent"
                     type="number"
@@ -389,7 +738,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="other_onetime_costs">Other One-time Costs ($)</Label>
+                  <Label htmlFor="other_onetime_costs" className="flex items-center gap-2">
+                    Other One-time Costs ($)
+                    <HelpTooltip content="Installation, setup, initial stocking, or other one-time costs associated with this machine" />
+                  </Label>
                   <Input
                     id="other_onetime_costs"
                     type="number"
@@ -401,7 +753,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="term_months">Finance Term (months)</Label>
+                  <Label htmlFor="term_months" className="flex items-center gap-2">
+                    Finance Term (months)
+                    <HelpTooltip content="Length of financing agreement in months (e.g., 60 months for a 5-year loan)" />
+                  </Label>
                   <Input
                     id="term_months"
                     type="number"
@@ -412,7 +767,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="apr">APR (%)</Label>
+                  <Label htmlFor="apr" className="flex items-center gap-2">
+                    APR (%)
+                    <HelpTooltip content="Annual Percentage Rate for financed machines - used for interest calculations" />
+                  </Label>
                   <Input
                     id="apr"
                     type="number"
@@ -424,7 +782,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="insurance_monthly">Insurance Monthly ($)</Label>
+                  <Label htmlFor="insurance_monthly" className="flex items-center gap-2">
+                    Insurance Monthly ($)
+                    <HelpTooltip content="Monthly insurance premium for theft, damage, or liability coverage for this machine" />
+                  </Label>
                   <Input
                     id="insurance_monthly"
                     type="number"
@@ -436,7 +797,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="telemetry_monthly">Telemetry Monthly ($)</Label>
+                  <Label htmlFor="telemetry_monthly" className="flex items-center gap-2">
+                    Telemetry Monthly ($)
+                    <HelpTooltip content="Monthly cost for remote monitoring, sales tracking, and diagnostic services" />
+                  </Label>
                   <Input
                     id="telemetry_monthly"
                     type="number"
@@ -448,7 +812,10 @@ export const MachinesList = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="data_plan_monthly">Data Plan Monthly ($)</Label>
+                  <Label htmlFor="data_plan_monthly" className="flex items-center gap-2">
+                    Data Plan Monthly ($)
+                    <HelpTooltip content="Monthly cellular data plan cost for machines using cellular connectivity" />
+                  </Label>
                   <Input
                     id="data_plan_monthly"
                     type="number"
@@ -468,293 +835,39 @@ export const MachinesList = () => {
             </div>
           </form>
         </div>
-
-        <div className="flex items-center justify-center p-8">
-          <div className="text-muted-foreground">No machines found</div>
+        
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {machines.map((machine) => (
+                <TableRow key={machine.id}>
+                  <TableCell className="font-medium">
+                    <Link 
+                      to={`/machines/${machine.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {machine.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{machine.location || "Not specified"}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(machine.status)}>
+                      {machine.status || "Unknown"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Machines</h1>
-        <p className="text-muted-foreground">
-          Manage and monitor your machine inventory
-        </p>
-      </div>
-      
-      <div className="mb-6 rounded-md border p-6">
-        <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-sm">Basic Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => updateFormData("name", e.target.value)}
-                  placeholder="Enter machine name"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => updateFormData("location", e.target.value)}
-                  placeholder="Enter location"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ONLINE">ONLINE</SelectItem>
-                    <SelectItem value="OFFLINE">OFFLINE</SelectItem>
-                    <SelectItem value="SERVICE">SERVICE</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="manufacturer">Manufacturer</Label>
-                <Input
-                  id="manufacturer"
-                  type="text"
-                  value={formData.manufacturer}
-                  onChange={(e) => updateFormData("manufacturer", e.target.value)}
-                  placeholder="e.g., Coca-Cola, Pepsi"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="serial_number">Serial Number</Label>
-                <Input
-                  id="serial_number"
-                  type="text"
-                  value={formData.serial_number}
-                  onChange={(e) => updateFormData("serial_number", e.target.value)}
-                  placeholder="Machine serial number"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="wifi_type">Connectivity</Label>
-                <Select value={formData.wifi_type} onValueChange={(value) => updateFormData("wifi_type", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="local">Local WiFi</SelectItem>
-                    <SelectItem value="cellular">Cellular Data</SelectItem>
-                    <SelectItem value="wifi_card">WiFi Card</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Financial Information */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="acquisition_type">Acquisition Type</Label>
-                <Select value={machineFinance.acquisition_type} onValueChange={(value) => updateFinanceData("acquisition_type", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="purchase">Purchase</SelectItem>
-                    <SelectItem value="lease">Lease</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="purchase_price">Purchase/Lease Price ($)</Label>
-                <Input
-                  id="purchase_price"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.purchase_price}
-                  onChange={(e) => updateFinanceData("purchase_price", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="monthly_payment">Monthly Payment ($)</Label>
-                <Input
-                  id="monthly_payment"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.monthly_payment}
-                  onChange={(e) => updateFinanceData("monthly_payment", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="monthly_software_cost">Monthly Software Cost ($)</Label>
-                <Input
-                  id="monthly_software_cost"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.monthly_software_cost}
-                  onChange={(e) => updateFinanceData("monthly_software_cost", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cc_processing_fee_cents">CC Processing Fee (¢ per transaction)</Label>
-                <Input
-                  id="cc_processing_fee_cents"
-                  type="number"
-                  value={machineFinance.cc_processing_fee_cents}
-                  onChange={(e) => updateFinanceData("cc_processing_fee_cents", e.target.value)}
-                  placeholder="30"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cc_processing_fee_percent">CC Processing Fee (%)</Label>
-                <Input
-                  id="cc_processing_fee_percent"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.cc_processing_fee_percent}
-                  onChange={(e) => updateFinanceData("cc_processing_fee_percent", e.target.value)}
-                  placeholder="2.5"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="other_onetime_costs">Other One-time Costs ($)</Label>
-                <Input
-                  id="other_onetime_costs"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.other_onetime_costs}
-                  onChange={(e) => updateFinanceData("other_onetime_costs", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="term_months">Finance Term (months)</Label>
-                <Input
-                  id="term_months"
-                  type="number"
-                  value={machineFinance.term_months}
-                  onChange={(e) => updateFinanceData("term_months", e.target.value)}
-                  placeholder="60"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="apr">APR (%)</Label>
-                <Input
-                  id="apr"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.apr}
-                  onChange={(e) => updateFinanceData("apr", e.target.value)}
-                  placeholder="5.99"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="insurance_monthly">Insurance Monthly ($)</Label>
-                <Input
-                  id="insurance_monthly"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.insurance_monthly}
-                  onChange={(e) => updateFinanceData("insurance_monthly", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telemetry_monthly">Telemetry Monthly ($)</Label>
-                <Input
-                  id="telemetry_monthly"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.telemetry_monthly}
-                  onChange={(e) => updateFinanceData("telemetry_monthly", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="data_plan_monthly">Data Plan Monthly ($)</Label>
-                <Input
-                  id="data_plan_monthly"
-                  type="number"
-                  step="0.01"
-                  value={machineFinance.data_plan_monthly}
-                  onChange={(e) => updateFinanceData("data_plan_monthly", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <Button type="submit" disabled={addMachineMutation.isPending}>
-              {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
-            </Button>
-          </div>
-        </form>
-      </div>
-      
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {machines.map((machine) => (
-              <TableRow key={machine.id}>
-                <TableCell className="font-medium">
-                  <Link 
-                    to={`/machines/${machine.id}`}
-                    className="text-primary hover:underline"
-                  >
-                    {machine.name}
-                  </Link>
-                </TableCell>
-                <TableCell>{machine.location || "Not specified"}</TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(machine.status)}>
-                    {machine.status || "Unknown"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    </HelpTooltipProvider>
   );
 };
