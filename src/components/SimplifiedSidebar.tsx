@@ -31,7 +31,6 @@ export function SimplifiedSidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
         {/* Dashboard */}
         <NavItem to="/" icon={LayoutDashboard} label="Mission Control" />
-        <NavItem to="/dashboard" icon={BarChart3} label="Classic Dashboard" />
 
         {/* Pipeline */}
         <NavItem to="/prospects" icon={MapPinned} label="Pipeline" />

@@ -20,14 +20,14 @@ import HomeDashboard from "./pages/HomeDashboard";
 import NewPurchaseOrder from "./pages/NewPurchaseOrder";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
 import PurchaseOrders from "./pages/PurchaseOrders";
-import Suppliers from "./pages/Suppliers";
-import Products from "./pages/Products";
-import Machines from "./pages/Machines";
+import SuppliersEnhanced from "./pages/SuppliersEnhanced";
+import ProductsEnhanced from "./pages/ProductsEnhanced";
+import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
 import ProspectDetail from "./pages/ProspectDetail";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
-import Locations from "./pages/Locations";
+import LocationsEnhanced from "./pages/LocationsEnhanced";
 import LocationDetail from "./pages/LocationDetail";
 import DeliveryRoutes from "./pages/DeliveryRoutes";
 import Picklists from "./pages/Picklists";
@@ -71,17 +71,16 @@ const App = () => (
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<EnhancedDashboard />} />
-            <Route path="/dashboard" element={<HomeDashboard />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
-            <Route path="/locations" element={<Locations />} />
+            <Route path="/locations" element={<LocationsEnhanced />} />
             <Route path="/locations/:id" element={<LocationDetail />} />
-            <Route path="/machines" element={<Machines />} />
+            <Route path="/machines" element={<MachinesEnhanced />} />
             <Route path="/machines/:id" element={<MachineDetail />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/products" element={<ProductsEnhanced />} />
+            <Route path="/suppliers" element={<SuppliersEnhanced />} />
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
             <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
