@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProspectAnalytics } from "@/hooks/useProspectAnalytics";
 import { PipelineKPIs } from "@/components/pipeline/PipelineKPIs";
 import { PipelineMetrics } from "@/components/pipeline/PipelineMetrics";
+import ProspectsKPIs from "@/components/kpis/ProspectsKPIs";
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -178,6 +179,9 @@ export function ProspectsHome() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
+            {/* Prospects KPIs */}
+            <ProspectsKPIs />
+            
             {/* Enhanced KPI Dashboard */}
             <PipelineKPIs data={analytics} />
 
