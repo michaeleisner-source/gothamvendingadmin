@@ -48,18 +48,60 @@ const ContractManagement = () => {
   const loadContracts = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First get contracts
+      const { data: contractsData, error: contractsError } = await supabase
         .from("contracts")
         .select(`
           id, contract_number, title, status, created_at, signed_at, signed_name,
-          location_id, prospect_id, revenue_share_pct, commission_flat_cents,
-          locations(name, contact_name),
-          prospects(business_name, contact_name)
+          location_id, prospect_id, revenue_share_pct, commission_flat_cents
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setContracts(data || []);
+      if (contractsError) throw contractsError;
+
+      // Get related location and prospect data
+      const locationIds = [...new Set(contractsData?.map(c => c.location_id).filter(Boolean) || [])];
+      const prospectIds = [...new Set(contractsData?.map(c => c.prospect_id).filter(Boolean) || [])];
+
+      const [locationsResponse, prospectsResponse] = await Promise.all([
+        locationIds.length > 0 
+          ? supabase.from("locations").select("id, name, contact_name").in("id", locationIds)
+          : { data: [], error: null },
+        prospectIds.length > 0 
+          ? supabase.from("prospects").select("id, business_name, contact_name").in("id", prospectIds)
+          : { data: [], error: null }
+      ]);
+
+      // Create maps for quick lookup
+      const locationsMap: { [key: string]: { name: string; contact_name: string } } = {};
+      const prospectsMap: { [key: string]: { business_name: string; contact_name: string } } = {};
+
+      locationsResponse.data?.forEach(location => {
+        if (location.id) {
+          locationsMap[location.id] = {
+            name: location.name || '',
+            contact_name: location.contact_name || ''
+          };
+        }
+      });
+
+      prospectsResponse.data?.forEach(prospect => {
+        if (prospect.id) {
+          prospectsMap[prospect.id] = {
+            business_name: prospect.business_name || '',
+            contact_name: prospect.contact_name || ''
+          };
+        }
+      });
+
+      // Map the data together
+      const contractsWithRelations: Contract[] = contractsData?.map(contract => ({
+        ...contract,
+        locations: contract.location_id ? locationsMap[contract.location_id] : undefined,
+        prospects: contract.prospect_id ? prospectsMap[contract.prospect_id] : undefined,
+      })) || [];
+
+      setContracts(contractsWithRelations);
     } catch (error: any) {
       toast({
         title: "Error",
