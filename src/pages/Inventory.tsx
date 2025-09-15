@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/table";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Header } from '@/components/ui/Header';
+import { InventoryKPIs, InventoryStockDistribution } from '@/components/inventory/InventoryKPIs';
+import { TopPerformingMachines, VelocityTrends, CriticalItemsAlert } from '@/components/inventory/InventoryMetrics';
+import { useInventoryAnalytics } from '@/hooks/useInventoryAnalytics';
 
 interface InventoryLevel {
   id: string;
@@ -240,7 +244,10 @@ const Inventory = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Inventory Management</h1>
+        <Header 
+          title="Inventory Management" 
+          subtitle="Monitor stock levels, track velocity, and manage inventory across all machines" 
+        />
         <div className="flex gap-2">
           <Button onClick={recalculateVelocity} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -261,88 +268,19 @@ const Inventory = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Items</p>
-                    <p className="text-2xl font-semibold">{stats.total_items}</p>
-                  </div>
-                  <Package className="w-8 h-8 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Stock Value</p>
-                    <p className="text-2xl font-semibold">${stats.total_stock_value.toFixed(0)}</p>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Low Stock</p>
-                    <p className="text-2xl font-semibold text-orange-600">{stats.low_stock_items}</p>
-                  </div>
-                  <AlertTriangle className="w-8 h-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Out of Stock</p>
-                    <p className="text-2xl font-semibold text-red-600">{stats.out_of_stock_items}</p>
-                  </div>
-                  <Package className="w-8 h-8 text-red-600" />
-                </div>
-              </CardContent>
-            </Card>
+          {/* Enhanced KPIs */}
+          <InventoryKPIs />
+          
+          {/* Analytics Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <InventoryStockDistribution />
+            <TopPerformingMachines />
           </div>
-
-          {/* Stock Status Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Stock Status Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {inventory.filter(i => getStockStatus(i) === 'good').length}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Good Stock</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {inventory.filter(i => getStockStatus(i) === 'medium').length}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Medium Stock</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {stats.low_stock_items}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Low Stock</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">
-                    {stats.out_of_stock_items}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Out of Stock</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <VelocityTrends />
+            <CriticalItemsAlert />
+          </div>
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
@@ -482,53 +420,120 @@ const Inventory = () => {
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-6">
+          {/* Critical Items Alert */}
+          <CriticalItemsAlert />
+          
+          {/* Detailed Stock Alerts Table */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-destructive" />
-                Stock Alerts
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+                Detailed Stock Alerts ({filteredInventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {inventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-green-600 mb-2">
-                    <Package className="w-12 h-12 mx-auto" />
-                  </div>
-                  <p className="text-lg font-medium">All Good!</p>
-                  <p className="text-muted-foreground">No low stock alerts at this time.</p>
+              {/* Alert Filters */}
+              <div className="flex gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Machine:</label>
+                  <Select value={filterMachine} onValueChange={setFilterMachine}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Machines</SelectItem>
+                      {machines.map(machine => (
+                        <SelectItem key={machine.id} value={machine.id}>
+                          {machine.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Machine</TableHead>
-                        <TableHead>Slot</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Reorder Point</TableHead>
-                        <TableHead className="text-right">Days Supply</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {inventory
-                        .filter(item => getStockStatus(item) === 'low' || getStockStatus(item) === 'out')
-                        .map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">{item.machines.name}</TableCell>
-                            <TableCell>{item.machine_slots.label}</TableCell>
-                            <TableCell>{item.products.name}</TableCell>
-                            <TableCell className="text-right">{item.current_qty}</TableCell>
-                            <TableCell className="text-right">{item.reorder_point}</TableCell>
-                            <TableCell className="text-right">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Alert Level:</label>
+                  <Select value={filterStatus === 'all' ? 'alerts' : filterStatus} onValueChange={(value) => setFilterStatus(value === 'alerts' ? 'all' : value)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alerts">All Alerts</SelectItem>
+                      <SelectItem value="out">Out of Stock</SelectItem>
+                      <SelectItem value="low">Low Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Machine</TableHead>
+                    <TableHead>Slot</TableHead>
+                    <TableHead>Current</TableHead>
+                    <TableHead>Reorder Point</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Days Supply</TableHead>
+                    <TableHead>Velocity</TableHead>
+                    <TableHead>Action Needed</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredInventory
+                    .filter(item => getStockStatus(item) === 'low' || getStockStatus(item) === 'out')
+                    .sort((a, b) => {
+                      // Sort by urgency: out of stock first, then by days of supply
+                      if (a.current_qty === 0 && b.current_qty > 0) return -1;
+                      if (b.current_qty === 0 && a.current_qty > 0) return 1;
+                      return a.days_of_supply - b.days_of_supply;
+                    })
+                    .map((item) => {
+                      const status = getStockStatus(item);
+                      const actionNeeded = item.current_qty === 0 ? 'Immediate Restock' : 
+                                         item.days_of_supply < 3 ? 'Urgent Restock' : 'Schedule Restock';
+                      
+                      return (
+                        <TableRow key={item.id} className={item.current_qty === 0 ? 'bg-red-50 dark:bg-red-950/20' : ''}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{item.products.name}</div>
+                              <div className="text-xs text-muted-foreground">{item.products.sku}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{item.machines.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{item.machine_slots.label}</Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">{item.current_qty}</TableCell>
+                          <TableCell>{item.reorder_point}</TableCell>
+                          <TableCell>{getStatusBadge(status)}</TableCell>
+                          <TableCell>
+                            <span className={item.days_of_supply < 3 ? 'text-red-600 font-medium' : 
+                                           item.days_of_supply < 7 ? 'text-orange-600 font-medium' : ''}>
                               {item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply)}
-                            </TableCell>
-                            <TableCell>{getStatusBadge(getStockStatus(item))}</TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">
+                              {item.sales_velocity.toFixed(1)}/day
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={item.current_qty === 0 ? 'destructive' : 'secondary'} className="text-xs">
+                              {actionNeeded}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+              {filteredInventory.filter(i => getStockStatus(i) === 'low' || getStockStatus(i) === 'out').length === 0 && (
+                <div className="text-center py-8">
+                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No stock alerts</h3>
+                  <p className="text-muted-foreground">All inventory levels are healthy!</p>
                 </div>
               )}
             </CardContent>
