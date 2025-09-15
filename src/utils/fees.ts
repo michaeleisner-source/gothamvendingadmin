@@ -60,7 +60,7 @@ export function computeNetForLine(
 /**
  * Hook: builds a cache of the **latest effective** fee rule per machine.
  * - Reads machine_processor_mappings to find each machine's processor
- * - Reads processor_fee_rules and takes the most recent effective_date per processor
+ * - Uses payment_processors default fees for calculations
  * - Returns a `feeFor(machineId, unit_price_cents, qty)` helper
  */
 export function useFeeRuleCache() {
@@ -85,26 +85,32 @@ export function useFeeRuleCache() {
           return;
         }
 
-        // 2) rules: get latest per processor (by effective_date desc)
+        // 2) Get processor defaults
         const procIds = Array.from(new Set(maps.map((m: any) => m.processor_id).filter(Boolean)));
-        let latestByProc = new Map<string, FeeRule>();
+        let rulesByProc = new Map<string, FeeRule>();
+        
         if (procIds.length) {
-          const ruleRes = await supabase
-            .from("processor_fee_rules")
-            .select("processor_id, percent_bps, fixed_cents, effective_date")
-            .in("processor_id", procIds)
-            .order("effective_date", { ascending: false });
-          if (ruleRes.error) throw ruleRes.error;
-          for (const r of (ruleRes.data || [])) {
-            const pid = r.processor_id;
-            if (!latestByProc.has(pid)) latestByProc.set(pid, r as FeeRule);
+          const procRes = await supabase
+            .from("payment_processors")
+            .select("id, default_percent_fee, default_fixed_fee")
+            .in("id", procIds);
+          
+          if (procRes.error) throw procRes.error;
+          
+          for (const p of (procRes.data || [])) {
+            const rule: FeeRule = {
+              processor_id: p.id,
+              percent_bps: Math.round((p.default_percent_fee || 0) * 100), // Convert % to bps
+              fixed_cents: Math.round((p.default_fixed_fee || 0) * 100), // Convert $ to cents
+            };
+            rulesByProc.set(p.id, rule);
           }
         }
 
         // 3) build machine->rule
         const mapping: Record<string, FeeRule | null> = {};
         for (const m of maps) {
-          const r = latestByProc.get(m.processor_id) || null;
+          const r = rulesByProc.get(m.processor_id) || null;
           mapping[m.machine_id] = r;
         }
         setRulesByMachine(mapping);

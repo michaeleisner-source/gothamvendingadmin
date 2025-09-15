@@ -1429,6 +1429,47 @@ export type Database = {
         }
         Relationships: []
       }
+      processor_fee_rules: {
+        Row: {
+          created_at: string
+          effective_date: string
+          fixed_cents: number
+          id: string
+          org_id: string
+          percent_bps: number
+          processor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_date?: string
+          fixed_cents?: number
+          id?: string
+          org_id: string
+          percent_bps?: number
+          processor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_date?: string
+          fixed_cents?: number
+          id?: string
+          org_id?: string
+          percent_bps?: number
+          processor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processor_fee_rules_processor_id_fkey"
+            columns: ["processor_id"]
+            isOneToOne: false
+            referencedRelation: "payment_processors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       processor_settlements: {
         Row: {
           created_at: string | null
