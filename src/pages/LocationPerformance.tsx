@@ -37,16 +37,37 @@ const LocationPerformance = () => {
   const loadPerformanceData = async () => {
     setLoading(true);
     try {
-      // Get locations with their contract status
+      // Get locations first
       const { data: locations, error: locError } = await supabase
         .from("locations")
         .select(`
           id, name, commission_model, commission_pct_bps, 
-          commission_flat_cents, commission_min_cents,
-          contracts(status, signed_at)
+          commission_flat_cents, commission_min_cents
         `);
 
       if (locError) throw locError;
+
+      // Get contracts separately
+      const locationIds = locations?.map(l => l.id) || [];
+      const { data: contracts, error: contractError } = locationIds.length > 0 
+        ? await supabase
+            .from("contracts")
+            .select("location_id, status, signed_at")
+            .in("location_id", locationIds)
+        : { data: [], error: null };
+
+      if (contractError) throw contractError;
+
+      // Create contracts map
+      const contractsMap: { [key: string]: { status: string; signed_at: string | null } } = {};
+      contracts?.forEach(contract => {
+        if (contract.location_id) {
+          contractsMap[contract.location_id] = {
+            status: contract.status || '',
+            signed_at: contract.signed_at
+          };
+        }
+      });
 
       // Get sales data for the period
       const startDate = new Date();
@@ -118,6 +139,9 @@ const LocationPerformance = () => {
         
         const performance_score = (revenueScore + machineUtilization + recencyScore) / 3;
 
+        // Get contract info from map
+        const contract = contractsMap[location.id];
+
         return {
           location_id: location.id,
           location_name: location.name || "Unknown Location",
@@ -125,7 +149,7 @@ const LocationPerformance = () => {
           total_revenue,
           commission_amount,
           commission_model: location.commission_model || "none",
-          contract_status: location.contracts?.[0]?.signed_at ? "signed" : "draft",
+          contract_status: contract?.signed_at ? "signed" : "draft",
           last_sale_date: lastSale?.occurred_at || null,
           avg_daily_revenue,
           performance_score: Math.round(performance_score),
