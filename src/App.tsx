@@ -57,6 +57,7 @@ import HelpArticle from "./pages/HelpArticle";
 import ContractView from "./pages/ContractView"; // Contract viewing component
 import ConvertProspect from "./pages/pipeline/ConvertProspect";
 import LocationContract from "./pages/contracts/LocationContract";
+import NewLocation from "./pages/NewLocation";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <Route path="/locations" element={<LocationsEnhanced />} />
+            <Route path="/locations/new" element={<ProtectedRoute><NewLocation /></ProtectedRoute>} />
             <Route path="/locations/:id" element={<LocationDetail />} />
             <Route path="/locations/:id/contract" element={<ProtectedRoute><LocationContract /></ProtectedRoute>} />
             <Route path="/machines" element={<MachinesEnhanced />} />

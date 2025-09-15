@@ -57,7 +57,7 @@ const LocationDetail = () => {
   const { toast } = useToast();
 
   const fetchLocation = async () => {
-    if (!id) return;
+    if (!id || id === "new") return;
     
     try {
       setLoading(true);
@@ -96,7 +96,7 @@ const LocationDetail = () => {
   };
 
   const fetchMachines = async () => {
-    if (!id) return;
+    if (!id || id === "new") return;
     
     try {
       setMachinesLoading(true);
