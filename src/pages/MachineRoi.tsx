@@ -14,7 +14,7 @@ function csv(s: string) {
   return v;
 }
 
-export default function MachineROI() {
+export default function MachineRoi() {
   const scope = useScope();
   const { feeFor, loading: feeLoading } = useFeeRuleCache();
 
@@ -246,7 +246,7 @@ export default function MachineROI() {
                 <Td className="text-right font-medium">{money(r.net)}</Td>
                 <Td className="text-right">{money(r.paymentMonthly)}</Td>
                 <Td className="text-right">{money(r.commissionPeriod)}</Td>
-                <Td className={`text-right font-semibold ${r.ownerNetPeriod>=0 ? "text-emerald-400" : "text-rose-400"}`}>{money(r.ownerNetPeriod)}</Td>
+                <Td className={`text-right font-semibold ${r.ownerNetPeriod>=0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>{money(r.ownerNetPeriod)}</Td>
                 <Td className="text-right">
                   <Link to={`/tickets/new?machine=${r.machine_id}`} className="text-xs rounded-md border border-border px-2 py-1 hover:bg-muted">New Ticket</Link>
                 </Td>

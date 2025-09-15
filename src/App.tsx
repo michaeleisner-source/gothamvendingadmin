@@ -67,6 +67,7 @@ import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
 import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
 import MachineROI from "./pages/reports/MachineROI";
+import MachineRoi from "./pages/MachineRoi";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 import RouteEfficiency from "./pages/reports/RouteEfficiency";
@@ -144,7 +145,8 @@ const App = () => (
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
-            <Route path="/insurance" element={<Insurance />} />
+          <Route path="/insurance" element={<Insurance />} />
+          <Route path="/reports/machine-roi" element={<MachineRoi />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
