@@ -2405,6 +2405,7 @@ export type Database = {
         Row: {
           category: string | null
           cost: number | null
+          cost_cents: number | null
           created_at: string
           description: string | null
           id: string
@@ -2422,6 +2423,7 @@ export type Database = {
         Insert: {
           category?: string | null
           cost?: number | null
+          cost_cents?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -2439,6 +2441,7 @@ export type Database = {
         Update: {
           category?: string | null
           cost?: number | null
+          cost_cents?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -3456,6 +3459,7 @@ export type Database = {
         Returns: {
           category: string | null
           cost: number | null
+          cost_cents: number | null
           created_at: string
           description: string | null
           id: string
