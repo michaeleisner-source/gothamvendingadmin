@@ -10,6 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +29,9 @@ import {
 } from "@/components/ui/select";
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 import { toast } from "sonner";
+import { 
+  Pencil, Trash2 
+} from "lucide-react";
 
 type Machine = {
   id: string;
@@ -843,6 +852,7 @@ export const MachinesList = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -862,6 +872,12 @@ export const MachinesList = () => {
                       {machine.status || "Unknown"}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center gap-2 justify-end">
+                      <EditMachineButton machine={machine} />
+                      <DeleteMachineButton machineId={machine.id} />
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -871,3 +887,137 @@ export const MachinesList = () => {
     </HelpTooltipProvider>
   );
 };
+
+// Edit Machine Button Component
+function EditMachineButton({ machine }: { machine: Machine }) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: machine.name || '',
+    location: machine.location || '',
+    status: machine.status || '',
+  });
+  const queryClient = useQueryClient();
+
+  const updateMachine = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase
+        .from('machines')
+        .update(data)
+        .eq('id', machine.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['machines'] });
+      setOpen(false);
+      toast.success('Machine updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update machine: ${error.message}`);
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMachine.mutate(formData);
+  };
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+      >
+        <Pencil className="w-4 h-4" />
+      </Button>
+      
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-lg font-semibold mb-4">Edit Machine</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-location">Location</Label>
+                <Input
+                  id="edit-location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-status">Status</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ONLINE">ONLINE</SelectItem>
+                    <SelectItem value="OFFLINE">OFFLINE</SelectItem>
+                    <SelectItem value="MAINTENANCE">MAINTENANCE</SelectItem>
+                    <SelectItem value="SERVICE">SERVICE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateMachine.isPending}>
+                  {updateMachine.isPending ? 'Updating...' : 'Update Machine'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Delete Machine Button Component  
+function DeleteMachineButton({ machineId }: { machineId: string }) {
+  const queryClient = useQueryClient();
+  
+  const deleteMachine = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('machines')
+        .delete()
+        .eq('id', machineId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['machines'] });
+      toast.success('Machine deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete machine: ${error.message}`);
+    }
+  });
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this machine? This action cannot be undone.')) {
+      deleteMachine.mutate();
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleDelete}
+      disabled={deleteMachine.isPending}
+    >
+      <Trash2 className="w-4 h-4" />
+    </Button>
+  );
+}

@@ -127,6 +127,7 @@ const ProductsEnhanced = () => {
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
+          <AddProductDialog />
         </div>
       </div>
 
@@ -260,44 +261,51 @@ const ProductsEnhanced = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Margin</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => {
-                    const margin = product.price && product.cost 
-                      ? ((product.price - product.cost) / product.price) * 100
-                      : 0;
-                    
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{product.category || "-"}</TableCell>
-                        <TableCell>${product.cost?.toFixed(2) || "-"}</TableCell>
-                        <TableCell>${product.price?.toFixed(2) || "-"}</TableCell>
-                        <TableCell>
-                          <span className={`text-sm ${
-                            margin > 30 ? 'text-green-600' :
-                            margin > 20 ? 'text-yellow-600' : 
-                            'text-red-600'
-                          }`}>
-                            {margin.toFixed(1)}%
-                          </span>
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Cost</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Margin</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((product) => {
+                        const margin = product.price && product.cost 
+                          ? ((product.price - product.cost) / product.price) * 100
+                          : 0;
+                        
+                        return (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell>{product.category || "-"}</TableCell>
+                            <TableCell>${product.cost?.toFixed(2) || "-"}</TableCell>
+                            <TableCell>${product.price?.toFixed(2) || "-"}</TableCell>
+                            <TableCell>
+                              <span className={`text-sm ${
+                                margin > 30 ? 'text-green-600' :
+                                margin > 20 ? 'text-yellow-600' : 
+                                'text-red-600'
+                              }`}>
+                                {margin.toFixed(1)}%
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center gap-2 justify-end">
+                                <EditProductDialog product={product} />
+                                <DeleteProductButton productId={product.id} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
             </div>
           )}
         </CardContent>
@@ -307,3 +315,369 @@ const ProductsEnhanced = () => {
 };
 
 export default ProductsEnhanced;
+
+// Add Product Dialog Component
+function AddProductDialog() {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    sku: '',
+    name: '',
+    category: '',
+    manufacturer: '',
+    cost: '',
+    price: '',
+    description: '',
+    size_oz: '',
+    size_ml: ''
+  });
+  const queryClient = useQueryClient();
+
+  const addProduct = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase.from('products').insert([{
+        ...data,
+        cost: data.cost ? parseFloat(data.cost) : null,
+        price: data.price ? parseFloat(data.price) : null,
+        size_oz: data.size_oz ? parseFloat(data.size_oz) : null,
+        size_ml: data.size_ml ? parseFloat(data.size_ml) : null,
+      }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setOpen(false);
+      setFormData({
+        sku: '', name: '', category: '', manufacturer: '', cost: '', 
+        price: '', description: '', size_oz: '', size_ml: ''
+      });
+      toast.success('Product added successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to add product: ${error.message}`);
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addProduct.mutate(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Plus className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Add New Product</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="sku">SKU *</Label>
+              <Input
+                id="sku"
+                value={formData.sku}
+                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="manufacturer">Manufacturer</Label>
+              <Input
+                id="manufacturer"
+                value={formData.manufacturer}
+                onChange={(e) => setFormData({...formData, manufacturer: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="cost">Cost ($)</Label>
+              <Input
+                id="cost"
+                type="number"
+                step="0.01"
+                value={formData.cost}
+                onChange={(e) => setFormData({...formData, cost: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Price ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="size_oz">Size (oz)</Label>
+              <Input
+                id="size_oz"
+                type="number"
+                step="0.1"
+                value={formData.size_oz}
+                onChange={(e) => setFormData({...formData, size_oz: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="size_ml">Size (ml)</Label>
+              <Input
+                id="size_ml"
+                type="number"
+                step="1"
+                value={formData.size_ml}
+                onChange={(e) => setFormData({...formData, size_ml: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={addProduct.isPending}>
+              {addProduct.isPending ? 'Adding...' : 'Add Product'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Edit Product Dialog Component
+function EditProductDialog({ product }: { product: Product }) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    sku: product.sku || '',
+    name: product.name || '',
+    category: product.category || '',
+    manufacturer: product.manufacturer || '',
+    cost: product.cost?.toString() || '',
+    price: product.price?.toString() || '',
+    description: product.description || '',
+    size_oz: product.size_oz?.toString() || '',
+    size_ml: product.size_ml?.toString() || ''
+  });
+  const queryClient = useQueryClient();
+
+  const updateProduct = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          ...data,
+          cost: data.cost ? parseFloat(data.cost) : null,
+          price: data.price ? parseFloat(data.price) : null,
+          size_oz: data.size_oz ? parseFloat(data.size_oz) : null,
+          size_ml: data.size_ml ? parseFloat(data.size_ml) : null,
+        })
+        .eq('id', product.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setOpen(false);
+      toast.success('Product updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update product: ${error.message}`);
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProduct.mutate(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Edit Product</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-sku">SKU *</Label>
+              <Input
+                id="edit-sku"
+                value={formData.sku}
+                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-name">Name *</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-category">Category</Label>
+              <Input
+                id="edit-category"
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-manufacturer">Manufacturer</Label>
+              <Input
+                id="edit-manufacturer"
+                value={formData.manufacturer}
+                onChange={(e) => setFormData({...formData, manufacturer: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="edit-cost">Cost ($)</Label>
+              <Input
+                id="edit-cost"
+                type="number"
+                step="0.01"
+                value={formData.cost}
+                onChange={(e) => setFormData({...formData, cost: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-price">Price ($)</Label>
+              <Input
+                id="edit-price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-size_oz">Size (oz)</Label>
+              <Input
+                id="edit-size_oz"
+                type="number"
+                step="0.1"
+                value={formData.size_oz}
+                onChange={(e) => setFormData({...formData, size_oz: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-size_ml">Size (ml)</Label>
+              <Input
+                id="edit-size_ml"
+                type="number"
+                step="1"
+                value={formData.size_ml}
+                onChange={(e) => setFormData({...formData, size_ml: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-description">Description</Label>
+            <Textarea
+              id="edit-description"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={updateProduct.isPending}>
+              {updateProduct.isPending ? 'Updating...' : 'Update Product'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Delete Product Button Component
+function DeleteProductButton({ productId }: { productId: string }) {
+  const queryClient = useQueryClient();
+  
+  const deleteProduct = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete product: ${error.message}`);
+    }
+  });
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      deleteProduct.mutate();
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleDelete}
+      disabled={deleteProduct.isPending}
+    >
+      <Trash2 className="w-4 h-4" />
+    </Button>
+  );
+}
