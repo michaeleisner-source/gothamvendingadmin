@@ -2720,6 +2720,10 @@ export type Database = {
         Args: { p_machine_id: string; p_note?: string }
         Returns: string
       }
+      unaccent: {
+        Args: { "": string }
+        Returns: string
+      }
       upsert_product: {
         Args: { p: Json }
         Returns: string
