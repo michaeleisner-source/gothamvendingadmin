@@ -29,7 +29,7 @@ import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
 import ProspectDetail from "./pages/ProspectDetail";
-import ProspectFunnel from "./pages/ProspectFunnel";
+import ProspectFunnel from "./pages/reports/ProspectFunnel";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
 import LocationsEnhanced from "./pages/LocationsEnhanced";
 import LocationDetail from "./pages/LocationDetail";
