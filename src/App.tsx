@@ -71,6 +71,7 @@ import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 import RouteEfficiency from "./pages/reports/RouteEfficiency";
 import LocationCommission from "./pages/reports/LocationCommission";
+import InventoryHealth from "./pages/reports/InventoryHealth";
 import BusinessFlow from "./pages/BusinessFlow";
 import DailyOps from "./pages/DailyOps";
 
@@ -133,6 +134,7 @@ const App = () => (
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
             <Route path="/reports/location-commissions" element={<ProtectedRoute><LocationCommission /></ProtectedRoute>} />
+            <Route path="/reports/inventory-health" element={<ProtectedRoute><InventoryHealth /></ProtectedRoute>} />
             <Route path="/finance/commissions" element={<CommissionDashboard />} />
             <Route path="/finance/commission-statements" element={<CommissionStatements />} />
             <Route path="/contracts" element={<ContractManagement />} />

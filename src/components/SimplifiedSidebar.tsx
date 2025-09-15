@@ -106,6 +106,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/reports/product-profitability-net" label="Product Profitability" />
           <SubNavItem to="/reports/prospect-funnel" label="Prospect Funnel" />
           <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />
+          <SubNavItem to="/reports/inventory-health" label="Inventory Health" />
         </ExpandableGroup>
 
         {/* Support - Expandable */}

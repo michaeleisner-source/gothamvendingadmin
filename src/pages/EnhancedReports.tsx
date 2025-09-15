@@ -7,6 +7,7 @@ import ProfitReports from './ProfitReports';
 import CostAnalysis from './CostAnalysis';
 import ReportsROI from './ReportsROI';
 import SalesSummary7d from './reports/SalesSummary';
+import InventoryHealth from './reports/InventoryHealth';
 import { supabase } from '@/integrations/supabase/client';
 
 const EnhancedReports = () => {
@@ -37,7 +38,7 @@ const EnhancedReports = () => {
         </div>
 
         <Tabs defaultValue="profit" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profit" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Profit Reports
@@ -53,6 +54,10 @@ const EnhancedReports = () => {
             <TabsTrigger value="sales" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               Sales Summary
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Inventory Health
             </TabsTrigger>
             <TabsTrigger value="alerts" className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
@@ -83,6 +88,21 @@ const EnhancedReports = () => {
               </CardHeader>
               <CardContent>
                 <SalesSummary7d />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Inventory Health
+                  <HelpTooltip content="Shows inventory deficits by comparing PAR levels with current stock. Helps identify items that need restocking." />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InventoryHealth />
               </CardContent>
             </Card>
           </TabsContent>
