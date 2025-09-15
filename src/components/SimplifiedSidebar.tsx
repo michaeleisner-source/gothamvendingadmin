@@ -139,6 +139,7 @@ export function SimplifiedSidebar() {
           <NavItem to="/admin/kickstart" icon={Play} label="Ops Kickstart" />
           <NavItem to="/qa/smoke" icon={Play} label="QA Smoke Test" />
           <NavItem to="/qa/verify" icon={ListChecks} label="QA Validation" />
+          <NavItem to="/qa/control" icon={ListChecks} label="QA Control" />
           {isDemo && (
             <NavItem to="/qa" icon={Wrench} label="QA Tools" />
           )}
