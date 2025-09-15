@@ -186,6 +186,85 @@ export type Database = {
           },
         ]
       }
+      contracts: {
+        Row: {
+          auto_renew: boolean | null
+          body_html: string
+          cancellation_notice_days: number | null
+          commission_flat_cents: number | null
+          created_at: string
+          id: string
+          location_id: string
+          machine_id: string | null
+          org_id: string
+          revenue_share_pct: number | null
+          signed_at: string | null
+          signed_email: string | null
+          signed_name: string | null
+          term_months: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          body_html: string
+          cancellation_notice_days?: number | null
+          commission_flat_cents?: number | null
+          created_at?: string
+          id?: string
+          location_id: string
+          machine_id?: string | null
+          org_id: string
+          revenue_share_pct?: number | null
+          signed_at?: string | null
+          signed_email?: string | null
+          signed_name?: string | null
+          term_months?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          body_html?: string
+          cancellation_notice_days?: number | null
+          commission_flat_cents?: number | null
+          created_at?: string
+          id?: string
+          location_id?: string
+          machine_id?: string | null
+          org_id?: string
+          revenue_share_pct?: number | null
+          signed_at?: string | null
+          signed_email?: string | null
+          signed_name?: string | null
+          term_months?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_contracts_location"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_contracts_machine"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_contracts_machine"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+        ]
+      }
       deletion_logs: {
         Row: {
           created_at: string
@@ -839,9 +918,14 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           city: string | null
+          commission_flat_cents: number | null
+          commission_model: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          contract_signed_at: string | null
+          contract_url: string | null
+          contract_version: string | null
           created_at: string | null
           from_prospect_id: string | null
           id: string
@@ -849,6 +933,7 @@ export type Database = {
           name: string
           org_id: string | null
           postal_code: string | null
+          revenue_share_pct: number | null
           search_tsv: unknown | null
           state: string | null
           traffic_daily_est: number | null
@@ -858,9 +943,14 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
+          commission_flat_cents?: number | null
+          commission_model?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_signed_at?: string | null
+          contract_url?: string | null
+          contract_version?: string | null
           created_at?: string | null
           from_prospect_id?: string | null
           id?: string
@@ -868,6 +958,7 @@ export type Database = {
           name: string
           org_id?: string | null
           postal_code?: string | null
+          revenue_share_pct?: number | null
           search_tsv?: unknown | null
           state?: string | null
           traffic_daily_est?: number | null
@@ -877,9 +968,14 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
+          commission_flat_cents?: number | null
+          commission_model?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_signed_at?: string | null
+          contract_url?: string | null
+          contract_version?: string | null
           created_at?: string | null
           from_prospect_id?: string | null
           id?: string
@@ -887,6 +983,7 @@ export type Database = {
           name?: string
           org_id?: string | null
           postal_code?: string | null
+          revenue_share_pct?: number | null
           search_tsv?: unknown | null
           state?: string | null
           traffic_daily_est?: number | null
