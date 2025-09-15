@@ -799,6 +799,179 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_allocations: {
+        Row: {
+          allocated_pct_bps: number | null
+          created_at: string
+          effective_end: string | null
+          effective_start: string | null
+          flat_monthly_cents: number | null
+          id: string
+          level: string
+          location_id: string | null
+          machine_id: string | null
+          org_id: string
+          policy_id: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_pct_bps?: number | null
+          created_at?: string
+          effective_end?: string | null
+          effective_start?: string | null
+          flat_monthly_cents?: number | null
+          id?: string
+          level: string
+          location_id?: string | null
+          machine_id?: string | null
+          org_id: string
+          policy_id: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_pct_bps?: number | null
+          created_at?: string
+          effective_end?: string | null
+          effective_start?: string | null
+          flat_monthly_cents?: number | null
+          id?: string
+          level?: string
+          location_id?: string | null
+          machine_id?: string | null
+          org_id?: string
+          policy_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_allocations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_allocations_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_allocations_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "v_machine_health"
+            referencedColumns: ["machine_id"]
+          },
+          {
+            foreignKeyName: "insurance_allocations_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_certificates: {
+        Row: {
+          certificate_url: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          location_id: string
+          notes: string | null
+          org_id: string
+          policy_id: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_url: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          location_id: string
+          notes?: string | null
+          org_id: string
+          policy_id: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_url?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          location_id?: string
+          notes?: string | null
+          org_id?: string
+          policy_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_certificates_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_certificates_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_policies: {
+        Row: {
+          carrier: string | null
+          coverage_end: string
+          coverage_start: string
+          created_at: string
+          document_url: string | null
+          id: string
+          monthly_premium_cents: number
+          name: string
+          notes: string | null
+          org_id: string
+          policy_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          carrier?: string | null
+          coverage_end: string
+          coverage_start: string
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          monthly_premium_cents: number
+          name: string
+          notes?: string | null
+          org_id: string
+          policy_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carrier?: string | null
+          coverage_end?: string
+          coverage_start?: string
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          monthly_premium_cents?: number
+          name?: string
+          notes?: string | null
+          org_id?: string
+          policy_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventory_levels: {
         Row: {
           created_at: string
