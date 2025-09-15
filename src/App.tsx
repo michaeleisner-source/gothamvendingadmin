@@ -74,6 +74,7 @@ import LocationCommission from "./pages/reports/LocationCommission";
 import InventoryHealth from "./pages/reports/InventoryHealth";
 import BusinessFlow from "./pages/BusinessFlow";
 import DailyOps from "./pages/DailyOps";
+import { Insurance } from "./pages/Insurance";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ const App = () => (
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
+            <Route path="/insurance" element={<Insurance />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
