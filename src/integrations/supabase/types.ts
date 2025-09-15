@@ -1988,45 +1988,59 @@ export type Database = {
       }
       processor_settlements: {
         Row: {
-          created_at: string | null
-          deposit_ref: string | null
-          fee_cents: number | null
+          created_at: string
+          fees_cents: number
           gross_cents: number
           id: string
-          net_cents: number | null
-          occurred_on: string
-          org_id: string | null
-          processor: string | null
-          txn_count: number | null
-          updated_at: string | null
+          net_cents: number
+          notes: string | null
+          org_id: string
+          payout_date: string | null
+          period_end: string
+          period_start: string
+          processor_id: string
+          reference: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          deposit_ref?: string | null
-          fee_cents?: number | null
-          gross_cents: number
-          id?: string
-          net_cents?: number | null
-          occurred_on: string
-          org_id?: string | null
-          processor?: string | null
-          txn_count?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          deposit_ref?: string | null
-          fee_cents?: number | null
+          created_at?: string
+          fees_cents?: number
           gross_cents?: number
           id?: string
-          net_cents?: number | null
-          occurred_on?: string
-          org_id?: string | null
-          processor?: string | null
-          txn_count?: number | null
-          updated_at?: string | null
+          net_cents?: number
+          notes?: string | null
+          org_id: string
+          payout_date?: string | null
+          period_end: string
+          period_start: string
+          processor_id: string
+          reference?: string | null
+          updated_at?: string
         }
-        Relationships: []
+        Update: {
+          created_at?: string
+          fees_cents?: number
+          gross_cents?: number
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          org_id?: string
+          payout_date?: string | null
+          period_end?: string
+          period_start?: string
+          processor_id?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processor_settlements_processor_id_fkey"
+            columns: ["processor_id"]
+            isOneToOne: false
+            referencedRelation: "payment_processors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
