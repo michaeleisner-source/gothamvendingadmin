@@ -55,6 +55,7 @@ import HelpArticle from "./pages/HelpArticle";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
+import ProductProfitabilityNet from "./pages/ProductProfitabilityNet";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="/audit" element={<Audit />} />
             <Route path="/finance" element={<FinanceManagement />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
+            <Route path="/finance/profitability" element={<ProductProfitabilityNet />} />
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/help" element={<HelpCenter />} />

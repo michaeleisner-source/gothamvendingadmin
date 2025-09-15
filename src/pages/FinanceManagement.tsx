@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, CreditCard, Receipt, Building, Calculator, TrendingUp } from 'lucide-react';
 import { HelpTooltip, HelpTooltipProvider } from '@/components/ui/HelpTooltip';
 import PaymentProcessors from './PaymentProcessors';
+import ProductProfitabilityNet from './ProductProfitabilityNet';
 
 const FinanceManagement = () => {
   return (
@@ -294,11 +295,8 @@ const FinanceManagement = () => {
                     </Card>
                   </div>
 
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Advanced financial analysis features coming soon.</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Detailed profit analysis, cash flow reports, and ROI calculations.
-                    </p>
+                  <div className="space-y-4">
+                    <ProductProfitabilityNet />
                   </div>
                 </div>
               </CardContent>
