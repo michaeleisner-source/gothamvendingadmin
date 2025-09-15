@@ -56,6 +56,7 @@ import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
 import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
+import MachineROI from "./pages/reports/MachineROI";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 
@@ -108,6 +109,7 @@ const App = () => (
             <Route path="/finance/profitability" element={<ProductProfitabilityNet />} />
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
+            <Route path="/reports/machine-roi" element={<MachineROI />} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
