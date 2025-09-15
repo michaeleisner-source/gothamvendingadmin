@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useScope } from "@/contexts/ScopeContext";
+import { useScope } from "@/context/Scope";
 import { supabase } from "@/integrations/supabase/client";
 
 type Opt = { id: string; name: string };
