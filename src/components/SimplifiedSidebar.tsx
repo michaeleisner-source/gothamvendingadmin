@@ -88,6 +88,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/finance" label="Overview" />
           <SubNavItem to="/finance/commissions" label="Commissions" />
           <SubNavItem to="/finance/processors" label="Payment Processors" />
+          <SubNavItem to="/finance/processor-reconciliation" label="Processor Reconciliation" />
           <SubNavItem to="/finance/profitability" label="Product Profitability" />
         </ExpandableGroup>
 

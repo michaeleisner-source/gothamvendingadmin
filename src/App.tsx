@@ -68,6 +68,7 @@ import SalesSummary7d from "./pages/reports/SalesSummary";
 import ProductProfitabilityNet from "./pages/reports/ProductProfitabilityNet";
 import MachineROI from "./pages/reports/MachineROI";
 import MachineRoi from "./pages/MachineRoi";
+import ProcessorReconciliation from "./pages/ProcessorReconciliation";
 import EnhancedDashboard from "./pages/EnhancedDashboard";
 import MobileQuickActions from "./components/MobileQuickActions";
 import RouteEfficiency from "./pages/reports/RouteEfficiency";
@@ -147,6 +148,7 @@ const App = () => (
             <Route path="/health" element={<Health />} />
           <Route path="/insurance" element={<Insurance />} />
           <Route path="/reports/machine-roi" element={<MachineRoi />} />
+          <Route path="/finance/processor-reconciliation" element={<ProcessorReconciliation />} />
             <Route path="/qa" element={<QALauncher />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
