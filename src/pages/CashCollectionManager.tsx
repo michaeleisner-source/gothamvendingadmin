@@ -130,6 +130,7 @@ export default function CashCollectionManager() {
 
     try {
       const collectionData = {
+        org_id: (await supabase.from('machines').select('org_id').eq('id', form.machine_id).single()).data?.org_id,
         machine_id: form.machine_id,
         collection_date: format(form.collection_date, 'yyyy-MM-dd'),
         collected_amount_cents: Math.round(parseFloat(form.collected_amount) * 100),

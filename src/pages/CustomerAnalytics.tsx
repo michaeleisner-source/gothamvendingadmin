@@ -90,12 +90,7 @@ export default function CustomerAnalytics() {
 
     const { data: interactions, error } = await supabase
       .from('customer_interactions')
-      .select(`
-        *,
-        products(name),
-        machines!inner(name),
-        locations!inner(name)
-      `)
+      .select('*')
       .gte('occurred_at', startDate.toISOString());
 
     if (error) throw error;
@@ -115,6 +110,13 @@ export default function CustomerAnalytics() {
       });
       return;
     }
+
+    // Get products data for enrichment
+    const productIds = [...new Set(interactions.map(i => i.product_id).filter(Boolean))];
+    const { data: productsData } = await supabase
+      .from('products')
+      .select('id, name')
+      .in('id', productIds);
 
     // Calculate metrics
     const totalInteractions = interactions.length;
@@ -166,7 +168,7 @@ export default function CustomerAnalytics() {
     // Top products
     const productSales = new Map<string, { count: number; revenue: number }>();
     purchases.forEach(p => {
-      const productName = p.products?.name || 'Unknown Product';
+      const productName = productsData?.find(prod => prod.id === p.product_id)?.name || 'Unknown Product';
       const existing = productSales.get(productName) || { count: 0, revenue: 0 };
       productSales.set(productName, {
         count: existing.count + 1,
@@ -202,18 +204,23 @@ export default function CustomerAnalytics() {
 
     const { data, error } = await supabase
       .from('customer_interactions')
-      .select(`
-        machine_id,
-        interaction_type,
-        amount_cents,
-        session_duration_seconds,
-        occurred_at,
-        machines!inner(name),
-        locations!inner(name)
-      `)
+      .select('machine_id, interaction_type, amount_cents, session_duration_seconds, occurred_at')
       .gte('occurred_at', startDate.toISOString());
 
     if (error) throw error;
+
+    // Get machines and locations data
+    const machineIds = [...new Set(data?.map(i => i.machine_id).filter(Boolean) || [])];
+    const { data: machinesData } = await supabase
+      .from('machines')
+      .select('id, name, location_id')
+      .in('id', machineIds);
+
+    const locationIds = [...new Set(machinesData?.map(m => m.location_id).filter(Boolean) || [])];
+    const { data: locationsData } = await supabase
+      .from('locations')
+      .select('id, name')
+      .in('id', locationIds);
 
     // Group by machine
     const machineMap = new Map<string, {
@@ -225,9 +232,11 @@ export default function CustomerAnalytics() {
     data?.forEach(interaction => {
       const machineId = interaction.machine_id;
       if (!machineMap.has(machineId)) {
+        const machine = machinesData?.find(m => m.id === machineId);
+        const location = locationsData?.find(l => l.id === machine?.location_id);
         machineMap.set(machineId, {
-          machine_name: interaction.machines?.name || 'Unknown',
-          location_name: interaction.locations?.name || 'Unknown',
+          machine_name: machine?.name || 'Unknown',
+          location_name: location?.name || 'Unknown',
           interactions: []
         });
       }
@@ -275,23 +284,44 @@ export default function CustomerAnalytics() {
   const loadRecentInteractions = async () => {
     const { data, error } = await supabase
       .from('customer_interactions')
-      .select(`
-        *,
-        machines!inner(name),
-        locations!inner(name),
-        products(name)
-      `)
+      .select('*')
       .order('occurred_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
 
-    setRecentInteractions(data?.map(interaction => ({
-      ...interaction,
-      machine_name: interaction.machines?.name || 'Unknown',
-      location_name: interaction.locations?.name || 'Unknown',
-      product_name: interaction.products?.name || null
-    })) || []);
+    // Get related data
+    const machineIds = [...new Set(data?.map(i => i.machine_id).filter(Boolean) || [])];
+    const productIds = [...new Set(data?.map(i => i.product_id).filter(Boolean) || [])];
+
+    const { data: machinesData } = await supabase
+      .from('machines')
+      .select('id, name, location_id')
+      .in('id', machineIds);
+
+    const locationIds = [...new Set(machinesData?.map(m => m.location_id).filter(Boolean) || [])];
+    const { data: locationsData } = await supabase
+      .from('locations')
+      .select('id, name')
+      .in('id', locationIds);
+
+    const { data: productsData } = await supabase
+      .from('products')
+      .select('id, name')
+      .in('id', productIds);
+
+    setRecentInteractions(data?.map(interaction => {
+      const machine = machinesData?.find(m => m.id === interaction.machine_id);
+      const location = locationsData?.find(l => l.id === machine?.location_id);
+      const product = productsData?.find(p => p.id === interaction.product_id);
+      
+      return {
+        ...interaction,
+        machine_name: machine?.name || 'Unknown',
+        location_name: location?.name || 'Unknown',
+        product_name: product?.name || null
+      };
+    }) || []);
   };
 
   const exportAnalytics = () => {

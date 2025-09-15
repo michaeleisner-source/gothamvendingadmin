@@ -82,18 +82,22 @@ export default function MachineHealthMonitor() {
   const loadAlerts = async () => {
     const { data, error } = await supabase
       .from('machine_health_alerts')
-      .select(`
-        *,
-        machines!inner(name)
-      `)
+      .select('*')
       .is('resolved_at', null)
       .order('triggered_at', { ascending: false });
 
     if (error) throw error;
+
+    // Get machine names
+    const machineIds = [...new Set(data?.map(a => a.machine_id).filter(Boolean) || [])];
+    const { data: machinesData } = await supabase
+      .from('machines')
+      .select('id, name')
+      .in('id', machineIds);
     
     setAlerts(data?.map(alert => ({
       ...alert,
-      machine_name: alert.machines?.name || 'Unknown'
+      machine_name: machinesData?.find(m => m.id === alert.machine_id)?.name || 'Unknown'
     })) || []);
   };
 
@@ -101,20 +105,23 @@ export default function MachineHealthMonitor() {
     // Get machine performance data for last 7 days
     const { data: performanceData, error: perfError } = await supabase
       .from('machine_performance_metrics')
-      .select(`
-        machine_id,
-        total_sales_cents,
-        total_transactions,
-        failed_transactions,
-        uptime_minutes,
-        downtime_minutes,
-        temperature_avg,
-        machines!inner(name),
-        locations!inner(name)
-      `)
+      .select('machine_id, total_sales_cents, total_transactions, failed_transactions, uptime_minutes, downtime_minutes, temperature_avg')
       .gte('metric_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
 
     if (perfError) throw perfError;
+
+    // Get machines and locations data
+    const machineIds = [...new Set(performanceData?.map(p => p.machine_id).filter(Boolean) || [])];
+    const { data: machinesData } = await supabase
+      .from('machines')
+      .select('id, name, location_id')
+      .in('id', machineIds);
+
+    const locationIds = [...new Set(machinesData?.map(m => m.location_id).filter(Boolean) || [])];
+    const { data: locationsData } = await supabase
+      .from('locations')
+      .select('id, name')
+      .in('id', locationIds);
 
     // Get latest sales data per machine
     const { data: salesData, error: salesError } = await supabase
@@ -138,12 +145,14 @@ export default function MachineHealthMonitor() {
     performanceData?.forEach(perf => {
       const machineId = perf.machine_id;
       const existing = machineMetrics.get(machineId);
+      const machine = machinesData?.find(m => m.id === machineId);
+      const location = locationsData?.find(l => l.id === machine?.location_id);
       
       if (!existing) {
         machineMetrics.set(machineId, {
           machine_id: machineId,
-          machine_name: perf.machines?.name || 'Unknown',
-          location_name: perf.locations?.name || 'Unknown',
+          machine_name: machine?.name || 'Unknown',
+          location_name: location?.name || 'Unknown',
           total_sales_cents: perf.total_sales_cents || 0,
           total_transactions: perf.total_transactions || 0,
           failed_transactions: perf.failed_transactions || 0,
