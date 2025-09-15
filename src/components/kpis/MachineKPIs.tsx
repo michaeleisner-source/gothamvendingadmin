@@ -22,8 +22,12 @@ export default function MachineKPIs({ machineId }: { machineId: string }) {
     (async () => {
       setLoading(true); setErr(null);
       try {
-        const m = await supabase.from("machines").select("id,name,location_id").eq("id", machineId).single();
+        const m = await supabase.from("machines").select("id,name,location_id").eq("id", machineId).maybeSingle();
         if (m.error) throw m.error;
+        if (!m.data) {
+          setErr("Machine not found");
+          return;
+        }
         setMachine(m.data);
 
         try {
@@ -43,7 +47,7 @@ export default function MachineKPIs({ machineId }: { machineId: string }) {
         }
 
         try {
-          const f = await supabase.from("machine_finance").select("monthly_payment,purchase_price").eq("machine_id", machineId).single();
+          const f = await supabase.from("machine_finance").select("monthly_payment,purchase_price").eq("machine_id", machineId).maybeSingle();
           if (!f.error && f.data) {
             setFinance(f.data);
           }
@@ -53,7 +57,7 @@ export default function MachineKPIs({ machineId }: { machineId: string }) {
 
         if (m.data?.location_id) {
           try {
-            const l = await supabase.from("locations").select("id,commission_model,commission_pct_bps,commission_flat_cents,commission_min_cents").eq("id", m.data.location_id).single();
+            const l = await supabase.from("locations").select("id,commission_model,commission_pct_bps,commission_flat_cents,commission_min_cents").eq("id", m.data.location_id).maybeSingle();
             if (!l.error && l.data) {
               setLocation(l.data);
             }

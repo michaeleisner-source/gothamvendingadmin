@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 import LocationKPIs from "@/components/kpis/LocationKPIs";
+import MachineKPIs from "@/components/kpis/MachineKPIs";
 
 export default function SlotPlanner() {
   const [machines, setMachines] = useState<Machine[]>([]);
@@ -280,6 +281,9 @@ export default function SlotPlanner() {
           </Select>
         </CardContent>
         </Card>
+
+      {/* Machine KPIs - show when machine is selected */}
+      {selectedMachineId && <MachineKPIs machineId={selectedMachineId} />}
 
       {/* Location KPIs - show when machine with location is selected */}
       {selectedMachineId && (() => {
