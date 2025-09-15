@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCommissionData } from "@/hooks/useCommissionData";
 import { money } from "@/lib/utils";
 import { downloadCsvWithTimestamp } from "@/lib/csv-utils";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 interface CommissionRow {
   location_id: string;
@@ -194,34 +195,41 @@ export default function LocationCommission() {
   if (error) return <ErrorState title="Failed to Load Commission Data" message={error?.message || "Unable to load commission data"} />;
 
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Location Commission Report"
-        description="Detailed commission calculations by location and time period"
-        icon={Receipt}
-        actions={
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lastMonth">Last Full Month</SelectItem>
-                  <SelectItem value="thisMonth">Month to Date</SelectItem>
-                  <SelectItem value="last3Months">Last 3 Months</SelectItem>
-                  <SelectItem value="yearToDate">Year to Date</SelectItem>
-                </SelectContent>
-              </Select>
+    <HelpTooltipProvider>
+      <div className="space-y-6">
+        <PageHeader 
+          title="Location Commission Report"
+          description="Detailed commission calculations by location and time period"
+          icon={Receipt}
+          actions={
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lastMonth">Last Full Month</SelectItem>
+                      <SelectItem value="thisMonth">Month to Date</SelectItem>
+                      <SelectItem value="last3Months">Last 3 Months</SelectItem>
+                      <SelectItem value="yearToDate">Year to Date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <HelpTooltip content="Select the time period for commission calculations. Monthly fees and minimums are automatically prorated for partial periods" />
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button onClick={handleExport} variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+                <HelpTooltip content="Export detailed commission data to CSV format for accounting records, payment processing, or further analysis" />
+              </div>
             </div>
-            <Button onClick={handleExport} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-          </div>
-        }
-      />
+          }
+        />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -236,7 +244,10 @@ export default function LocationCommission() {
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Gross Revenue</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Gross Revenue</CardTitle>
+              <HelpTooltip content="Sum of all sales revenue from vending machines at locations with commission agreements during the selected period" size="sm" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{money(processedData.totals.gross)}</div>
@@ -245,7 +256,10 @@ export default function LocationCommission() {
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Commission Due</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Commission Due</CardTitle>
+              <HelpTooltip content="Total amount owed to all locations based on their individual commission structures and sales performance" size="sm" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">{money(processedData.totals.commission)}</div>
@@ -271,13 +285,48 @@ export default function LocationCommission() {
             <table className="w-full text-sm">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium">Location</th>
-                  <th className="px-4 py-3 text-left font-medium">Model</th>
-                  <th className="px-4 py-3 text-right font-medium">% (bps)</th>
-                  <th className="px-4 py-3 text-right font-medium">Flat / mo</th>
-                  <th className="px-4 py-3 text-right font-medium">Min / mo</th>
-                  <th className="px-4 py-3 text-right font-medium">Gross Revenue</th>
-                  <th className="px-4 py-3 text-right font-medium">Commission Due</th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    <div className="flex items-center gap-1">
+                      Location
+                      <HelpTooltip content="The location where vending machines are installed and generating commissionable sales" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    <div className="flex items-center gap-1">
+                      Model
+                      <HelpTooltip content="Commission structure: % of Gross (percentage-based), Flat Monthly (fixed amount), Hybrid (combination), or None" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <div className="flex items-center justify-end gap-1">
+                      % (bps)
+                      <HelpTooltip content="Commission percentage in basis points (e.g., 1500 bps = 15%). Applied to gross sales revenue" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <div className="flex items-center justify-end gap-1">
+                      Flat / mo
+                      <HelpTooltip content="Fixed monthly commission amount regardless of sales volume. Automatically prorated for partial periods" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <div className="flex items-center justify-end gap-1">
+                      Min / mo
+                      <HelpTooltip content="Guaranteed minimum monthly commission. If calculated commission is lower, this minimum applies instead" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <div className="flex items-center justify-end gap-1">
+                      Gross Revenue
+                      <HelpTooltip content="Total sales revenue generated by all machines at this location during the selected time period" size="sm" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <div className="flex items-center justify-end gap-1">
+                      Commission Due
+                      <HelpTooltip content="Final commission amount owed to this location after applying their commission model and any minimum guarantees" size="sm" />
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -321,8 +370,9 @@ export default function LocationCommission() {
             </table>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </HelpTooltipProvider>
   );
 }
 
