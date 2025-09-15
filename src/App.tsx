@@ -58,6 +58,9 @@ import ContractView from "./pages/ContractView"; // Contract viewing component
 import ConvertProspect from "./pages/pipeline/ConvertProspect";
 import LocationContract from "./pages/contracts/LocationContract";
 import NewLocation from "./pages/NewLocation";
+import CommissionDashboard from "./pages/CommissionDashboard";
+import ContractManagement from "./pages/ContractManagement";
+import LocationPerformance from "./pages/LocationPerformance";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -124,7 +127,10 @@ const App = () => (
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
+            <Route path="/reports/location-performance" element={<LocationPerformance />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
+            <Route path="/finance/commissions" element={<CommissionDashboard />} />
+            <Route path="/contracts" element={<ContractManagement />} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />

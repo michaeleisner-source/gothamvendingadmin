@@ -13,6 +13,7 @@ export function SimplifiedSidebar() {
     pipeline: false,
     operations: false,
     supply: false,
+    finance: false,
     reports: false,
     support: false,
   });
@@ -42,7 +43,9 @@ export function SimplifiedSidebar() {
           onClick={() => toggleGroup('pipeline')}
         >
           <SubNavItem to="/prospects" label="All Prospects" />
-          <SubNavItem to="/prospects/convert" label="Convert Prospect → Contract" />
+          <SubNavItem to="/prospects/new" label="New Prospect" />
+          <SubNavItem to="/prospects/convert" label="Convert → Contract" />
+          <SubNavItem to="/contracts" label="Contract Management" />
         </ExpandableGroup>
         
         {/* Business Flow Guide */}
@@ -58,6 +61,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/machines" label="Machines" />
           <SubNavItem to="/inventory" label="Inventory" />
           <SubNavItem to="/locations" label="Locations" />
+          <SubNavItem to="/locations/new" label="New Location" />
           <SubNavItem to="/setup" label="Machine Setup" />
           <SubNavItem to="/slots" label="Slot Planner" />
         </ExpandableGroup>
@@ -74,8 +78,18 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/suppliers" label="Suppliers" />
         </ExpandableGroup>
 
-        {/* Finance */}
-        <NavItem to="/finance" icon={DollarSign} label="Finance" />
+        {/* Finance - Expandable */}
+        <ExpandableGroup
+          label="Finance"
+          icon={DollarSign}
+          isOpen={openGroups.finance}
+          onClick={() => toggleGroup('finance')}
+        >
+          <SubNavItem to="/finance" label="Overview" />
+          <SubNavItem to="/finance/commissions" label="Commissions" />
+          <SubNavItem to="/finance/processors" label="Payment Processors" />
+          <SubNavItem to="/finance/profitability" label="Product Profitability" />
+        </ExpandableGroup>
 
         {/* Reports - Expandable */}
         <ExpandableGroup
@@ -86,8 +100,9 @@ export function SimplifiedSidebar() {
         >
           <SubNavItem to="/reports" label="All Reports" />
           <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
-          <SubNavItem to="/reports/product-profitability-net" label="Product Profitability (Net)" />
           <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
+          <SubNavItem to="/reports/location-performance" label="Location Performance" />
+          <SubNavItem to="/reports/product-profitability-net" label="Product Profitability" />
           <SubNavItem to="/reports/prospect-funnel" label="Prospect Funnel" />
           <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />
         </ExpandableGroup>
