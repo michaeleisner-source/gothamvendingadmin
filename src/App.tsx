@@ -55,8 +55,8 @@ import EnhancedReports from "./pages/EnhancedReports";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
 import ContractView from "./pages/ContractView"; // Contract viewing component
-import ConvertProspect from "./pages/ConvertProspect";
-import LocationContract from "./pages/LocationContract";
+import ConvertProspect from "./pages/pipeline/ConvertProspect";
+import LocationContract from "./pages/contracts/LocationContract";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -86,14 +86,14 @@ const App = () => (
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/new" element={<NewProspect />} />
-            <Route path="/prospects/convert" element={<ConvertProspect />} />
+            <Route path="/prospects/convert" element={<ProtectedRoute><ConvertProspect /></ProtectedRoute>} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/prospects/funnel" element={<ProspectFunnel />} />
             <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <Route path="/locations" element={<LocationsEnhanced />} />
             <Route path="/locations/:id" element={<LocationDetail />} />
-            <Route path="/locations/:id/contract" element={<LocationContract />} />
+            <Route path="/locations/:id/contract" element={<ProtectedRoute><LocationContract /></ProtectedRoute>} />
             <Route path="/machines" element={<MachinesEnhanced />} />
             <Route path="/machines/:id" element={<MachineDetail />} />
             <Route path="/products" element={<ProductsEnhanced />} />
