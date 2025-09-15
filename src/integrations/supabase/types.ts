@@ -192,56 +192,81 @@ export type Database = {
           body_html: string
           cancellation_notice_days: number | null
           commission_flat_cents: number | null
+          contract_number: string | null
           created_at: string
+          html: string | null
           id: string
           location_id: string
           machine_id: string | null
           org_id: string
+          pdf_url: string | null
+          prospect_id: string | null
           revenue_share_pct: number | null
           signed_at: string | null
           signed_email: string | null
           signed_name: string | null
+          status: string | null
           term_months: number | null
           title: string
           updated_at: string
+          version: number | null
         }
         Insert: {
           auto_renew?: boolean | null
           body_html: string
           cancellation_notice_days?: number | null
           commission_flat_cents?: number | null
+          contract_number?: string | null
           created_at?: string
+          html?: string | null
           id?: string
           location_id: string
           machine_id?: string | null
           org_id: string
+          pdf_url?: string | null
+          prospect_id?: string | null
           revenue_share_pct?: number | null
           signed_at?: string | null
           signed_email?: string | null
           signed_name?: string | null
+          status?: string | null
           term_months?: number | null
           title?: string
           updated_at?: string
+          version?: number | null
         }
         Update: {
           auto_renew?: boolean | null
           body_html?: string
           cancellation_notice_days?: number | null
           commission_flat_cents?: number | null
+          contract_number?: string | null
           created_at?: string
+          html?: string | null
           id?: string
           location_id?: string
           machine_id?: string | null
           org_id?: string
+          pdf_url?: string | null
+          prospect_id?: string | null
           revenue_share_pct?: number | null
           signed_at?: string | null
           signed_email?: string | null
           signed_name?: string | null
+          status?: string | null
           term_months?: number | null
           title?: string
           updated_at?: string
+          version?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contracts_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_contracts_location"
             columns: ["location_id"]
