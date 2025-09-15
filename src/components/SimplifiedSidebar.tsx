@@ -87,6 +87,7 @@ export function SimplifiedSidebar() {
         {/* Admin */}
         <div className="pt-4 border-t border-sidebar-border">
           <NavItem to="/account" icon={Settings} label="Settings" />
+          <NavItem to="/admin/review-snapshot" icon={BarChart3} label="Review Snapshot" />
           {isDemo && (
             <NavItem to="/qa" icon={Wrench} label="QA Tools" />
           )}
