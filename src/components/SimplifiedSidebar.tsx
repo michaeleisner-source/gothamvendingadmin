@@ -12,6 +12,7 @@ export function SimplifiedSidebar() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     operations: false,
     supply: false,
+    reports: false,
     support: false,
   });
 
@@ -62,8 +63,17 @@ export function SimplifiedSidebar() {
         {/* Finance */}
         <NavItem to="/finance" icon={DollarSign} label="Finance" />
 
-        {/* Reports */}
-        <NavItem to="/reports" icon={BarChart3} label="Reports" />
+        {/* Reports - Expandable */}
+        <ExpandableGroup
+          label="Reports"
+          icon={BarChart3}
+          isOpen={openGroups.reports}
+          onClick={() => toggleGroup('reports')}
+        >
+          <SubNavItem to="/reports" label="All Reports" />
+          <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
+          <SubNavItem to="/reports/product-profitability-net" label="Product Profitability (Net)" />
+        </ExpandableGroup>
 
         {/* Support - Expandable */}
         <ExpandableGroup
