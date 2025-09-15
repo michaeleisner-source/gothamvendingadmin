@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Pencil, Trash2, Upload, Search, Download, Building2 } from "lucide-react";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 
 type Product = {
@@ -442,14 +443,21 @@ const updateProductMutation = useMutation({
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <div className="flex gap-2">
-          <Button onClick={exportToCSV} variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">Products</h1>
+            <HelpTooltip content="Manage your product catalog with SKUs, costs, prices, and detailed information for all vending machine items" />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-1">
+              <Button onClick={exportToCSV} variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+              <HelpTooltip content="Export all product data to CSV format for backup or external analysis" />
+            </div>
           <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm">
             <Upload className="w-4 h-4 mr-2" />
             Import CSV
@@ -867,6 +875,7 @@ const updateProductMutation = useMutation({
         </DialogContent>
       </Dialog>
     </div>
+    </HelpTooltipProvider>
   );
 };
 

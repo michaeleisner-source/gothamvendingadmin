@@ -22,6 +22,7 @@ import { InventoryKPIs, InventoryStockDistribution } from '@/components/inventor
 import { TopPerformingMachines, VelocityTrends, CriticalItemsAlert } from '@/components/inventory/InventoryMetrics';
 import { useInventoryAnalytics } from '@/hooks/useInventoryAnalytics';
 import { InventoryWorkflow, InventoryActionGuide } from '@/components/inventory/InventoryWorkflow';
+import { HelpTooltip, HelpTooltipProvider } from '@/components/ui/HelpTooltip';
 
 interface InventoryLevel {
   id: string;
@@ -244,23 +245,33 @@ const Inventory = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <Header 
-          title="Inventory Management" 
-          subtitle="Monitor stock levels, track velocity, and manage inventory across all machines" 
-        />
-        <div className="flex gap-2">
-          <Button onClick={recalculateVelocity} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Update Velocity
-          </Button>
-          <Button onClick={exportInventoryCSV} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
+    <HelpTooltipProvider>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Header 
+              title="Inventory Management" 
+              subtitle="Monitor stock levels, track velocity, and manage inventory across all machines" 
+            />
+            <HelpTooltip content="Track real-time inventory levels across all your vending machines. Monitor stock status, sales velocity, and get automated restock alerts." />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-1">
+              <Button onClick={recalculateVelocity} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Update Velocity
+              </Button>
+              <HelpTooltip content="Recalculate sales velocity based on recent transaction data to improve reorder point accuracy" />
+            </div>
+            <div className="flex items-center gap-1">
+              <Button onClick={exportInventoryCSV} variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+              <HelpTooltip content="Export current inventory data to CSV for external analysis or reporting" />
+            </div>
+          </div>
         </div>
-      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
@@ -685,6 +696,7 @@ const Inventory = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </HelpTooltipProvider>
   );
 };
 
