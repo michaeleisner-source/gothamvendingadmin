@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import GlobalSearch from "../components/GlobalSearch";
 import HelpBot from "../components/HelpBot";
-import SmartNotifications from "../components/SmartNotifications";
 import { useRouterLinkInterceptor } from "../hooks/useRouterLinkInterceptor";
 
 export default function AppLayout() {
@@ -19,7 +18,6 @@ export default function AppLayout() {
         </main>
       </div>
       <HelpBot />
-      <SmartNotifications />
     </div>
   );
 }
