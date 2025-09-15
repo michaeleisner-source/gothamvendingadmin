@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Edit, Plus } from "lucide-react";
+import { Search, Edit, Plus, MapPin } from "lucide-react";
+import { useSupabaseQuery } from "@/hooks/useOptimizedQuery";
+import { OptimizedLoadingState } from "@/components/common/OptimizedLoadingState";
+import { ErrorState } from "@/components/common/ErrorState";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,55 +51,33 @@ type Location = {
 };
 
 const Locations = () => {
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
 
-  const fetchLocations = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("locations")
-        .select(`
-          *,
-          location_types (
-            name
-          )
-        `)
-        .order("name", { ascending: true });
+  const { 
+    data: locations = [], 
+    isLoading, 
+    error, 
+    refetch 
+  } = useSupabaseQuery<Location>(
+    "locations", 
+    `*, location_types(name)`, 
+    [], 
+    { column: "name", ascending: true }
+  );
 
-      if (error) throw error;
-      setLocations(data || []);
-      setFilteredLocations(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: `Failed to load locations: ${error.message}`,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredLocations(locations);
-    } else {
-      const filtered = locations.filter((location) =>
-        location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (location.city && location.city.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      setFilteredLocations(filtered);
-    }
+  const filteredLocations = useMemo(() => {
+    if (!searchTerm.trim()) return locations;
+    
+    const term = searchTerm.toLowerCase();
+    return locations.filter((location) =>
+      location.name.toLowerCase().includes(term) ||
+      (location.city && location.city.toLowerCase().includes(term)) ||
+      (location.state && location.state.toLowerCase().includes(term)) ||
+      (location.contact_name && location.contact_name.toLowerCase().includes(term))
+    );
   }, [searchTerm, locations]);
 
   const formatTraffic = (daily: number | null, monthly: number | null) => {
@@ -140,7 +121,7 @@ const Locations = () => {
 
       setShowEditDialog(false);
       setEditingLocation(null);
-      fetchLocations();
+      refetch();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -150,11 +131,35 @@ const Locations = () => {
     }
   };
 
+  if (isLoading) {
+    return <OptimizedLoadingState type="table" title="Loading Locations..." count={8} />;
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <ErrorState 
+          title="Failed to Load Locations"
+          message="Unable to load location data. Please check your connection and try again."
+          onRetry={() => refetch()}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-2xl font-bold">Locations</h1>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <MapPin className="h-8 w-8" />
+              Locations
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your vending machine locations
+            </p>
+          </div>
           
           <div className="flex gap-2">
             <Button asChild>
@@ -193,11 +198,7 @@ const Locations = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="text-sm text-muted-foreground">Loading locations...</div>
-              </div>
-            ) : filteredLocations.length === 0 ? (
+            {filteredLocations.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-sm text-muted-foreground">
                   {searchTerm ? "No locations found matching your search." : "No locations found."}

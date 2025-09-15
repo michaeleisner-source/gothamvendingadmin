@@ -1,115 +1,103 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NextActionBar } from "@/feature-pack/VendingWorkflowPack";
-
-type Machine = {
-  id: string;
-  name: string;
-  location: string | null;
-  status: string | null;
-  created_at: string | null;
-};
-
-const fetchMachines = async (): Promise<Machine[]> => {
-  const { data, error } = await (supabase as any)
-    .from("machines")
-    .select("*");
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data || [];
-};
+import { OptimizedLoadingState } from "@/components/common/OptimizedLoadingState";
+import { ErrorState } from "@/components/common/ErrorState";
+import { QuickStatsCard } from "@/components/dashboard/QuickStatsCard";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { 
+  Factory, 
+  MapPin, 
+  Users, 
+  TrendingUp, 
+  Activity,
+  Clock
+} from "lucide-react";
 
 const HomeDashboard = () => {
-  const { data: machines = [], isLoading, error } = useQuery({
-    queryKey: ["machines"],
-    queryFn: fetchMachines,
-  });
+  const { data: dashboardData, isLoading } = useDashboardData();
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-gray-200 rounded w-12"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <OptimizedLoadingState type="dashboard" title="Mission Control Dashboard" />;
   }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
-        <p className="text-destructive">Error loading machines data</p>
-      </div>
-    );
-  }
-
-  const totalMachines = machines.length;
-  const onlineMachines = machines.filter(m => m.status === 'ONLINE').length;
-  const offlineMachines = machines.filter(m => m.status === 'OFFLINE').length;
-  const serviceMachines = machines.filter(m => m.status === 'SERVICE').length;
 
   const kpiData = [
     {
       title: "Total Machines",
-      value: totalMachines,
+      value: dashboardData.machines.total,
+      icon: Factory,
       className: "text-primary"
     },
     {
-      title: "Online",
-      value: onlineMachines,
+      title: "Online Machines",
+      value: dashboardData.machines.online,
+      icon: TrendingUp,
       className: "text-green-600"
     },
     {
-      title: "Offline", 
-      value: offlineMachines,
-      className: "text-red-600"
+      title: "Active Locations",
+      value: dashboardData.locations.total,
+      icon: MapPin,
+      className: "text-blue-600"
     },
     {
-      title: "Service",
-      value: serviceMachines,
-      className: "text-yellow-600"
+      title: "Active Prospects",
+      value: dashboardData.prospects.active,
+      icon: Users,
+      className: "text-purple-600"
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold">Mission Control</h1>
+          <p className="text-muted-foreground mt-1">
+            Real-time overview of your vending operations
+          </p>
+        </div>
+      </div>
       
       <NextActionBar />
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiData.map((kpi) => (
-          <Card key={kpi.title} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {kpi.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold ${kpi.className}`}>
-                {kpi.value}
-              </div>
-            </CardContent>
-          </Card>
+          <QuickStatsCard
+            key={kpi.title}
+            title={kpi.title}
+            value={kpi.value}
+            icon={kpi.icon}
+            className={kpi.className}
+          />
         ))}
       </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {dashboardData.recentActivity.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No recent activity</p>
+          ) : (
+            <div className="space-y-3">
+              {dashboardData.recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-center gap-3 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{activity.message}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {new Date(activity.timestamp).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
