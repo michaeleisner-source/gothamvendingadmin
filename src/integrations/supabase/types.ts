@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_collections: {
+        Row: {
+          collected_amount_cents: number
+          collection_date: string
+          collection_notes: string | null
+          collector_id: string | null
+          created_at: string
+          deposit_reference: string | null
+          deposited_amount_cents: number | null
+          deposited_at: string | null
+          discrepancy_cents: number | null
+          expected_amount_cents: number | null
+          id: string
+          machine_id: string
+          org_id: string
+          route_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          collected_amount_cents?: number
+          collection_date: string
+          collection_notes?: string | null
+          collector_id?: string | null
+          created_at?: string
+          deposit_reference?: string | null
+          deposited_amount_cents?: number | null
+          deposited_at?: string | null
+          discrepancy_cents?: number | null
+          expected_amount_cents?: number | null
+          id?: string
+          machine_id: string
+          org_id: string
+          route_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          collected_amount_cents?: number
+          collection_date?: string
+          collection_notes?: string | null
+          collector_id?: string | null
+          created_at?: string
+          deposit_reference?: string | null
+          deposited_amount_cents?: number | null
+          deposited_at?: string | null
+          discrepancy_cents?: number | null
+          expected_amount_cents?: number | null
+          id?: string
+          machine_id?: string
+          org_id?: string
+          route_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       commission_payouts: {
         Row: {
           amount: number
@@ -289,6 +343,48 @@ export type Database = {
             referencedColumns: ["machine_id"]
           },
         ]
+      }
+      customer_interactions: {
+        Row: {
+          amount_cents: number | null
+          customer_feedback: string | null
+          error_code: string | null
+          id: string
+          interaction_type: string
+          machine_id: string
+          occurred_at: string
+          org_id: string
+          payment_method: string | null
+          product_id: string | null
+          session_duration_seconds: number | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          customer_feedback?: string | null
+          error_code?: string | null
+          id?: string
+          interaction_type: string
+          machine_id: string
+          occurred_at?: string
+          org_id: string
+          payment_method?: string | null
+          product_id?: string | null
+          session_duration_seconds?: number | null
+        }
+        Update: {
+          amount_cents?: number | null
+          customer_feedback?: string | null
+          error_code?: string | null
+          id?: string
+          interaction_type?: string
+          machine_id?: string
+          occurred_at?: string
+          org_id?: string
+          payment_method?: string | null
+          product_id?: string | null
+          session_duration_seconds?: number | null
+        }
+        Relationships: []
       }
       deletion_logs: {
         Row: {
@@ -1415,6 +1511,108 @@ export type Database = {
           },
         ]
       }
+      machine_health_alerts: {
+        Row: {
+          alert_type: string
+          auto_resolved: boolean
+          created_at: string
+          description: string | null
+          id: string
+          machine_id: string
+          org_id: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          triggered_at: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          auto_resolved?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          machine_id: string
+          org_id: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title: string
+          triggered_at?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          auto_resolved?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          machine_id?: string
+          org_id?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          triggered_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      machine_performance_metrics: {
+        Row: {
+          cash_collected_cents: number
+          created_at: string
+          downtime_minutes: number
+          energy_consumption_kwh: number | null
+          failed_transactions: number
+          id: string
+          machine_id: string
+          metric_date: string
+          org_id: string
+          products_dispensed: number
+          temperature_avg: number | null
+          total_sales_cents: number
+          total_transactions: number
+          uptime_minutes: number
+        }
+        Insert: {
+          cash_collected_cents?: number
+          created_at?: string
+          downtime_minutes?: number
+          energy_consumption_kwh?: number | null
+          failed_transactions?: number
+          id?: string
+          machine_id: string
+          metric_date: string
+          org_id: string
+          products_dispensed?: number
+          temperature_avg?: number | null
+          total_sales_cents?: number
+          total_transactions?: number
+          uptime_minutes?: number
+        }
+        Update: {
+          cash_collected_cents?: number
+          created_at?: string
+          downtime_minutes?: number
+          energy_consumption_kwh?: number | null
+          failed_transactions?: number
+          id?: string
+          machine_id?: string
+          metric_date?: string
+          org_id?: string
+          products_dispensed?: number
+          temperature_avg?: number | null
+          total_sales_cents?: number
+          total_transactions?: number
+          uptime_minutes?: number
+        }
+        Relationships: []
+      }
       machine_processor_mappings: {
         Row: {
           created_at: string
@@ -1775,6 +1973,57 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_schedules: {
+        Row: {
+          assigned_technician_id: string | null
+          created_at: string
+          estimated_cost_cents: number | null
+          frequency_days: number
+          id: string
+          is_active: boolean
+          last_service_date: string | null
+          machine_id: string
+          next_service_date: string
+          org_id: string
+          priority: string
+          schedule_type: string
+          service_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_technician_id?: string | null
+          created_at?: string
+          estimated_cost_cents?: number | null
+          frequency_days?: number
+          id?: string
+          is_active?: boolean
+          last_service_date?: string | null
+          machine_id: string
+          next_service_date: string
+          org_id: string
+          priority?: string
+          schedule_type: string
+          service_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_technician_id?: string | null
+          created_at?: string
+          estimated_cost_cents?: number | null
+          frequency_days?: number
+          id?: string
+          is_active?: boolean
+          last_service_date?: string | null
+          machine_id?: string
+          next_service_date?: string
+          org_id?: string
+          priority?: string
+          schedule_type?: string
+          service_description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       maintenance_work_orders: {
         Row: {
           closed_at: string | null
@@ -1851,6 +2100,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          notification_type: string
+          org_id: string
+          priority: string
+          read_at: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          notification_type?: string
+          org_id: string
+          priority?: string
+          read_at?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          org_id?: string
+          priority?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       organizations: {
         Row: {
