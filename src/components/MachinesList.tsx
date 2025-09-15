@@ -43,13 +43,16 @@ const fetchMachines = async (): Promise<Machine[]> => {
   return data || [];
 };
 
-const insertMachine = async (machine: { name: string; location: string; status: string }) => {
+const insertMachine = async (machine: { name: string; location: string; status: string; manufacturer: string; serial_number: string; wifi_type: string }) => {
   const { data, error } = await (supabase as any)
     .from("machines")
     .insert({
       name: machine.name,
       location: machine.location || null,
       status: machine.status || "ONLINE",
+      manufacturer: machine.manufacturer || null,
+      serial_number: machine.serial_number || null,
+      wifi_type: machine.wifi_type || "local"
     })
     .select()
     .single();
@@ -80,6 +83,24 @@ export const MachinesList = () => {
     name: "",
     location: "",
     status: "",
+    manufacturer: "",
+    serial_number: "",
+    wifi_type: "local"
+  });
+
+  const [machineFinance, setMachineFinance] = useState({
+    acquisition_type: "purchase",
+    purchase_price: "",
+    monthly_payment: "",
+    monthly_software_cost: "",
+    cc_processing_fee_cents: "",
+    cc_processing_fee_percent: "",
+    other_onetime_costs: "",
+    term_months: "",
+    apr: "",
+    insurance_monthly: "",
+    telemetry_monthly: "",
+    data_plan_monthly: ""
   });
 
   const {
@@ -93,9 +114,61 @@ export const MachinesList = () => {
 
   const addMachineMutation = useMutation({
     mutationFn: insertMachine,
-    onSuccess: () => {
+    onSuccess: async (machine) => {
       queryClient.invalidateQueries({ queryKey: ["machines"] });
-      setFormData({ name: "", location: "", status: "" });
+      
+      // Create machine finance record if financial data is provided
+      const hasFinanceData = machineFinance.purchase_price || 
+                            machineFinance.monthly_payment || 
+                            machineFinance.monthly_software_cost ||
+                            machineFinance.cc_processing_fee_cents ||
+                            machineFinance.cc_processing_fee_percent ||
+                            machineFinance.other_onetime_costs;
+
+      if (hasFinanceData && machine.id) {
+        const financeData: any = {
+          machine_id: machine.id,
+          acquisition_type: machineFinance.acquisition_type
+        };
+
+        // Add numeric fields only if they have values
+        if (machineFinance.purchase_price) financeData.purchase_price = parseFloat(machineFinance.purchase_price);
+        if (machineFinance.monthly_payment) financeData.monthly_payment = parseFloat(machineFinance.monthly_payment);
+        if (machineFinance.monthly_software_cost) financeData.monthly_software_cost = parseFloat(machineFinance.monthly_software_cost);
+        if (machineFinance.cc_processing_fee_cents) financeData.cc_processing_fee_cents = parseInt(machineFinance.cc_processing_fee_cents);
+        if (machineFinance.cc_processing_fee_percent) financeData.cc_processing_fee_percent = parseFloat(machineFinance.cc_processing_fee_percent);
+        if (machineFinance.other_onetime_costs) financeData.other_onetime_costs = parseFloat(machineFinance.other_onetime_costs);
+        if (machineFinance.term_months) financeData.term_months = parseInt(machineFinance.term_months);
+        if (machineFinance.apr) financeData.apr = parseFloat(machineFinance.apr);
+        if (machineFinance.insurance_monthly) financeData.insurance_monthly = parseFloat(machineFinance.insurance_monthly);
+        if (machineFinance.telemetry_monthly) financeData.telemetry_monthly = parseFloat(machineFinance.telemetry_monthly);
+        if (machineFinance.data_plan_monthly) financeData.data_plan_monthly = parseFloat(machineFinance.data_plan_monthly);
+
+        const { error: financeError } = await supabase
+          .from('machine_finance')
+          .insert([financeData]);
+
+        if (financeError) {
+          console.error('Error creating machine finance:', financeError);
+          toast.error('Machine created but failed to save financial data');
+        }
+      }
+      
+      setFormData({ name: "", location: "", status: "", manufacturer: "", serial_number: "", wifi_type: "local" });
+      setMachineFinance({
+        acquisition_type: "purchase",
+        purchase_price: "",
+        monthly_payment: "",
+        monthly_software_cost: "",
+        cc_processing_fee_cents: "",
+        cc_processing_fee_percent: "",
+        other_onetime_costs: "",
+        term_months: "",
+        apr: "",
+        insurance_monthly: "",
+        telemetry_monthly: "",
+        data_plan_monthly: ""
+      });
       toast.success("Machine added successfully!");
     },
     onError: (error: Error) => {
@@ -115,11 +188,18 @@ export const MachinesList = () => {
       name: formData.name.trim(),
       location: formData.location.trim(),
       status: formData.status || "ONLINE",
+      manufacturer: formData.manufacturer.trim(),
+      serial_number: formData.serial_number.trim(),
+      wifi_type: formData.wifi_type || "local"
     });
   };
 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateFinanceData = (field: string, value: string) => {
+    setMachineFinance(prev => ({ ...prev, [field]: value }));
   };
 
   if (isLoading) {
@@ -152,10 +232,268 @@ export const MachinesList = () => {
         
         <div className="mb-6 rounded-md border p-6">
           <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Basic Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name *</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => updateFormData("name", e.target.value)}
+                    placeholder="Enter machine name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => updateFormData("location", e.target.value)}
+                    placeholder="Enter location"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ONLINE">ONLINE</SelectItem>
+                      <SelectItem value="OFFLINE">OFFLINE</SelectItem>
+                      <SelectItem value="SERVICE">SERVICE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturer">Manufacturer</Label>
+                  <Input
+                    id="manufacturer"
+                    type="text"
+                    value={formData.manufacturer}
+                    onChange={(e) => updateFormData("manufacturer", e.target.value)}
+                    placeholder="e.g., Coca-Cola, Pepsi"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="serial_number">Serial Number</Label>
+                  <Input
+                    id="serial_number"
+                    type="text"
+                    value={formData.serial_number}
+                    onChange={(e) => updateFormData("serial_number", e.target.value)}
+                    placeholder="Machine serial number"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="wifi_type">Connectivity</Label>
+                  <Select value={formData.wifi_type} onValueChange={(value) => updateFormData("wifi_type", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local">Local WiFi</SelectItem>
+                      <SelectItem value="cellular">Cellular Data</SelectItem>
+                      <SelectItem value="wifi_card">WiFi Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Financial Information */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="acquisition_type">Acquisition Type</Label>
+                  <Select value={machineFinance.acquisition_type} onValueChange={(value) => updateFinanceData("acquisition_type", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="purchase">Purchase</SelectItem>
+                      <SelectItem value="lease">Lease</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="purchase_price">Purchase/Lease Price ($)</Label>
+                  <Input
+                    id="purchase_price"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.purchase_price}
+                    onChange={(e) => updateFinanceData("purchase_price", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="monthly_payment">Monthly Payment ($)</Label>
+                  <Input
+                    id="monthly_payment"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.monthly_payment}
+                    onChange={(e) => updateFinanceData("monthly_payment", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="monthly_software_cost">Monthly Software Cost ($)</Label>
+                  <Input
+                    id="monthly_software_cost"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.monthly_software_cost}
+                    onChange={(e) => updateFinanceData("monthly_software_cost", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cc_processing_fee_cents">CC Processing Fee (¢ per transaction)</Label>
+                  <Input
+                    id="cc_processing_fee_cents"
+                    type="number"
+                    value={machineFinance.cc_processing_fee_cents}
+                    onChange={(e) => updateFinanceData("cc_processing_fee_cents", e.target.value)}
+                    placeholder="30"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cc_processing_fee_percent">CC Processing Fee (%)</Label>
+                  <Input
+                    id="cc_processing_fee_percent"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.cc_processing_fee_percent}
+                    onChange={(e) => updateFinanceData("cc_processing_fee_percent", e.target.value)}
+                    placeholder="2.5"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="other_onetime_costs">Other One-time Costs ($)</Label>
+                  <Input
+                    id="other_onetime_costs"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.other_onetime_costs}
+                    onChange={(e) => updateFinanceData("other_onetime_costs", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="term_months">Finance Term (months)</Label>
+                  <Input
+                    id="term_months"
+                    type="number"
+                    value={machineFinance.term_months}
+                    onChange={(e) => updateFinanceData("term_months", e.target.value)}
+                    placeholder="60"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="apr">APR (%)</Label>
+                  <Input
+                    id="apr"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.apr}
+                    onChange={(e) => updateFinanceData("apr", e.target.value)}
+                    placeholder="5.99"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="insurance_monthly">Insurance Monthly ($)</Label>
+                  <Input
+                    id="insurance_monthly"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.insurance_monthly}
+                    onChange={(e) => updateFinanceData("insurance_monthly", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telemetry_monthly">Telemetry Monthly ($)</Label>
+                  <Input
+                    id="telemetry_monthly"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.telemetry_monthly}
+                    onChange={(e) => updateFinanceData("telemetry_monthly", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="data_plan_monthly">Data Plan Monthly ($)</Label>
+                  <Input
+                    id="data_plan_monthly"
+                    type="number"
+                    step="0.01"
+                    value={machineFinance.data_plan_monthly}
+                    onChange={(e) => updateFinanceData("data_plan_monthly", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button type="submit" disabled={addMachineMutation.isPending}>
+                {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="flex items-center justify-center p-8">
+          <div className="text-muted-foreground">No machines found</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Machines</h1>
+        <p className="text-muted-foreground">
+          Manage and monitor your machine inventory
+        </p>
+      </div>
+      
+      <div className="mb-6 rounded-md border p-6">
+        <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">Basic Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
                   type="text"
@@ -189,78 +527,200 @@ export const MachinesList = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="manufacturer">Manufacturer</Label>
+                <Input
+                  id="manufacturer"
+                  type="text"
+                  value={formData.manufacturer}
+                  onChange={(e) => updateFormData("manufacturer", e.target.value)}
+                  placeholder="e.g., Coca-Cola, Pepsi"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="serial_number">Serial Number</Label>
+                <Input
+                  id="serial_number"
+                  type="text"
+                  value={formData.serial_number}
+                  onChange={(e) => updateFormData("serial_number", e.target.value)}
+                  placeholder="Machine serial number"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="wifi_type">Connectivity</Label>
+                <Select value={formData.wifi_type} onValueChange={(value) => updateFormData("wifi_type", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="local">Local WiFi</SelectItem>
+                    <SelectItem value="cellular">Cellular Data</SelectItem>
+                    <SelectItem value="wifi_card">WiFi Card</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
+          </div>
+
+          {/* Financial Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">Financial Information (Optional)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="acquisition_type">Acquisition Type</Label>
+                <Select value={machineFinance.acquisition_type} onValueChange={(value) => updateFinanceData("acquisition_type", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="purchase">Purchase</SelectItem>
+                    <SelectItem value="lease">Lease</SelectItem>
+                    <SelectItem value="finance">Finance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchase_price">Purchase/Lease Price ($)</Label>
+                <Input
+                  id="purchase_price"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.purchase_price}
+                  onChange={(e) => updateFinanceData("purchase_price", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="monthly_payment">Monthly Payment ($)</Label>
+                <Input
+                  id="monthly_payment"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.monthly_payment}
+                  onChange={(e) => updateFinanceData("monthly_payment", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="monthly_software_cost">Monthly Software Cost ($)</Label>
+                <Input
+                  id="monthly_software_cost"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.monthly_software_cost}
+                  onChange={(e) => updateFinanceData("monthly_software_cost", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cc_processing_fee_cents">CC Processing Fee (¢ per transaction)</Label>
+                <Input
+                  id="cc_processing_fee_cents"
+                  type="number"
+                  value={machineFinance.cc_processing_fee_cents}
+                  onChange={(e) => updateFinanceData("cc_processing_fee_cents", e.target.value)}
+                  placeholder="30"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cc_processing_fee_percent">CC Processing Fee (%)</Label>
+                <Input
+                  id="cc_processing_fee_percent"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.cc_processing_fee_percent}
+                  onChange={(e) => updateFinanceData("cc_processing_fee_percent", e.target.value)}
+                  placeholder="2.5"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="other_onetime_costs">Other One-time Costs ($)</Label>
+                <Input
+                  id="other_onetime_costs"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.other_onetime_costs}
+                  onChange={(e) => updateFinanceData("other_onetime_costs", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="term_months">Finance Term (months)</Label>
+                <Input
+                  id="term_months"
+                  type="number"
+                  value={machineFinance.term_months}
+                  onChange={(e) => updateFinanceData("term_months", e.target.value)}
+                  placeholder="60"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="apr">APR (%)</Label>
+                <Input
+                  id="apr"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.apr}
+                  onChange={(e) => updateFinanceData("apr", e.target.value)}
+                  placeholder="5.99"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="insurance_monthly">Insurance Monthly ($)</Label>
+                <Input
+                  id="insurance_monthly"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.insurance_monthly}
+                  onChange={(e) => updateFinanceData("insurance_monthly", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telemetry_monthly">Telemetry Monthly ($)</Label>
+                <Input
+                  id="telemetry_monthly"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.telemetry_monthly}
+                  onChange={(e) => updateFinanceData("telemetry_monthly", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="data_plan_monthly">Data Plan Monthly ($)</Label>
+                <Input
+                  id="data_plan_monthly"
+                  type="number"
+                  step="0.01"
+                  value={machineFinance.data_plan_monthly}
+                  onChange={(e) => updateFinanceData("data_plan_monthly", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+          
           <div className="flex justify-end">
             <Button type="submit" disabled={addMachineMutation.isPending}>
               {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
             </Button>
           </div>
-          </form>
-        </div>
-
-        <div className="flex items-center justify-center p-8">
-          <div className="text-muted-foreground">No machines found</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Machines</h1>
-        <p className="text-muted-foreground">
-          Manage and monitor your machine inventory
-        </p>
-      </div>
-      
-      <div className="mb-6 rounded-md border p-6">
-        <h2 className="text-xl font-semibold mb-4">Add New Machine</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => updateFormData("name", e.target.value)}
-                placeholder="Enter machine name"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                type="text"
-                value={formData.location}
-                onChange={(e) => updateFormData("location", e.target.value)}
-                placeholder="Enter location"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => updateFormData("status", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ONLINE">ONLINE</SelectItem>
-                  <SelectItem value="OFFLINE">OFFLINE</SelectItem>
-                  <SelectItem value="SERVICE">SERVICE</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-            <div className="flex justify-end">
-              <Button type="submit" disabled={addMachineMutation.isPending}>
-                {addMachineMutation.isPending ? "Adding..." : "Add Machine"}
-              </Button>
-            </div>
         </form>
       </div>
       
