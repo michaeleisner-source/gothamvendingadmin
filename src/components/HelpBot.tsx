@@ -75,6 +75,10 @@ export default function HelpBot() {
 
   const handleClose = async () => {
     setOpen(false);
+    setQ('');
+    setAnswers([]);
+    setShowEscalation(false);
+    setLoading(false);
     // End session without resolution if user closes without clicking
     if (sessionIdRef.current) {
       await endHelpBotSession(sessionIdRef.current, false);
@@ -92,7 +96,13 @@ export default function HelpBot() {
     <>
       {/* Floating Button */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          setQ('');
+          setAnswers([]);
+          setShowEscalation(false);
+          setLoading(false);
+        }}
         className="fixed bottom-6 right-6 z-40 size-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
         aria-label="Open HelpBot"
       >

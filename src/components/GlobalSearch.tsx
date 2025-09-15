@@ -64,8 +64,11 @@ export default function GlobalSearch() {
   // Click outside to close
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const searchContainer = inputRef.current?.parentElement;
+      if (searchContainer && !searchContainer.contains(target)) {
         setOpen(false);
+        setQ('');
       }
     };
     document.addEventListener('click', onClick);
@@ -107,6 +110,8 @@ export default function GlobalSearch() {
     navigate(result.url);
     setOpen(false);
     setQ('');
+    setResults([]);
+    setActive(0);
   };
 
   return (
