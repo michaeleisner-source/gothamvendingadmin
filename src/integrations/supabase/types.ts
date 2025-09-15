@@ -2938,6 +2938,7 @@ export type Database = {
           machine_id: string
           occurred_at: string
           org_id: string
+          payment_method: string | null
           product_id: string
           qty: number
           source: string | null
@@ -2949,6 +2950,7 @@ export type Database = {
           machine_id: string
           occurred_at?: string
           org_id: string
+          payment_method?: string | null
           product_id: string
           qty: number
           source?: string | null
@@ -2960,6 +2962,7 @@ export type Database = {
           machine_id?: string
           occurred_at?: string
           org_id?: string
+          payment_method?: string | null
           product_id?: string
           qty?: number
           source?: string | null
