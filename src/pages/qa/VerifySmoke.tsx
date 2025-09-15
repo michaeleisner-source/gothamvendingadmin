@@ -31,8 +31,9 @@ function sum(arr: number[]) { return arr.reduce((a, b) => a + b, 0); }
 
 export default function VerifySmoke() {
   usePageSEO({
-    title: "QA Smoke Test - System Verification",
-    description: "Comprehensive smoke test for QA validation and system integrity verification"
+    title: "QA Validation - System Health Check",
+    description: "Comprehensive validation of system components including products, locations, machines, and financial data",
+    keywords: "qa, validation, system check, smoke test, quality assurance"
   });
 
   const [busy, setBusy] = useState(false);
@@ -123,7 +124,7 @@ export default function VerifySmoke() {
       // 7) Ticket (latest for machine)
       if (m) {
         const t = await supabase.from("tickets")
-          .select("id,title,status,priority,created_at")
+          .select("id,title,status,priority,due_at,created_at")
           .eq("machine_id", m.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -194,7 +195,7 @@ export default function VerifySmoke() {
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <ListChecks className="h-6 w-6" /> QA Smoke Test Validation
+            <ListChecks className="h-6 w-6" /> QA Validation Snapshot
           </h1>
           <HelpTooltip content="Smoke test validation for critical system components and data flows." />
         </div>
@@ -220,9 +221,9 @@ export default function VerifySmoke() {
         <CheckCard icon={<MapPin className="h-4 w-4" />} label="Location QA Test Site" pass={!!location} detail={location ? `id ${location.id}` : "Not found"} />
         <CheckCard icon={<Factory className="h-4 w-4" />} label="Machine QA-001" pass={!!machine} detail={machine ? `linked location ${machine.location_id ? "yes" : "no"}` : "Not found"} />
         <CheckCard icon={<CreditCard className="h-4 w-4" />} label="Processor Mapping" pass={!!processor} detail={processor ? processor.name : "Missing (ok if you skipped SQL)"} />
-        <CheckCard icon={<Landmark className="h-4 w-4" />} label="Finance Row" pass={!!finance} detail={finance ? `payment ${money(finance.monthly_payment ? finance.monthly_payment * 100 : null)} / mo` : "Missing (optional)"} />
+        <CheckCard icon={<Landmark className="h-4 w-4" />} label="Finance Row" pass={!!finance} detail={finance ? `payment ${money(finance.monthly_payment)} / mo` : "Missing (optional)"} />
         <CheckCard icon={<ShieldCheck className="h-4 w-4" />} label="Insurance Allocation" pass={!!alloc} detail={alloc ? `flat ${money(alloc.flat_monthly_cents)}` : (policy ? "Policy present, no allocation" : "Missing (optional)")} />
-        <CheckCard icon={<Wrench className="h-4 w-4" />} label="Ticket (latest)" pass={!!ticket} detail={ticket ? `${ticket.status} • created ${new Date(ticket.created_at).toLocaleDateString()}` : "Not found (optional)"} />
+        <CheckCard icon={<Wrench className="h-4 w-4" />} label="Ticket (latest)" pass={!!ticket} detail={ticket ? `${ticket.status} • due ${ticket.due_at ? new Date(ticket.due_at).toLocaleString() : "—"}` : "Not found (optional)"} />
         <CheckCard icon={<FileText className="h-4 w-4" />} label="Parts Usage" pass={partsCount > 0} detail={partsCount > 0 ? `${partsCount} part(s)` : "None (optional)"} />
         <CheckCard icon={<Scale className="h-4 w-4" />} label="Processor Settlement" pass={!!settlement} detail={settlement ? `gross ${money(settlement.gross_cents)} • fees ${money(settlement.fees_cents)}` : "Not found (optional)"} />
       </div>
