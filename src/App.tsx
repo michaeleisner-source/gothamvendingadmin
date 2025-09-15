@@ -29,6 +29,7 @@ import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
 import ProspectDetail from "./pages/ProspectDetail";
+import ProspectFunnel from "./pages/ProspectFunnel";
 import PipelineAnalytics from "./pages/PipelineAnalytics";
 import LocationsEnhanced from "./pages/LocationsEnhanced";
 import LocationDetail from "./pages/LocationDetail";
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
+            <Route path="/prospects/funnel" element={<ProspectFunnel />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <Route path="/locations" element={<LocationsEnhanced />} />
             <Route path="/locations/:id" element={<LocationDetail />} />
