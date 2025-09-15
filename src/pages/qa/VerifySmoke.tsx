@@ -3,9 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePageSEO } from "@/hooks/usePageSEO";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import {
+  RefreshCw,
   CheckCircle2,
   XCircle,
-  RefreshCw,
+  AlertTriangle,
+  Play,
+  Rocket,
+  Layers,
   ListChecks,
   DollarSign,
   Factory,
@@ -17,29 +21,187 @@ import {
   Wrench,
   FileText,
   Scale,
+  User,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
+/** ---------- tiny utils ---------- */
 type Any = Record<string, any>;
+const iso = (d: Date) => d.toISOString();
 const startOfMonth = (d = new Date()) => new Date(d.getFullYear(), d.getMonth(), 1);
 const endOfMonth = (d = new Date()) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
-const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+const money = (c?: number | null) => (typeof c === "number" ? `$${(c / 100).toFixed(2)}` : "—");
+const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+const prettyErr = (e: any) => {
+  if (!e) return "";
+  try {
+    return JSON.stringify(
+      { message: e.message ?? String(e), code: e.code, details: e.details, hint: e.hint },
+      null,
+      2
+    );
+  } catch {
+    return String(e);
+  }
+};
 
-function money(cents?: number | null) {
-  return typeof cents === "number" ? `$${(cents / 100).toFixed(2)}` : "—";
+/** ---------- ENSURE HELPERS (schema-safe + RLS friendly) ---------- */
+async function ensureProduct(sku: string, name: string, costCents: number, say: (s: string)=>void) {
+  const probe = await supabase.from("products").select("id, sku").eq("sku", sku).maybeSingle();
+  if (!probe.error && probe.data) { say(`Product '${sku}' exists.`); return probe.data.id as string; }
+  if (probe.error && probe.error.code === "PGRST301") throw new Error("RLS blocked products read.");
+  const ins = await supabase.from("products").insert({ sku, name, cost_cents: costCents }).select("id").single();
+  if (ins.error) throw ins.error; say("✔ Created product."); return ins.data.id as string;
 }
-function sum(arr: number[]) { return arr.reduce((a, b) => a + b, 0); }
+async function ensureLocation(name: string, commission: Any, say: (s: string)=>void) {
+  const probe = await supabase.from("locations").select("id, name").eq("name", name).maybeSingle();
+  if (!probe.error && probe.data) { say(`Location '${name}' exists.`); return probe.data.id as string; }
+  if (probe.error && probe.error.code === "PGRST301") throw new Error("RLS blocked locations read.");
+  let ins = await supabase.from("locations").insert({ name, ...commission }).select("id").maybeSingle();
+  if (ins.error && String(ins.error.message).includes("column")) {
+    ins = await supabase.from("locations").insert({ name }).select("id").maybeSingle();
+  }
+  if (ins.error || !ins.data) throw ins.error || new Error("Failed to create location");
+  say("✔ Created location."); return ins.data.id as string;
+}
+async function ensureMachine(code: string, location_id: string, say: (s: string)=>void) {
+  const probe = await supabase.from("machines").select("id, name, location_id").eq("name", code).maybeSingle();
+  if (!probe.error && probe.data) {
+    if (!probe.data.location_id && location_id) await supabase.from("machines").update({ location_id }).eq("id", probe.data.id);
+    say(`Machine '${code}' ready.`); return probe.data.id as string;
+  }
+  if (probe.error && probe.error.code === "PGRST301") throw new Error("RLS blocked machines read.");
+  const ins = await supabase.from("machines").insert({ name: code, location_id }).select("id").single();
+  if (ins.error) throw ins.error; say("✔ Created machine."); return ins.data.id as string;
+}
+async function ensureProcessor(name: string, say: (s: string)=>void) {
+  const chkTbl = await supabase.from("payment_processors").select("id").limit(1);
+  if (chkTbl.error) throw new Error("payment_processors missing (run SQL migration).");
+  const got = await supabase.from("payment_processors").select("id").eq("name", name).maybeSingle();
+  if (!got.error && got.data) { say(`Processor '${name}' exists.`); return got.data.id as string; }
+  const ins = await supabase.from("payment_processors").insert({ name, org_id: "00000000-0000-0000-0000-000000000000" }).select("id").single();
+  if (ins.error) throw ins.error; say("✔ Created processor."); return ins.data.id as string;
+}
+async function ensureMapping(machine_id: string, processor_id: string, say: (s: string)=>void) {
+  const chk = await supabase.from("machine_processor_mappings").select("id").limit(1);
+  if (chk.error) throw new Error("machine_processor_mappings missing (run SQL migration).");
+  const got = await supabase.from("machine_processor_mappings").select("id").eq("machine_id", machine_id).eq("processor_id", processor_id).maybeSingle();
+  if (!got.error && got.data) { say("Mapping exists."); return; }
+  const ins = await supabase.from("machine_processor_mappings").insert({ machine_id, processor_id, org_id: "00000000-0000-0000-0000-000000000000" });
+  if (ins.error) throw ins.error; say("✔ Mapped machine → processor.");
+}
+async function ensureFinance(machine_id: string, payCents: number, capexCents: number, say: (s: string)=>void) {
+  const chk = await supabase.from("machine_finance").select("machine_id").eq("machine_id", machine_id).maybeSingle();
+  if (!chk.error && chk.data) { say("Finance row exists."); return; }
+  const ins = await supabase.from("machine_finance").insert({
+    machine_id, monthly_payment: payCents / 100, purchase_price: capexCents / 100, apr: 9.9, 
+    acquisition_type: "lease", org_id: "00000000-0000-0000-0000-000000000000"
+  }).select("machine_id").single();
+  if (ins.error && String(ins.error.message).includes("column")) {
+    const ins2 = await supabase.from("machine_finance").insert({ 
+      machine_id, acquisition_type: "lease", org_id: "00000000-0000-0000-0000-000000000000" 
+    });
+    if (ins2.error) throw ins.error;
+    say("✔ Created minimal finance row.");
+    return;
+  }
+  if (ins.error) throw ins.error; say("✔ Created finance row.");
+}
+async function ensurePolicy(name: string, monthlyPremiumCents: number, say: (s: string)=>void) {
+  const chkTbl = await supabase.from("insurance_policies").select("id").limit(1);
+  if (chkTbl.error) throw new Error("insurance_policies missing (run SQL migration).");
+  const today = new Date(); const ps = startOfMonth(today); const pe = endOfMonth(today);
+  const got = await supabase.from("insurance_policies")
+    .select("id").eq("name", name)
+    .lte("coverage_start", pe.toISOString().slice(0,10))
+    .gte("coverage_end",   ps.toISOString().slice(0,10))
+    .maybeSingle();
+  if (!got.error && got.data) { say("Policy exists."); return got.data.id as string; }
+  const ins = await supabase.from("insurance_policies").insert({
+    name, carrier:"QA Insurance Co", policy_number:"QA-TEST-001",
+    coverage_start: ps.toISOString().slice(0,10),
+    coverage_end:   pe.toISOString().slice(0,10),
+    monthly_premium_cents: monthlyPremiumCents,
+    org_id: "00000000-0000-0000-0000-000000000000"
+  }).select("id").single();
+  if (ins.error) throw ins.error; say("✔ Created policy."); return ins.data.id as string;
+}
+async function ensurePolicyAllocMachine(policy_id: string, machine_id: string, say: (s: string)=>void) {
+  const chkTbl = await supabase.from("insurance_allocations").select("id").limit(1);
+  if (chkTbl.error) throw new Error("insurance_allocations missing (run SQL migration).");
+  const got = await supabase.from("insurance_allocations")
+    .select("id").eq("policy_id", policy_id).eq("level","machine").eq("machine_id", machine_id).maybeSingle();
+  if (!got.error && got.data) { say("Allocation exists."); return; }
+  const ins = await supabase.from("insurance_allocations")
+    .insert({ policy_id, level:"machine", machine_id, flat_monthly_cents: 1500, org_id: "00000000-0000-0000-0000-000000000000" });
+  if (ins.error) throw ins.error; say("✔ Created machine allocation.");
+}
+async function ensureSLAPolicies(say: (s: string)=>void) {
+  const chkTbl = await supabase.from("ticket_sla_policies").select("id").limit(1);
+  if (chkTbl.error) throw new Error("ticket_sla_policies missing (run SQL migration).");
+  if (chkTbl.data && chkTbl.data.length) { say("SLA policies present."); return; }
+  const ins = await supabase.from("ticket_sla_policies").insert([
+    { priority:"low", minutes_to_ack:480, minutes_to_resolve:2880, active:true, org_id: "00000000-0000-0000-0000-000000000000" },
+    { priority:"normal", minutes_to_ack:240, minutes_to_resolve:1440, active:true, org_id: "00000000-0000-0000-0000-000000000000" },
+    { priority:"high", minutes_to_ack:120, minutes_to_resolve:720, active:true, org_id: "00000000-0000-0000-0000-000000000000" },
+    { priority:"urgent", minutes_to_ack:30, minutes_to_resolve:240, active:true, org_id: "00000000-0000-0000-0000-000000000000" },
+  ]);
+  if (ins.error) throw ins.error; say("✔ Seeded SLA policies.");
+}
+async function openTicket(machine_id: string, location_id: string, say: (s: string)=>void) {
+  let dueISO: string | null = null;
+  const pol = await supabase.from("ticket_sla_policies").select("minutes_to_resolve").eq("priority","normal").eq("active",true).maybeSingle();
+  if (!pol.error && pol.data) { const d = new Date(); d.setMinutes(d.getMinutes() + (Number(pol.data.minutes_to_resolve)||1440)); dueISO = iso(d); }
+  const ins = await supabase.from("tickets").insert({
+    title:"QA: Coin jam / coil check", status:"open", priority:"normal",
+    machine_id, location_id, due_at: dueISO, org_id: "00000000-0000-0000-0000-000000000000"
+  }).select("id").single();
+  if (ins.error) throw ins.error; say("✔ Opened ticket."); return ins.data.id as string;
+}
+async function recordParts(product_id: string, ticket_id: string, location_id: string, machine_id: string, say: (s: string)=>void) {
+  const chkTbl = await supabase.from("inventory_transactions").select("id").limit(1);
+  if (chkTbl.error) throw new Error("inventory_transactions missing (run SQL migration).");
+  const ins = await supabase.from("inventory_transactions").insert({
+    product_id, qty_change:-1, reason:"parts", ref_type:"ticket", ref_id:ticket_id, 
+    occurred_at: iso(new Date()), location_id, machine_id, org_id: "00000000-0000-0000-0000-000000000000"
+  });
+  if (ins.error) throw ins.error; say("✔ Recorded parts usage (-1).");
+}
+async function recordSale(machine_id: string, product_id: string, qty: number, priceCents: number, costCents: number, say: (s: string)=>void) {
+  const ins = await supabase.from("sales").insert({
+    machine_id, product_id, qty, unit_price_cents: priceCents, unit_cost_cents: costCents, 
+    occurred_at: iso(new Date()), payment_method: "card", org_id: "00000000-0000-0000-0000-000000000000"
+  });
+  if (ins.error) throw ins.error; say(`✔ Recorded sale ${qty} × ${money(priceCents)}.`);
+}
+async function addSettlement(processor_id: string, say: (s: string)=>void) {
+  const chkTbl = await supabase.from("processor_settlements").select("id").limit(1);
+  if (chkTbl.error) throw new Error("processor_settlements missing (run SQL migration).");
+  const today = new Date(); const ps = startOfMonth(today); const pe = endOfMonth(today);
+  const ins = await supabase.from("processor_settlements").insert({
+    processor_id,
+    period_start: ps.toISOString().slice(0,10),
+    period_end: pe.toISOString().slice(0,10),
+    gross_cents: 525, fees_cents: 16, net_cents: 509,
+    org_id: "00000000-0000-0000-0000-000000000000"
+  });
+  if (ins.error) throw ins.error; say("✔ Added settlement.");
+}
 
+/** ---------- Page ---------- */
 export default function VerifySmoke() {
   usePageSEO({
-    title: "QA Validation - System Health Check",
-    description: "Comprehensive validation of system components including products, locations, machines, and financial data",
-    keywords: "qa, validation, system check, smoke test, quality assurance"
+    title: "QA Control - System Health Check & Test Data",
+    description: "Comprehensive QA tool for seeding test data and validating system components",
+    keywords: "qa, validation, system check, smoke test, quality assurance, test data seeding"
   });
 
+  const [log, setLog] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [sessionOK, setSessionOK] = useState<"yes"|"no"|"checking">("checking");
   const [err, setErr] = useState<string | null>(null);
 
-  // Snapshot
+  // snapshot state for verify tiles
   const [product, setProduct] = useState<Any | null>(null);
   const [location, setLocation] = useState<Any | null>(null);
   const [machine, setMachine] = useState<Any | null>(null);
@@ -54,134 +216,157 @@ export default function VerifySmoke() {
 
   const monthStart = useMemo(() => startOfMonth(), []);
   const monthEnd = useMemo(() => endOfMonth(), []);
-  const twoWeeksAgo = useMemo(() => {
-    const d = new Date(); d.setDate(d.getDate() - 14); d.setHours(0,0,0,0); return d;
-  }, []);
+  const twoWeeksAgo = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - 14); d.setHours(0,0,0,0); return d; }, []);
 
-  async function load() {
-    setBusy(true); setErr(null);
+  const say = (s:string)=> setLog(l=>[...l, s]);
+  const clearLog = ()=> setLog([]);
+
+  async function checkSession() {
+    setSessionOK("checking");
+    const { data } = await supabase.auth.getSession();
+    setSessionOK(data.session ? "yes" : "no");
+  }
+
+  async function runBase() {
+    setErr(null); clearLog(); setBusy(true);
     try {
-      // 1) Product
+      say("Creating base test entities (product, location, machine) …");
+      const pid = await ensureProduct("QA-SODA-12","QA Soda 12oz",50,say);
+      const lid = await ensureLocation("QA Test Site", {
+        commission_model: "percent_gross",
+        commission_pct_bps: 1000,
+        commission_flat_cents: 0,
+        commission_min_cents: 0,
+      }, say);
+      await ensureMachine("QA-001", lid, say);
+      say("✅ Base complete.");
+    } catch (e: any) {
+      const msg = prettyErr(e);
+      setErr(msg); say(`❌ Base failed\n${msg}`);
+    } finally { setBusy(false); }
+  }
+
+  async function runAdvanced() {
+    setErr(null); clearLog(); setBusy(true);
+    try {
+      say("Advanced seeding (processor/mapping, finance, insurance, SLA, ticket/parts, sales, settlement) …");
+      const productId = await ensureProduct("QA-SODA-12","QA Soda 12oz",50,say);
+      const loc = await supabase.from("locations").select("id").eq("name","QA Test Site").maybeSingle();
+      if (loc.error || !loc.data) throw new Error("Need location 'QA Test Site' first (run Base).");
+      const machineId = await ensureMachine("QA-001", loc.data.id, say);
+
+      const procId = await ensureProcessor("Cantaloupe", say);
+      await ensureMapping(machineId, procId, say);
+
+      await ensureFinance(machineId, 11000, 350000, say);
+
+      const polId = await ensurePolicy("QA Liability Monthly", 3000, say);
+      await ensurePolicyAllocMachine(polId, machineId, say);
+
+      await ensureSLAPolicies(say);
+      const tid = await openTicket(machineId, loc.data.id, say);
+      await recordParts(productId, tid, loc.data.id, machineId, say);
+
+      await recordSale(machineId, productId, 1, 175, 50, say);
+      await recordSale(machineId, productId, 1, 175, 50, say);
+      await recordSale(machineId, productId, 1, 175, 50, say);
+
+      await addSettlement(procId, say);
+
+      say("✅ Advanced complete.");
+    } catch (e: any) {
+      const msg = prettyErr(e);
+      setErr(msg); say(`❌ Advanced failed\n${msg}`);
+    } finally { setBusy(false); }
+  }
+
+  async function verify() {
+    setErr(null); setBusy(true);
+    try {
+      // product
       const p = await supabase.from("products").select("id,sku,name,cost_cents").eq("sku","QA-SODA-12").maybeSingle();
-      if (p.error) throw p.error;
+      if (p.error && p.error.code === "PGRST301") throw new Error("RLS blocked reading products. Log in or enable demo.");
       setProduct(p.data ?? null);
 
-      // 2) Location
-      const l = await supabase.from("locations").select("*").eq("name","QA Test Site").maybeSingle();
-      if (l.error) throw l.error;
+      // location
+      const l = await supabase.from("locations").select("id,name").eq("name","QA Test Site").maybeSingle();
+      if (l.error && l.error.code === "PGRST301") throw new Error("RLS blocked reading locations. Log in or enable demo.");
       setLocation(l.data ?? null);
 
-      // 3) Machine
-      let m: Any | null = null;
-      {
-        const q = await supabase.from("machines").select("id,name,location_id").eq("name","QA-001").maybeSingle();
-        if (q.error) throw q.error;
-        m = q.data ?? null;
-        setMachine(m);
-      }
+      // machine
+      const m = await supabase.from("machines").select("id,name,location_id").eq("name","QA-001").maybeSingle();
+      if (m.error && m.error.code === "PGRST301") throw new Error("RLS blocked reading machines. Log in or enable demo.");
+      setMachine(m.data ?? null);
 
-      // 4) Finance (optional schema)
-      if (m) {
+      // finance
+      if (m.data) {
         const f = await supabase.from("machine_finance")
           .select("machine_id,monthly_payment,purchase_price,apr")
-          .eq("machine_id", m.id)
-          .maybeSingle();
-        // do not throw on error; it may not exist yet
+          .eq("machine_id", m.data.id).maybeSingle();
         if (!f.error) setFinance(f.data ?? null);
       }
 
-      // 5) Processor + mapping (optional)
-      let proc: Any | null = null;
-      if (m) {
-        const map = await supabase.from("machine_processor_mappings").select("processor_id").eq("machine_id", m.id).maybeSingle();
+      // processor + mapping
+      if (m.data) {
+        const map = await supabase.from("machine_processor_mappings").select("processor_id").eq("machine_id", m.data.id).maybeSingle();
         if (!map.error && map.data) {
           const pr = await supabase.from("payment_processors").select("id,name").eq("id", map.data.processor_id).maybeSingle();
-          if (!pr.error) proc = pr.data ?? null;
+          if (!pr.error) setProcessor(pr.data ?? null);
         }
       }
-      setProcessor(proc);
 
-      // 6) Insurance policy + allocation (optional)
-      let pol: Any | null = null;
-      let al: Any | null = null;
-      const ps = isoDate(monthStart), pe = isoDate(monthEnd);
-      {
-        const polQ = await supabase.from("insurance_policies")
-          .select("id,name,monthly_premium_cents,coverage_start,coverage_end")
-          .lte("coverage_start", pe).gte("coverage_end", ps).maybeSingle();
-        if (!polQ.error) pol = polQ.data ?? null;
-
-        if (pol && m) {
-          const alQ = await supabase.from("insurance_allocations")
-            .select("id,level,flat_monthly_cents,allocated_pct_bps,machine_id,policy_id")
-            .eq("policy_id", pol.id).eq("level","machine").eq("machine_id", m.id).maybeSingle();
-          if (!alQ.error) al = alQ.data ?? null;
-        }
+      // insurance
+      const ps = startOfMonth(); const pe = endOfMonth();
+      const polQ = await supabase.from("insurance_policies")
+        .select("id,name,monthly_premium_cents,coverage_start,coverage_end")
+        .lte("coverage_start", pe.toISOString().slice(0,10)).gte("coverage_end", ps.toISOString().slice(0,10)).maybeSingle();
+      if (!polQ.error) setPolicy(polQ.data ?? null);
+      if (polQ.data && m.data) {
+        const alQ = await supabase.from("insurance_allocations")
+          .select("id,level,flat_monthly_cents,allocated_pct_bps,machine_id,policy_id")
+          .eq("policy_id", polQ.data.id).eq("level","machine").eq("machine_id", m.data.id).maybeSingle();
+        if (!alQ.error) setAlloc(alQ.data ?? null);
       }
-      setPolicy(pol);
-      setAlloc(al);
 
-      // 7) Ticket (latest for machine)
-      if (m) {
-        const t = await supabase.from("tickets")
-          .select("id,title,status,priority,due_at,created_at")
-          .eq("machine_id", m.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+      // ticket latest
+      if (m.data) {
+        const t = await supabase.from("tickets").select("id,title,status,priority,due_at,created_at")
+          .eq("machine_id", m.data.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
         if (!t.error) setTicket(t.data ?? null);
       }
 
-      // 8) Parts usage (count)
-      if (m && ticket) {
+      // parts usage count
+      if (m.data) {
         const it = await supabase.from("inventory_transactions")
           .select("id", { count: "exact", head: true })
-          .eq("machine_id", m.id)
-          .eq("ref_type","ticket")
-          .eq("ref_id", ticket.id)
-          .eq("reason","parts");
+          .eq("machine_id", m.data.id).eq("reason","parts");
         if (!it.error && typeof it.count === "number") setPartsCount(it.count);
-      } else {
-        // compute even if ticket not just created yet: count parts this month for machine
-        if (m) {
-          const it2 = await supabase.from("inventory_transactions")
-            .select("id", { count: "exact", head: true })
-            .eq("machine_id", m.id)
-            .eq("reason","parts");
-          if (!it2.error && typeof it2.count === "number") setPartsCount(it2.count);
-        }
       }
 
-      // 9) Sales (last 14 days for machine/product)
-      if (m && product) {
-        const ss = await supabase.from("sales")
-          .select("qty,unit_price_cents,unit_cost_cents,occurred_at,payment_method")
-          .eq("machine_id", m.id)
-          .eq("product_id", product.id)
-          .gte("occurred_at", new Date(twoWeeksAgo).toISOString());
+      // sales last 14 days
+      if (m.data && p.data) {
+        const ss = await supabase.from("sales").select("qty,unit_price_cents,unit_cost_cents,occurred_at,payment_method")
+          .eq("machine_id", m.data.id).eq("product_id", p.data.id)
+          .gte("occurred_at", new Date(Date.now() - 14*24*3600*1000).toISOString());
         if (!ss.error) setSales(ss.data ?? []);
       }
 
-      // 10) Settlement (this month, for processor)
+      // settlement
       if (processor) {
         const st = await supabase.from("processor_settlements")
           .select("id,gross_cents,fees_cents,net_cents,period_start,period_end")
-          .eq("processor_id", processor.id)
-          .gte("period_start", isoDate(monthStart))
-          .lte("period_end", isoDate(monthEnd))
-          .order("period_start", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .eq("processor_id", (processor as any).id)
+          .gte("period_start", startOfMonth().toISOString().slice(0,10))
+          .lte("period_end", endOfMonth().toISOString().slice(0,10))
+          .order("period_start", { ascending: false }).limit(1).maybeSingle();
         if (!st.error) setSettlement(st.data ?? null);
       }
     } catch (e: any) {
-      setErr(e.message || String(e));
-    } finally {
-      setBusy(false);
-    }
+      setErr(prettyErr(e));
+    } finally { setBusy(false); }
   }
 
-  useEffect(() => { load(); /* initial */ }, []);
+  useEffect(() => { checkSession(); verify(); }, []);
 
   // Derived KPIs
   const gross = useMemo(() => sum(sales.map(s => (s.qty ?? 0) * (s.unit_price_cents ?? 0))), [sales]);
@@ -200,7 +385,7 @@ export default function VerifySmoke() {
           <HelpTooltip content="Smoke test validation for critical system components and data flows." />
         </div>
         <button
-          onClick={load}
+          onClick={verify}
           disabled={busy}
           className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted disabled:opacity-50 transition-colors"
         >
@@ -253,23 +438,34 @@ export default function VerifySmoke() {
 
 function CheckCard({ icon, label, pass, detail }: { icon: React.ReactNode; label: string; pass: boolean; detail: string; }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3 hover:bg-muted/50 transition-colors">
+    <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium">
           {icon} {label}
         </div>
-        {pass ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-destructive" />}
+        {pass ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-rose-500" />}
       </div>
       <div className="text-xs text-muted-foreground mt-1">{detail}</div>
     </div>
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string; }) {
+function NavCard({ icon, title, desc, to }: { icon: React.ReactNode; title: string; desc: string; to: string; }) {
+  return (
+    <Link to={to} className="rounded-xl border border-border bg-card p-3 hover:bg-muted transition-colors">
+      <div className="flex items-center gap-2 font-medium">
+        {icon}{title}
+      </div>
+      <div className="text-xs text-muted-foreground mt-1">{desc}</div>
+    </Link>
+  );
+}
+
+function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-background p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-lg font-semibold">{value}</div>
+      <div className="text-sm font-medium">{value}</div>
     </div>
   );
 }
