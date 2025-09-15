@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Route } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Copy, AlertTriangle, CheckCircle2, Info, BarChart3, RefreshCw } from "lucide-react";
+import { Copy, AlertTriangle, CheckCircle2, Info, BarChart3, RefreshCw, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /** Review Snapshot — one-click JSON of the app's health + flow signals
  *  Use this right after publish; paste JSON back to me for deep review.
@@ -217,115 +223,130 @@ export function ReviewSnapshotPage() {
   }
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold flex items-center gap-2"><BarChart3 className="h-5 w-5"/> Review Snapshot</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={()=>window.location.reload()} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
-            <RefreshCw className="h-4 w-4"/> Refresh
-          </button>
-          <button onClick={copyJSON} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
-            <Copy className="h-4 w-4"/>{copied ? "Copied!" : "Copy JSON"}
-          </button>
-        </div>
-      </div>
-
-      {loading && <div className="text-sm text-muted-foreground">Collecting signals…</div>}
-
-      {!loading && snap && (
-        <>
-          <div className="grid gap-2 sm:grid-cols-4">
-            <Card label="Router" value={snap.meta.router} ok />
-            <Card label="Demo" value={snap.meta.demo ? "on" : "off"} ok />
-            <Card label="Sales (30d gross)" value={`$${snap.money30d.gross.toLocaleString()}`} ok />
-            <Card label="Silent >7d" value={snap.maintenance.silent_over_7d} ok={snap.maintenance.silent_over_7d === 0} />
+    <TooltipProvider>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold flex items-center gap-2"><BarChart3 className="h-5 w-5"/> Review Snapshot</h1>
+          <div className="flex items-center gap-2">
+            <button onClick={()=>window.location.reload()} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
+              <RefreshCw className="h-4 w-4"/> Refresh
+            </button>
+            <button onClick={copyJSON} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
+              <Copy className="h-4 w-4"/>{copied ? "Copied!" : "Copy JSON"}
+            </button>
           </div>
+        </div>
 
-          <Section title="Schema presence">
-            <Row label="Have" value={snap.schema.have.join(", ") || "—"} />
-            <Row label="Missing" value={snap.schema.missing.join(", ") || "—"} warn={!!snap.schema.missing.length} />
-            <Row label="Tender column" value={snap.schema.salesTenderColumn || "—"} />
-            <Row label="Tickets assignable" value={snap.schema.ticketsAssignable ? "yes" : "no"} warn={snap.schema.ticketsAssignable === false} />
-          </Section>
+        {loading && <div className="text-sm text-muted-foreground">Collecting signals…</div>}
 
-          <Section title="Money (last 30 days)">
-            <Row label="Gross" value={`$${snap.money30d.gross.toLocaleString()}`} />
-            <Row label="COGS" value={`$${snap.money30d.cogs.toLocaleString()}`} />
-            <Row label="Processor fees" value={`$${snap.money30d.fees.toLocaleString()}`} />
-            <Row label="Net" value={<span className={snap.money30d.net >= 0 ? "text-emerald-400" : "text-rose-400"}>${snap.money30d.net.toLocaleString()}</span>} />
-            {snap.money30d.tender && <Row label="Tender split" value={snap.money30d.tender.map(t=>`${t.method}:${t.units}u/$${t.gross.toLocaleString()}`).join("  ·  ")} />}
-          </Section>
-
-          <Section title="Maintenance">
-            <Row label="Tickets (open/in-progress/closed)" value={`${snap.maintenance.open}/${snap.maintenance.in_progress}/${snap.maintenance.closed}`} />
-            <Row label="Silent >7 days" value={snap.maintenance.silent_over_7d} warn={snap.maintenance.silent_over_7d>0} />
-            <div className="rounded-xl border border-border overflow-auto mt-2">
-              <table className="w-full text-sm">
-                <thead className="bg-muted">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Machine</th>
-                    <th className="px-3 py-2 text-right">Days silent</th>
-                    <th className="px-3 py-2 text-left">Last sale</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {snap.maintenance.worst_silent.map((w,i)=>(
-                    <tr key={i} className="odd:bg-card/50">
-                      <td className="px-3 py-2">{w.machine}</td>
-                      <td className="px-3 py-2 text-right">{w.daysSilent}</td>
-                      <td className="px-3 py-2">{w.lastSale ? new Date(w.lastSale).toLocaleString() : "— never —"}</td>
-                    </tr>
-                  ))}
-                  {!snap.maintenance.worst_silent.length && <tr><td className="px-3 py-6 text-center text-muted-foreground" colSpan={3}>No machines found.</td></tr>}
-                </tbody>
-              </table>
+        {!loading && snap && (
+          <>
+            <div className="grid gap-2 sm:grid-cols-4">
+              <Card label="Router" value={snap.meta.router} ok tooltip="Shows whether your app uses hash routing (#/) or browser routing. Hash routing is more compatible with static hosting." />
+              <Card label="Demo" value={snap.meta.demo ? "on" : "off"} ok tooltip="Indicates if demo mode is active, which affects data and features shown to users." />
+              <Card label="Sales (30d gross)" value={`$${snap.money30d.gross.toLocaleString()}`} ok tooltip="Total gross revenue from all sales in the last 30 days, before costs and fees." />
+              <Card label="Silent >7d" value={snap.maintenance.silent_over_7d} ok={snap.maintenance.silent_over_7d === 0} tooltip="Number of machines that haven't recorded any sales in over 7 days. Could indicate maintenance issues." />
             </div>
-          </Section>
 
-          {snap.inventory && (
-            <Section title="Inventory">
-              <Row label="Below-PAR items" value={snap.inventory.below_par_count} warn={snap.inventory.below_par_count>0} />
+            <Section title="Schema presence" tooltip="Shows which database tables exist in your system vs. which are missing. Helps identify incomplete features.">
+              <Row label="Have" value={snap.schema.have.join(", ") || "—"} />
+              <Row label="Missing" value={snap.schema.missing.join(", ") || "—"} warn={!!snap.schema.missing.length} />
+              <Row label="Tender column" value={snap.schema.salesTenderColumn || "—"} />
+              <Row label="Tickets assignable" value={snap.schema.ticketsAssignable ? "yes" : "no"} warn={snap.schema.ticketsAssignable === false} />
+            </Section>
+
+            <Section title="Money (last 30 days)" tooltip="Financial performance summary showing revenue, costs, and profit margins for the past month.">
+              <Row label="Gross" value={`$${snap.money30d.gross.toLocaleString()}`} />
+              <Row label="COGS" value={`$${snap.money30d.cogs.toLocaleString()}`} />
+              <Row label="Processor fees" value={`$${snap.money30d.fees.toLocaleString()}`} />
+              <Row label="Net" value={<span className={snap.money30d.net >= 0 ? "text-emerald-400" : "text-rose-400"}>${snap.money30d.net.toLocaleString()}</span>} />
+              {snap.money30d.tender && <Row label="Tender split" value={snap.money30d.tender.map(t=>`${t.method}:${t.units}u/$${t.gross.toLocaleString()}`).join("  ·  ")} />}
+            </Section>
+
+            <Section title="Maintenance" tooltip="Machine health and support ticket status. Tracks machines needing attention and outstanding service requests.">
+              <Row label="Tickets (open/in-progress/closed)" value={`${snap.maintenance.open}/${snap.maintenance.in_progress}/${snap.maintenance.closed}`} />
+              <Row label="Silent >7 days" value={snap.maintenance.silent_over_7d} warn={snap.maintenance.silent_over_7d>0} />
               <div className="rounded-xl border border-border overflow-auto mt-2">
                 <table className="w-full text-sm">
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-3 py-2 text-left">Machine</th>
-                      <th className="px-3 py-2 text-left">Product</th>
-                      <th className="px-3 py-2 text-right">Deficit</th>
+                      <th className="px-3 py-2 text-right">Days silent</th>
+                      <th className="px-3 py-2 text-left">Last sale</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {snap.inventory.top_deficits.map((d,i)=>(
+                    {snap.maintenance.worst_silent.map((w,i)=>(
                       <tr key={i} className="odd:bg-card/50">
-                        <td className="px-3 py-2">{d.machine}</td>
-                        <td className="px-3 py-2">{d.product}</td>
-                        <td className="px-3 py-2 text-right">{d.deficit}</td>
+                        <td className="px-3 py-2">{w.machine}</td>
+                        <td className="px-3 py-2 text-right">{w.daysSilent}</td>
+                        <td className="px-3 py-2">{w.lastSale ? new Date(w.lastSale).toLocaleString() : "— never —"}</td>
                       </tr>
                     ))}
-                    {!snap.inventory.top_deficits.length && <tr><td className="px-3 py-6 text-center text-muted-foreground" colSpan={3}>No deficits.</td></tr>}
+                    {!snap.maintenance.worst_silent.length && <tr><td className="px-3 py-6 text-center text-muted-foreground" colSpan={3}>No machines found.</td></tr>}
                   </tbody>
                 </table>
               </div>
             </Section>
-          )}
 
-          <Section title="Raw JSON (what you'll paste to me)">
-            <pre className="text-xs bg-muted p-2 rounded overflow-auto">{JSON.stringify(snap, null, 2)}</pre>
-            <div className="text-xs text-muted-foreground mt-2 flex items-start gap-2">
-              <Info className="h-4 w-4 mt-0.5" />
-              <span>Copy JSON → paste it here in chat. I'll give you targeted recommendations (keep / fix / prune + reports & SQL).</span>
-            </div>
-          </Section>
-        </>
-      )}
-    </div>
+            {snap.inventory && (
+              <Section title="Inventory" tooltip="Stock levels across your machines. Shows which products are running low compared to their target levels.">
+                <Row label="Below-PAR items" value={snap.inventory.below_par_count} warn={snap.inventory.below_par_count>0} />
+                <div className="rounded-xl border border-border overflow-auto mt-2">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Machine</th>
+                        <th className="px-3 py-2 text-left">Product</th>
+                        <th className="px-3 py-2 text-right">Deficit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {snap.inventory.top_deficits.map((d,i)=>(
+                        <tr key={i} className="odd:bg-card/50">
+                          <td className="px-3 py-2">{d.machine}</td>
+                          <td className="px-3 py-2">{d.product}</td>
+                          <td className="px-3 py-2 text-right">{d.deficit}</td>
+                        </tr>
+                      ))}
+                      {!snap.inventory.top_deficits.length && <tr><td className="px-3 py-6 text-center text-muted-foreground" colSpan={3}>No deficits.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              </Section>
+            )}
+
+            <Section title="Raw JSON (what you'll paste to me)" tooltip="The complete diagnostic data in JSON format. Copy this and share it for detailed system analysis.">
+              <pre className="text-xs bg-muted p-2 rounded overflow-auto">{JSON.stringify(snap, null, 2)}</pre>
+              <div className="text-xs text-muted-foreground mt-2 flex items-start gap-2">
+                <Info className="h-4 w-4 mt-0.5" />
+                <span>Copy JSON → paste it here in chat. I'll give you targeted recommendations (keep / fix / prune + reports & SQL).</span>
+              </div>
+            </Section>
+          </>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
 
-function Card({ label, value, ok }: { label: string; value: React.ReactNode; ok?: boolean }) {
+
+function Card({ label, value, ok, tooltip }: { label: string; value: React.ReactNode; ok?: boolean; tooltip?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-sm text-muted-foreground flex items-center gap-1">
+        {label}
+        {tooltip && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-3 w-3 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
       <div className="text-lg font-semibold flex items-center gap-2">
         {ok === undefined ? null : ok ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 text-amber-400" />}
         {value}
@@ -333,14 +354,28 @@ function Card({ label, value, ok }: { label: string; value: React.ReactNode; ok?
     </div>
   );
 }
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+
+function Section({ title, children, tooltip }: { title: string; children: React.ReactNode; tooltip?: string }) {
   return (
     <div className="rounded-xl border border-border p-3">
-      <div className="text-sm font-medium mb-2">{title}</div>
+      <div className="text-sm font-medium mb-2 flex items-center gap-2">
+        {title}
+        {tooltip && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
       {children}
     </div>
   );
 }
+
 function Row({ label, value, warn }: { label: string; value: React.ReactNode; warn?: boolean }) {
   return (
     <div className="flex items-center justify-between text-sm py-1">
