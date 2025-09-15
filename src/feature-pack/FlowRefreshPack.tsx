@@ -65,6 +65,9 @@ export function SidebarFlowRefresh() {
         <SectionLabel>Dashboard</SectionLabel>
         <NavItem to="/" icon={LayoutDashboard}>Dashboard</NavItem>
 
+        <SectionLabel>Today</SectionLabel>
+        <NavItem to="/ops" icon={LayoutDashboard}>Daily Ops</NavItem>
+
         <NavGroup label="Pipeline (Leads)" icon={MapPinned} isOpen={open.pipeline} onToggle={() => toggle("pipeline")}>
           <NavItem to="/prospects" icon={Clipboard}>Prospects</NavItem>
           {/* Locations removed from Pipeline to reduce confusion */}
