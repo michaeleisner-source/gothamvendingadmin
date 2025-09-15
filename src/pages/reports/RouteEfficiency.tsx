@@ -1,17 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { money } from "@/utils/fees";
-import { RefreshCw, Route as RouteIcon, Info, TrendingUp } from "lucide-react";
+import { RefreshCw, Route as RouteIcon, Info, Search, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-/**
- * Route Efficiency Dashboard - Unified routing analytics
- * - Integrates delivery_routes + route_stops for operational routes
- * - Uses optional route_runs for performance tracking
- * - Provides business intelligence on route optimization
- */
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Header } from "@/components/ui/Header";
+import { RouteKPIs } from "@/components/routes/RouteKPIs";
+import { TopRoutes, TopDrivers, DailyTrends } from "@/components/routes/RouteMetrics";
+import { useToast } from "@/hooks/use-toast";
 
 type AnyRow = Record<string, any>;
 
@@ -21,210 +22,355 @@ const fmt1 = (n: number) => (Number.isFinite(n) ? n.toFixed(1) : "0.0");
 const hours = (ms: number) => (ms > 0 ? ms / 3_600_000 : 0);
 const minutes = (ms: number) => (ms > 0 ? ms / 60_000 : 0);
 
-async function tableExists(name: string): Promise<boolean> {
-  // Simple existence check - try to query and handle the error
+async function tableExists(name: string) {
   try {
-    const result = await (supabase as any).from(name).select("id").limit(1);
-    return !result.error;
+    const r = await (supabase as any).from(name).select("*").limit(1);
+    return !r.error;
   } catch {
     return false;
   }
 }
 
+function pick<T extends string>(obj: AnyRow | undefined, candidates: T[]): T | null {
+  if (!obj) return null;
+  for (const c of candidates) if (c in obj) return c;
+  return null;
+}
+
 function SQLNotice({ title, sql }: { title: string; sql: string }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Info className="h-4 w-4" /> {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <p className="text-xs text-muted-foreground">Copy into Supabase → SQL Editor:</p>
-        <pre className="text-xs overflow-auto rounded bg-muted p-3 whitespace-pre-wrap">{sql}</pre>
+      <CardContent className="p-6">
+        <div className="text-sm font-medium flex items-center gap-2 mb-3">
+          <Info className="h-4 w-4 text-blue-600" /> {title}
+        </div>
+        <div className="text-xs text-muted-foreground mb-2">Copy into Supabase → SQL Editor:</div>
+        <pre className="text-xs overflow-auto rounded bg-muted p-3 whitespace-pre-wrap border">{sql}</pre>
       </CardContent>
     </Card>
   );
 }
 
-type RouteMetrics = {
+type RunAgg = {
   id: string;
-  name: string;
-  driver?: string;
-  totalStops: number;
-  completedStops: number;
-  avgServiceTime: number;
-  totalMiles?: number;
-  revenue: number;
-  efficiency: number;
-  lastRun?: string;
+  route: string;
+  driver: string;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  odometerStart?: number | null;
+  odometerEnd?: number | null;
+  miles: number;
+  stops: number;
+  machinesVisited: number;
+  serviceMinutes: number;
+  sales: number;
+  salesPerHour: number;
+  milesPerStop: number;
+  minPerStop: number;
 };
 
 export default function RouteEfficiency() {
-  const [deliveryRoutes, setDeliveryRoutes] = useState<AnyRow[]>([]);
-  const [routeStops, setRouteStops] = useState<AnyRow[]>([]);
+  const { toast } = useToast();
+  const [haveRuns, setHaveRuns] = useState<boolean | null>(null);
+  const [haveStops, setHaveStops] = useState<boolean | null>(null);
+  const [runs, setRuns] = useState<AnyRow[]>([]);
+  const [stops, setStops] = useState<AnyRow[]>([]);
   const [sales, setSales] = useState<AnyRow[]>([]);
-  const [haveRouteRuns, setHaveRouteRuns] = useState<boolean | null>(null);
-  const [routeRuns, setRouteRuns] = useState<AnyRow[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRoute, setFilterRoute] = useState<string>("all");
+  const [filterDriver, setFilterDriver] = useState<string>("all");
+  const [days, setDays] = useState(14);
 
   const sinceISO = useMemo(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 14);
+    d.setDate(d.getDate() - days);
     return d.toISOString();
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [sinceISO]);
+  }, [days]);
 
   const loadData = async () => {
     setLoading(true);
-    setError(null);
+    setErr(null);
     try {
-      // Check if route_runs exists for enhanced metrics
-      const haveRuns = await tableExists("route_runs");
-      setHaveRouteRuns(haveRuns);
+      const haveRuns_ = await tableExists("route_runs");
+      const haveStops_ = await tableExists("route_stops");
+      setHaveRuns(haveRuns_);
+      setHaveStops(haveStops_);
 
-      // Load core delivery routes
-      const routesRes = await supabase
-        .from("delivery_routes")
-        .select(`
-          *,
-          staff!delivery_routes_driver_id_fkey(full_name)
-        `)
-        .order("created_at", { ascending: false });
-
-      if (routesRes.error) throw routesRes.error;
-      setDeliveryRoutes(routesRes.data || []);
-
-      // Load route stops for the last 14 days
-      const stopsRes = await supabase
-        .from("route_stops")
-        .select("*")
-        .gte("created_at", sinceISO)
-        .order("created_at", { ascending: false });
-
-      if (stopsRes.error) throw stopsRes.error;
-      setRouteStops(stopsRes.data || []);
-
-      // Load sales data for revenue calculation
-      const salesRes = await supabase
+      // Sales (for "same-day" aggregation)
+      const s = await supabase
         .from("sales")
         .select("machine_id, occurred_at, qty, unit_price_cents")
-        .gte("occurred_at", sinceISO);
+        .gte("occurred_at", sinceISO)
+        .limit(100000);
+      if (s.error) throw s.error;
+      setSales(s.data || []);
 
-      if (salesRes.error) throw salesRes.error;
-      setSales(salesRes.data || []);
+      // ------- SAFE FETCH: route_runs -------
+      if (haveRuns_) {
+        let r = await (supabase as any)
+          .from("route_runs")
+          .select("*")
+          .gte("started_at", sinceISO)
+          .order("started_at", { ascending: false })
+          .limit(10000);
 
-      // If route_runs exists, load performance data
-      if (haveRuns) {
-        try {
-          const runsRes = await (supabase as any)
+        if (r.error) {
+          // fallback: try created_at, then plain select
+          const r2 = await (supabase as any)
             .from("route_runs")
             .select("*")
-            .gte("run_date", sinceISO.slice(0, 10))
-            .order("run_date", { ascending: false });
-
-          if (!runsRes.error) {
-            setRouteRuns(runsRes.data || []);
+            .gte("created_at", sinceISO)
+            .order("created_at", { ascending: false })
+            .limit(10000);
+          if (!r2.error) {
+            setRuns(r2.data || []);
+          } else {
+            const r3 = await (supabase as any).from("route_runs").select("*").limit(10000);
+            if (!r3.error) setRuns(r3.data || []);
+            else throw r3.error;
           }
-        } catch (error) {
-          console.warn("Error loading route_runs data:", error);
-          // Continue without route_runs data
+        } else {
+          setRuns(r.data || []);
+        }
+      }
+
+      // ------- SAFE FETCH: route_stops -------
+      if (haveStops_) {
+        let st = await (supabase as any)
+          .from("route_stops")
+          .select("*")
+          .gte("arrived_at", sinceISO)
+          .order("arrived_at", { ascending: false })
+          .limit(100000);
+
+        if (st.error) {
+          // fallback: try created_at, then plain select
+          const st2 = await (supabase as any)
+            .from("route_stops")
+            .select("*")
+            .gte("created_at", sinceISO)
+            .order("created_at", { ascending: false })
+            .limit(100000);
+          if (!st2.error) {
+            setStops(st2.data || []);
+          } else {
+            const st3 = await (supabase as any).from("route_stops").select("*").limit(100000);
+            if (!st3.error) setStops(st3.data || []);
+            else throw st3.error;
+          }
+        } else {
+          setStops(st.data || []);
         }
       }
     } catch (e: any) {
-      setError(e?.message || String(e));
+      setErr(e?.message || String(e));
     } finally {
       setLoading(false);
     }
   };
 
-  const routeMetrics = useMemo<RouteMetrics[]>(() => {
-    const metrics: RouteMetrics[] = [];
+  useEffect(() => {
+    loadData();
+  }, [sinceISO]);
 
-    // Group sales by machine and day for revenue calculation
-    const salesByMachine = new Map<string, number>();
-    for (const sale of sales) {
-      const machineId = String(sale.machine_id || "");
-      if (!machineId) continue;
-      const revenue = (Number(sale.qty) || 0) * (Number(sale.unit_price_cents) || 0) / 100;
-      salesByMachine.set(machineId, (salesByMachine.get(machineId) || 0) + revenue);
+  const aggs = useMemo<RunAgg[]>(() => {
+    if (!haveRuns || !runs.length) return [];
+
+    // Detect likely column names from the first run row
+    const sample = runs[0] || {};
+    const routeKey = pick(sample, ["route_name", "name", "route"]) || "route_name";
+    const driverKey = pick(sample, ["driver", "assigned_to", "driver_name"]) || "driver";
+    const startKey = pick(sample, ["started_at", "start_at", "started", "created_at"]) || "started_at";
+    const endKey = pick(sample, ["finished_at", "end_at", "finished"]) || "finished_at";
+    const odoStartKey = pick(sample, ["odometer_start", "odo_start"]);
+    const odoEndKey = pick(sample, ["odometer_end", "odo_end"]);
+
+    // Group stops by run
+    const byRun = new Map<string, AnyRow[]>();
+    if (haveStops) {
+      for (const st of stops) {
+        const rid = String(st.run_id ?? "");
+        if (!byRun.has(rid)) byRun.set(rid, []);
+        byRun.get(rid)!.push(st);
+      }
     }
 
-    // Group stops by route
-    const stopsByRoute = new Map<string, AnyRow[]>();
-    for (const stop of routeStops) {
-      const routeId = String(stop.route_id || "");
-      if (!routeId) continue;
-      if (!stopsByRoute.has(routeId)) stopsByRoute.set(routeId, []);
-      stopsByRoute.get(routeId)!.push(stop);
+    // Pre-group sales by machine + day (yyyy-mm-dd)
+    function dayKey(iso: string) { return iso.slice(0, 10); }
+    const salesByMachineDay = new Map<string, number>(); // key: mId|day → $gross
+    for (const s of sales) {
+      const m = String(s.machine_id ?? "");
+      const iso = String(s.occurred_at ?? "");
+      if (!m || !iso) continue;
+      const grossCents = (Number(s.qty) || 0) * (Number(s.unit_price_cents) || 0);
+      const key = `${m}|${dayKey(iso)}`;
+      salesByMachineDay.set(key, (salesByMachineDay.get(key) || 0) + grossCents / 100);
     }
 
-    for (const route of deliveryRoutes) {
-      const routeId = String(route.id);
-      const stops = stopsByRoute.get(routeId) || [];
-      
-      const totalStops = stops.length;
-      const completedStops = stops.filter(s => s.completed).length;
-      
-      // Calculate average service time
-      let totalServiceMinutes = 0;
-      let serviceStopCount = 0;
-      for (const stop of stops) {
-        if (stop.actual_arrival && stop.estimated_arrival) {
-          const arrival = new Date(stop.actual_arrival);
-          const estimated = new Date(stop.estimated_arrival);
-          totalServiceMinutes += minutes(arrival.getTime() - estimated.getTime());
-          serviceStopCount++;
+    const out: RunAgg[] = [];
+    for (const r of runs) {
+      const id = String(r.id ?? "");
+      const startedISO = r[startKey] as string | null | undefined;
+      const finishedISO = r[endKey] as string | null | undefined;
+      const start = startedISO ? new Date(startedISO) : null;
+      const end = finishedISO ? new Date(finishedISO) : null;
+      const durMs = start && end ? Math.max(0, end.getTime() - start.getTime()) : 0;
+      const durH = hours(durMs);
+
+      const stopsForRun = byRun.get(id) || [];
+
+      // stop-level dynamic picks
+      let stopsCount = 0;
+      let serviceMin = 0;
+      let miles = 0;
+      const machinesVisited = new Set<string>();
+
+      for (const st of stopsForRun) {
+        stopsCount += 1;
+        const mid = String(st.machine_id ?? "");
+        if (mid) machinesVisited.add(mid);
+
+        const svcMinCol = pick(st, ["service_minutes", "service_mins"]);
+        if (svcMinCol && Number.isFinite(Number(st[svcMinCol]))) {
+          serviceMin += Number(st[svcMinCol]) || 0;
+        } else {
+          const arrKey = pick(st, ["arrived_at", "arrival_at", "arrived"]);
+          const depKey = pick(st, ["departed_at", "departure_at", "departed"]);
+          const a = arrKey && st[arrKey] ? new Date(st[arrKey]) : null;
+          const d = depKey && st[depKey] ? new Date(st[depKey]) : null;
+          if (a && d) serviceMin += minutes(d.getTime() - a.getTime());
+        }
+
+        const milesCol = pick(st, ["miles", "distance_miles"]);
+        if (milesCol && Number.isFinite(Number(st[milesCol]))) {
+          miles += Number(st[milesCol]) || 0;
         }
       }
-      const avgServiceTime = serviceStopCount > 0 ? totalServiceMinutes / serviceStopCount : 0;
 
-      // Calculate revenue from machines on this route
-      let routeRevenue = 0;
-      const machinesOnRoute = new Set<string>();
-      for (const stop of stops) {
-        const machineId = String(stop.machine_id || "");
-        if (machineId) {
-          machinesOnRoute.add(machineId);
-          routeRevenue += salesByMachine.get(machineId) || 0;
+      if (miles === 0 && odoStartKey && odoEndKey && Number.isFinite(Number(r[odoStartKey!])) && Number.isFinite(Number(r[odoEndKey!]))) {
+        miles = Math.max(0, Number(r[odoEndKey!]) - Number(r[odoStartKey!]));
+      }
+
+      // same-day sales for visited machines (day of startedAt)
+      let sameDaySales = 0;
+      if (start) {
+        const day = startedISO!.slice(0, 10);
+        for (const mid of machinesVisited) {
+          const key = `${mid}|${day}`;
+          sameDaySales += salesByMachineDay.get(key) || 0;
         }
       }
 
-      // Efficiency score: revenue per stop, adjusted for completion rate
-      const efficiency = totalStops > 0 
-        ? (routeRevenue / totalStops) * (completedStops / totalStops)
-        : 0;
+      const mph = durH > 0 ? sameDaySales / durH : 0;
+      const mps = stopsCount > 0 ? miles / stopsCount : 0;
+      const minPerStop = stopsCount > 0 ? serviceMin / stopsCount : 0;
 
-      metrics.push({
-        id: routeId,
-        name: String(route.name || "Unnamed Route"),
-        driver: route.staff?.full_name || "Unassigned",
-        totalStops,
-        completedStops,
-        avgServiceTime,
-        revenue: routeRevenue,
-        efficiency,
-        lastRun: stops.length > 0 
-          ? new Date(Math.max(...stops.map(s => new Date(s.created_at || 0).getTime()))).toISOString()
-          : undefined
+      out.push({
+        id,
+        route: String(r[routeKey] ?? "—"),
+        driver: String(r[driverKey] ?? "—"),
+        startedAt: startedISO ?? null,
+        finishedAt: finishedISO ?? null,
+        odometerStart: odoStartKey ? Number(r[odoStartKey]) || null : null,
+        odometerEnd: odoEndKey ? Number(r[odoEndKey]) || null : null,
+        miles,
+        stops: stopsCount,
+        machinesVisited: machinesVisited.size,
+        serviceMinutes: serviceMin,
+        sales: sameDaySales,
+        salesPerHour: mph,
+        milesPerStop: mps,
+        minPerStop: minPerStop,
       });
     }
 
-    return metrics.sort((a, b) => b.efficiency - a.efficiency);
-  }, [deliveryRoutes, routeStops, sales]);
+    // Latest first
+    out.sort((a, b) => {
+      const ta = a.startedAt ? new Date(a.startedAt).getTime() : 0;
+      const tb = b.startedAt ? new Date(b.startedAt).getTime() : 0;
+      return tb - ta;
+    });
+    return out;
+  }, [haveRuns, haveStops, runs, stops, sales]);
+
+  const routes = useMemo(() => {
+    const routeSet = new Set(aggs.map(r => r.route).filter(r => r !== "—"));
+    return Array.from(routeSet).sort();
+  }, [aggs]);
+
+  const drivers = useMemo(() => {
+    const driverSet = new Set(aggs.map(r => r.driver).filter(d => d !== "—"));
+    return Array.from(driverSet).sort();
+  }, [aggs]);
+
+  const filteredAggs = useMemo(() => {
+    return aggs.filter(run => {
+      const routeMatch = filterRoute === "all" || run.route === filterRoute;
+      const driverMatch = filterDriver === "all" || run.driver === filterDriver;
+      const searchMatch = !searchTerm || 
+        run.route.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        run.driver.toLowerCase().includes(searchTerm.toLowerCase());
+      return routeMatch && driverMatch && searchMatch;
+    });
+  }, [aggs, filterRoute, filterDriver, searchTerm]);
+
+  const exportRouteCSV = () => {
+    if (!filteredAggs.length) {
+      toast({
+        title: "No data to export",
+        description: "No route data available for export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const headers = [
+      'Date', 'Route', 'Driver', 'Stops', 'Machines', 'Service (min)',
+      'Miles', 'Sales ($)', 'Sales/hr', 'Miles/stop', 'Min/stop'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...filteredAggs.map(r => [
+        r.startedAt ? new Date(r.startedAt).toLocaleDateString() : "—",
+        r.route,
+        r.driver,
+        fmtInt(r.stops),
+        fmtInt(r.machinesVisited),
+        fmt1(r.serviceMinutes),
+        fmt1(r.miles),
+        fmt(r.sales),
+        fmt1(r.salesPerHour),
+        fmt1(r.milesPerStop),
+        fmt1(r.minPerStop)
+      ].map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `route-efficiency-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export successful",
+      description: "Route efficiency report has been downloaded"
+    });
+  };
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-48"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-32 bg-muted rounded"></div>
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-48 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-muted rounded"></div>
             ))}
           </div>
         </div>
@@ -232,212 +378,222 @@ export default function RouteEfficiency() {
     );
   }
 
-  if (error) {
+  if (err) {
     return (
       <div className="container mx-auto px-4 py-6">
         <Card>
           <CardContent className="p-6">
-            <div className="text-center text-destructive">
-              <Info className="h-8 w-8 mx-auto mb-2" />
-              <p>Error loading route data: {error}</p>
-            </div>
+            <div className="text-sm text-destructive">Error: {err}</div>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const totalRoutes = routeMetrics.length;
-  const avgEfficiency = totalRoutes > 0 
-    ? routeMetrics.reduce((sum, r) => sum + r.efficiency, 0) / totalRoutes 
-    : 0;
-  const totalRevenue = routeMetrics.reduce((sum, r) => sum + r.revenue, 0);
-
   return (
-    <HelpTooltipProvider>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <RouteIcon className="h-8 w-8" />
-              Route Efficiency
-            </h1>
-            <p className="text-muted-foreground mt-1">Analyze delivery route performance and optimization opportunities</p>
-          </div>
-          <button
-            onClick={loadData}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm hover:bg-muted transition-colors"
-          >
-            <RefreshCw className="h-4 w-4" /> Refresh Data
-          </button>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <Header 
+          title="Route Efficiency" 
+          subtitle={`Performance metrics and analytics for the last ${days} days`}
+        />
+        <div className="flex gap-2">
+          <Select value={days.toString()} onValueChange={(v) => setDays(Number(v))}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 days</SelectItem>
+              <SelectItem value="14">14 days</SelectItem>
+              <SelectItem value="30">30 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={loadData} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={exportRouteCSV} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
         </div>
+      </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Routes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{totalRoutes}</span>
-                <HelpTooltip content="Number of active delivery routes in your system" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Average Efficiency</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{fmt(avgEfficiency)}</span>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <HelpTooltip content="Revenue per stop, weighted by completion rate. Higher is better." />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue (14d)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-green-600">{fmt(totalRevenue)}</span>
-                <HelpTooltip content="Total sales revenue from all machines on active routes in the last 14 days" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="performance" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="performance">Route Performance</TabsTrigger>
-            <TabsTrigger value="setup">Setup & Integration</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="performance">
-            <Card>
-              <CardHeader>
-                <CardTitle>Route Performance Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {routeMetrics.length === 0 ? (
-                  <div className="text-center py-8">
-                    <RouteIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No route data available</h3>
-                    <p className="text-muted-foreground">
-                      Create delivery routes and record stops to see performance metrics.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="px-3 py-2 text-left">Route Name</th>
-                          <th className="px-3 py-2 text-left">Driver</th>
-                          <th className="px-3 py-2 text-right">Stops</th>
-                          <th className="px-3 py-2 text-right">Completed</th>
-                          <th className="px-3 py-2 text-right">Avg Service (min)</th>
-                          <th className="px-3 py-2 text-right">Revenue</th>
-                          <th className="px-3 py-2 text-right">Efficiency</th>
-                          <th className="px-3 py-2 text-right">Last Run</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {routeMetrics.map(route => (
-                          <tr key={route.id} className="border-t">
-                            <td className="px-3 py-2 font-medium">{route.name}</td>
-                            <td className="px-3 py-2">{route.driver}</td>
-                            <td className="px-3 py-2 text-right">{route.totalStops}</td>
-                            <td className="px-3 py-2 text-right">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                route.completedStops === route.totalStops 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {route.completedStops}/{route.totalStops}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-right">{fmt1(route.avgServiceTime)}</td>
-                            <td className="px-3 py-2 text-right">{fmt(route.revenue)}</td>
-                            <td className="px-3 py-2 text-right font-medium">{fmt(route.efficiency)}</td>
-                            <td className="px-3 py-2 text-right text-xs text-muted-foreground">
-                              {route.lastRun ? new Date(route.lastRun).toLocaleDateString() : "—"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="setup">
-            <div className="space-y-4">
-              {!haveRouteRuns && (
-                <SQLNotice
-                  title="Optional: Enhanced Route Tracking with route_runs"
-                  sql={`-- Enhanced route performance tracking
-CREATE TABLE IF NOT EXISTS public.route_runs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id uuid NOT NULL DEFAULT current_org(),
-  route_id uuid NOT NULL REFERENCES public.delivery_routes(id) ON DELETE CASCADE,
-  run_date date NOT NULL DEFAULT CURRENT_DATE,
-  start_time timestamptz,
-  end_time timestamptz,
-  miles numeric DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now()
+      {!haveRuns || !haveStops ? (
+        <SQLNotice
+          title="Optional: create route_runs and route_stops to unlock Route Efficiency"
+          sql={`-- Minimal schema to track restock runs & stops
+create table if not exists public.route_runs (
+  id uuid primary key default gen_random_uuid(),
+  route_name text,
+  driver text,
+  started_at timestamptz,
+  finished_at timestamptz,
+  odometer_start numeric,
+  odometer_end numeric
 );
 
--- Enable RLS
-ALTER TABLE public.route_runs ENABLE ROW LEVEL SECURITY;
+create table if not exists public.route_stops (
+  id uuid primary key default gen_random_uuid(),
+  run_id uuid not null references public.route_runs(id) on delete cascade,
+  machine_id uuid not null references public.machines(id) on delete cascade,
+  arrived_at timestamptz,
+  departed_at timestamptz,
+  service_minutes integer,
+  miles numeric
+);
 
--- Create policy
-CREATE POLICY "route_runs_org_policy" ON public.route_runs
-  FOR ALL USING (is_org_member(org_id))
-  WITH CHECK (org_id = current_org());
+-- Example seed (delete later):
+insert into public.route_runs(route_name, driver, started_at, finished_at, odometer_start, odometer_end)
+values ('Downtown A', 'Chris', now() - interval '3 hours', now(), 10231, 10246)
+returning id;`}
+        />
+      ) : null}
 
--- Index for performance
-CREATE INDEX IF NOT EXISTS idx_route_runs_date ON public.route_runs(run_date);
-CREATE INDEX IF NOT EXISTS idx_route_runs_route ON public.route_runs(route_id);`}
-                />
-              )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="details">Route Details</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Integration Status</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span>Delivery Routes</span>
-                    <span className="text-green-600">✓ Connected</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Route Stops</span>
-                    <span className="text-green-600">✓ Connected</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Sales Data</span>
-                    <span className="text-green-600">✓ Connected</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Enhanced Tracking (route_runs)</span>
-                    <span className={haveRouteRuns ? "text-green-600" : "text-amber-600"}>
-                      {haveRouteRuns ? "✓ Available" : "⚠ Optional"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </HelpTooltipProvider>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Enhanced KPIs */}
+          <RouteKPIs />
+          
+          {/* Analytics Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TopRoutes />
+            <TopDrivers />
+          </div>
+          
+          <DailyTrends />
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-6">
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-4">
+                <div className="relative flex-1 min-w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search routes or drivers..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Route:</label>
+                  <Select value={filterRoute} onValueChange={setFilterRoute}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Routes</SelectItem>
+                      {routes.map(route => (
+                        <SelectItem key={route} value={route}>
+                          {route}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Driver:</label>
+                  <Select value={filterDriver} onValueChange={setFilterDriver}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Drivers</SelectItem>
+                      {drivers.map(driver => (
+                        <SelectItem key={driver} value={driver}>
+                          {driver}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Route Details Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <RouteIcon className="h-5 w-5" />
+                  Route Details ({filteredAggs.length} runs)
+                </span>
+                <Badge variant="secondary">
+                  ${filteredAggs.reduce((sum, r) => sum + r.sales, 0).toFixed(0)} total revenue
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg border overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Driver</TableHead>
+                      <TableHead className="text-right">Stops</TableHead>
+                      <TableHead className="text-right">Machines</TableHead>
+                      <TableHead className="text-right">Service (min)</TableHead>
+                      <TableHead className="text-right">Miles</TableHead>
+                      <TableHead className="text-right">Sales ($)</TableHead>
+                      <TableHead className="text-right">Sales/hr</TableHead>
+                      <TableHead className="text-right">Miles/stop</TableHead>
+                      <TableHead className="text-right">Min/stop</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAggs.length ? filteredAggs.map(r => (
+                      <TableRow key={r.id}>
+                        <TableCell>{r.startedAt ? new Date(r.startedAt).toLocaleDateString() : "—"}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{r.route}</div>
+                        </TableCell>
+                        <TableCell>{r.driver}</TableCell>
+                        <TableCell className="text-right">{fmtInt(r.stops)}</TableCell>
+                        <TableCell className="text-right">{fmtInt(r.machinesVisited)}</TableCell>
+                        <TableCell className="text-right">{fmt1(r.serviceMinutes)}</TableCell>
+                        <TableCell className="text-right">{fmt1(r.miles)}</TableCell>
+                        <TableCell className="text-right font-medium">{fmt(r.sales)}</TableCell>
+                        <TableCell className="text-right">{fmt1(r.salesPerHour)}</TableCell>
+                        <TableCell className="text-right">{fmt1(r.milesPerStop)}</TableCell>
+                        <TableCell className="text-right">{fmt1(r.minPerStop)}</TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={11}>
+                          <div className="py-8 text-center text-muted-foreground">
+                            {haveRuns && haveStops
+                              ? "No runs match the current filters."
+                              : "Create the tables with the SQL above to start tracking route efficiency."}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TopRoutes />
+            <TopDrivers />
+          </div>
+          <DailyTrends />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
