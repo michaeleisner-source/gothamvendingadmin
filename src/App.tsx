@@ -77,6 +77,7 @@ import InventoryHealth from "./pages/reports/InventoryHealth";
 import BusinessFlow from "./pages/BusinessFlow";
 import DailyOps from "./pages/DailyOps";
 import { Insurance } from "./pages/Insurance";
+import SmokeTest from "./pages/qa/SmokeTest";
 
 const queryClient = new QueryClient();
 
@@ -150,6 +151,7 @@ const App = () => (
           <Route path="/reports/machine-roi" element={<MachineRoi />} />
           <Route path="/reports/processor-reconciliation" element={<ProcessorReconciliation />} />
             <Route path="/qa" element={<QALauncher />} />
+            <Route path="/qa/smoke" element={<ProtectedRoute><SmokeTest /></ProtectedRoute>} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
