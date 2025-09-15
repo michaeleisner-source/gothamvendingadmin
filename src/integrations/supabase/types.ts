@@ -1070,6 +1070,42 @@ export type Database = {
           },
         ]
       }
+      machine_product_pricing: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          machine_id: string
+          org_id: string
+          price_cents: number
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          machine_id: string
+          org_id: string
+          price_cents: number
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          machine_id?: string
+          org_id?: string
+          price_cents?: number
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       machine_slots: {
         Row: {
           capacity: number | null
@@ -2563,6 +2599,10 @@ export type Database = {
           silent_flag: boolean
           since_last_sale: unknown
         }[]
+      }
+      get_machine_product_price: {
+        Args: { p_date?: string; p_machine_id: string; p_product_id: string }
+        Returns: number
       }
       is_org_member: {
         Args: { row_org: string }
