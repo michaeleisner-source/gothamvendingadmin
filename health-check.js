@@ -1,58 +1,102 @@
 (async () => {
-  // === Supabase Edge Functions endpoints ===
-  const SUPABASE_URL = "https://wmbrnfocnlkhqflliaup.supabase.co";
-  const endpoints = {
-    whoami: `${SUPABASE_URL}/functions/v1/auth-whoami`,
-    org: `${SUPABASE_URL}/functions/v1/org-current`,
-    salesSummary: `${SUPABASE_URL}/functions/v1/reports-sales-summary?days=30`,
-    audit: `${SUPABASE_URL}/functions/v1/audit-run`,
-  };
+  /******************************************************************
+   * QA Smoke Test for Supabase Edge Functions
+   * Tries to use your existing Supabase client if available.
+   * If not, it will load @supabase/supabase-js from CDN and ask
+   * for your SUPABASE_URL and ANON_KEY (one-time prompts).
+   *
+   * Functions expected (already created in Lovable):
+   *  - auth-whoami
+   *  - org-current
+   *  - reports-sales-summary
+   *  - audit-run
+   ******************************************************************/
+
+  // ---- 0) Helpers -------------------------------------------------
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
 
   const out = [];
   const log = (name, ok, extra='') => out.push({ check: name, status: ok ? 'PASS' : 'FAIL', info: extra });
 
-  const fetchJSON = async (url, opts) => {
-    try {
-      const res = await fetch(url, {
-        credentials: 'include',
-        headers: { 
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtYnJuZm9jbmxraHFmbGxpYXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3ODIwNjEsImV4cCI6MjA3MzM1ODA2MX0.Wzt4HcA_I6xEV9CfvxrC4X97Z1dlUU4OGkX1t5m0rWE'
-        },
-        ...opts
-      });
-      const text = await res.text();
-      let data; try { data = text ? JSON.parse(text) : null; } catch {
-        data = { parseError: text?.slice(0, 300) };
-      }
-      return { ok: res.ok, status: res.status, url, data };
-    } catch (e) {
-      return { ok: false, status: 'NETWORK', url, error: String(e?.message || e) };
+  // ---- 1) Ensure Supabase client ---------------------------------
+  // Try to reuse an existing client on the page
+  let sb = window._qa_sb || window.supabase;
+
+  // Try to discover existing config (some apps stash it on window.__env or similar)
+  const guessUrl = window.__env?.SUPABASE_URL || window.SUPABASE_URL || window.__supabase?.url;
+  const guessAnon = window.__env?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || window.__supabase?.anon;
+
+  if (!sb) {
+    // Load UMD build of @supabase/supabase-js v2
+    await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js');
+
+    const url = guessUrl || prompt('Enter your SUPABASE_URL (e.g., https://xxxx.supabase.co)');
+    const anon = guessAnon || prompt('Enter your SUPABASE_ANON_KEY');
+
+    if (!url || !anon) {
+      console.warn('Supabase URL/ANON KEY missing — cannot continue.');
+      console.table([{check:'Supabase client', status:'FAIL', info:'missing url/anon'}]);
+      return;
     }
-  };
+    sb = window._qa_sb = window.supabase.createClient(url, anon, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
+  }
 
-  // 1) Auth present?
-  const me = await fetchJSON(endpoints.whoami);
-  log('Auth: user session', me.ok && me.data && me.data.user?.id, `status=${me.status}`);
+  // ---- 2) Get an access token (for auth-protected functions) -----
+  let accessToken = null;
+  try {
+    const { data } = await sb.auth.getSession();
+    accessToken = data?.session?.access_token || null;
+    log('Auth: session present', !!accessToken, accessToken ? 'using user access token' : 'no session found');
+  } catch (e) {
+    log('Auth: session present', false, String(e?.message || e));
+  }
 
-  // 2) Org selected & propagated?
-  const org = await fetchJSON(endpoints.org);
-  log('Org: selected org present', org.ok && org.data && org.data.id, JSON.stringify(org.data || {}));
+  // Helper to invoke a function with proper headers
+  async function invoke(fnName, body) {
+    // Prefer functions.invoke which handles base URL & headers
+    try {
+      const { data, error } = await sb.functions.invoke(fnName, {
+        body: body || {},
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
+      if (error) {
+        return { ok: false, status: '500', data: { message: error.message, details: error } };
+      }
+      return { ok: true, status: 200, data };
+    } catch (err) {
+      return { ok: false, status: 'NETWORK', data: { message: String(err?.message || err) } };
+    }
+  }
 
-  // 3) Sales summary (handle empty dataset gracefully)
-  const sales = await fetchJSON(endpoints.salesSummary);
-  const rows = (Array.isArray(sales.data?.rows) ? sales.data.rows : (Array.isArray(sales.data) ? sales.data : []));
-  log('Data: sales summary endpoint', sales.ok, `status=${sales.status}; rows=${Array.isArray(rows) ? rows.length : 'n/a'}; message=${sales.data?.message ?? ''}`);
+  // ---- 3) Hit each Edge Function ---------------------------------
+  const me     = await invoke('auth-whoami');
+  log('auth-whoami', me.ok, `status=${me.status}; user=${me.data?.user?.id ?? 'n/a'}`);
 
-  // 4) Audit POST
-  const audit = await fetchJSON(endpoints.audit, { method: 'POST', body: JSON.stringify({ scope: 'smoke' }) });
-  const auditChecks = Array.isArray(audit.data?.checks) ? audit.data.checks.length : 0;
-  log('Audit: POST audit endpoint', audit.ok, `status=${audit.status}; result=${audit.data?.result ?? ''}; checks=${auditChecks}`);
+  const org    = await invoke('org-current');
+  log('org-current', org.ok && !!org.data?.id, `status=${org.status}; org=${JSON.stringify(org.data || {})}`);
 
+  // Use 30 days window for reports (adjust if your function expects different)
+  const sales  = await invoke('reports-sales-summary', { days: 30 });
+  const rowCount =
+    (Array.isArray(sales.data?.rows) && sales.data.rows.length) ||
+    (Array.isArray(sales.data) && sales.data.length) || 0;
+  log('reports-sales-summary', sales.ok, `status=${sales.status}; rows=${rowCount}; msg=${sales.data?.message ?? ''}`);
+
+  const audit  = await invoke('audit-run', { scope: 'smoke' });
+  const checks = Array.isArray(audit.data?.checks) ? audit.data.checks.length : 0;
+  const result = audit.data?.result ?? '';
+  log('audit-run', audit.ok, `status=${audit.status}; result=${result}; checks=${checks}`);
+
+  // ---- 4) Print results + stash details ---------------------------
   console.table(out);
-  // Expose details for copy/paste
   window.__qa = { me, org, sales, audit, out };
-  console.log('Details stored on window.__qa — expand it and copy/paste here.');
-  
-  return out;
+  console.log('Details stored at window.__qa — expand it and copy/paste here.');
 })();
