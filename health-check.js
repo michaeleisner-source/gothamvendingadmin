@@ -141,29 +141,45 @@ window.exportSalesCSV = async function(days = 30, startDate = null, endDate = nu
   }
 };
 
-// Smart-wire the export button to use date range or days input
-(function wireCsvDays() {
-  const btn = document.getElementById("exportCsvBtn");
-  const daysInput = document.getElementById("exportDays");
-  const startInput = document.getElementById("exportStart");
-  const endInput = document.getElementById("exportEnd");
-  
+// Prefer date range → fall back to "days"
+(function wireCsvDateRange() {
+  const btn  = document.getElementById("exportCsvBtn");
+  const dIn  = document.getElementById("exportDays");
+  const sIn  = document.getElementById("exportStart");
+  const eIn  = document.getElementById("exportEnd");
   if (!btn) return;
 
+  // Default Start/End to the last 30 days on load
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const daysAgoISO = (n) => new Date(Date.now() - n*24*60*60*1000).toISOString().slice(0,10);
+  if (sIn && !sIn.value) sIn.value = daysAgoISO(30);
+  if (eIn && !eIn.value) eIn.value = todayISO();
+
   btn.addEventListener("click", () => {
-    // Get date values
-    const startDate = startInput?.value || null;
-    const endDate = endInput?.value || null;
-    
-    // Get days value with validation
-    const val = daysInput ? Number(daysInput.value) : 30;
-    const days = Number.isFinite(val) && val >= 1 && val <= 365 ? val : 30;
-    
-    // Call export with date range or days
-    window.exportSalesCSV?.(days, startDate, endDate);
+    // If both dates are valid and Start <= End, compute days (inclusive)
+    let daysToExport = null;
+    if (sIn?.value && eIn?.value) {
+      const start = new Date(sIn.value + "T00:00:00");
+      const end   = new Date(eIn.value + "T23:59:59"); // inclusive end
+      const ms    = end - start;
+      if (Number.isFinite(ms) && ms >= 0) {
+        // Convert ms → days, inclusive (min 1, max 365)
+        const days = Math.floor(ms / (24*60*60*1000)) + 1;
+        if (days >= 1 && days <= 365) daysToExport = days;
+      }
+    }
+
+    // Fall back to numeric "Days" input if date range not usable
+    if (daysToExport == null) {
+      const val = Number(dIn?.value);
+      daysToExport = (Number.isFinite(val) && val >= 1 && val <= 365) ? val : 30;
+    }
+
+    // Kick off export
+    window.exportSalesCSV?.(daysToExport);
   });
 
-  console.log("Export CSV button wired with date range and days controls.");
+  console.log("Export CSV wired with Start/End date range (falls back to Days).");
 })();
 
 // === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
