@@ -57,7 +57,7 @@ export const NAV: NavSection[] = [
     { label: 'Sales Summary', path: '/reports/sales-summary', icon: '🧮' },
     { label: 'Machine ROI', path: '/reports/machine-roi', icon: '🤖' },
     { label: 'Location Performance', path: '/reports/location-performance', icon: '🗺️' },
-    { label: 'Location Performance (Edge)', path: '/reports/location-performance-edge', icon: '🚀' },
+    { label: 'Location Performance (Edge)', path: '/reports/locations', icon: '🚀' },
     { label: 'Sales Trends', path: '/reports/trends', icon: '📈' },
     { label: 'Stockout Predictions', path: '/reports/stockouts', icon: '⚠️' },
     { label: 'Location Commissions', path: '/reports/location-commissions', icon: '💰' },

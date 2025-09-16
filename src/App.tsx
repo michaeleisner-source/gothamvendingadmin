@@ -61,10 +61,10 @@ import CommissionDashboard from "./pages/CommissionDashboard";
 import CommissionStatements from "./pages/CommissionStatements";
 import ContractManagement from "./pages/ContractManagement";
 import LocationPerformance from "./pages/LocationPerformance";
-import LocationPerformanceEdge from "./pages/reports/LocationPerformanceEdge";
+import LocationPerformanceReports from "./pages/reports/LocationPerformance";
 import Trends from "./pages/reports/Trends";
 import Stockouts from "./pages/reports/Stockouts";
-import Exports from "./pages/Exports";
+import ExportsPage from "./pages/ExportsPage";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -137,7 +137,7 @@ const App = () => (
             <Route path="/setup" element={<MachineSetup />} />
             <Route path="/slots" element={<SlotPlanner />} />
             <Route path="/reports" element={<EnhancedReports />} />
-            <Route path="/exports" element={<Exports />} />
+            <Route path="/exports" element={<ExportsPage />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/finance" element={<FinanceManagement />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />
@@ -146,7 +146,7 @@ const App = () => (
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
-            <Route path="/reports/location-performance-edge" element={<LocationPerformanceEdge />} />
+            <Route path="/reports/locations" element={<LocationPerformanceReports />} />
             <Route path="/reports/trends" element={<Trends />} />
             <Route path="/reports/stockouts" element={<Stockouts />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
