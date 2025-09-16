@@ -3375,7 +3375,7 @@ export type Database = {
     }
     Functions: {
       _normalize_range: {
-        Args: { p_end: string; p_start: string }
+        Args: { p_end?: string; p_start?: string }
         Returns: {
           end_at: string
           start_at: string
@@ -3454,7 +3454,9 @@ export type Database = {
         }[]
       }
       get_machine_product_price: {
-        Args: { p_date?: string; p_machine_id: string; p_product_id: string }
+        Args:
+          | { p_date?: string; p_machine_id: string; p_product_id: string }
+          | { p_machine_id: string; p_product_id: string }
         Returns: number
       }
       is_org_member: {
