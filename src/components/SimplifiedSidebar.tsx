@@ -30,6 +30,20 @@ export function SimplifiedSidebar() {
     setOpenGroups(prev => ({ ...prev, [sectionTitle]: !prev[sectionTitle] }));
   };
 
+  // Icon mapping for section headers (emoji fallbacks for the new system)
+  const getSectionIcon = (sectionTitle: string) => {
+    const iconMap: Record<string, string> = {
+      'Pipeline': '🧲',
+      'Operations': '🗂️', 
+      'Supply Chain': '📦',
+      'Finance': '💰',
+      'Reports': '📊',
+      'Support': '🎫',
+      'Help & QA': '❓'
+    };
+    return iconMap[sectionTitle] || '•';
+  };
+
   return (
     <aside className="h-screen w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
       <div className="px-4 py-4 border-b border-sidebar-border flex items-center gap-2">
@@ -48,7 +62,7 @@ export function SimplifiedSidebar() {
               <NavItem 
                 key={item.path} 
                 to={item.path} 
-                icon={item.icon} 
+                iconText={item.icon} 
                 label={item.label} 
               />
             );
@@ -65,7 +79,7 @@ export function SimplifiedSidebar() {
                     <Component
                       key={item.path}
                       to={item.path}
-                      icon={item.icon}
+                      iconText={item.icon}
                       label={item.label}
                     />
                   );
@@ -79,7 +93,7 @@ export function SimplifiedSidebar() {
             <ExpandableGroup
               key={section.title}
               label={section.title}
-              icon={section.icon}
+              iconText={getSectionIcon(section.title)}
               isOpen={openGroups[section.title] || false}
               onClick={() => toggleGroup(section.title)}
             >
@@ -98,7 +112,7 @@ export function SimplifiedSidebar() {
   );
 }
 
-function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+function NavItem({ to, iconText, label }: { to: string; iconText?: string; label: string }) {
   return (
     <NavLink
       to={to}
@@ -110,7 +124,7 @@ function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: stri
         }`
       }
     >
-      <Icon className="size-4" />
+      <span className="size-4 text-center">{iconText || '•'}</span>
       <span>{label}</span>
     </NavLink>
   );
@@ -118,13 +132,13 @@ function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: stri
 
 function ExpandableGroup({ 
   label, 
-  icon: Icon, 
+  iconText, 
   isOpen, 
   onClick, 
   children 
 }: { 
   label: string; 
-  icon: any; 
+  iconText: string; 
   isOpen: boolean; 
   onClick: () => void; 
   children: React.ReactNode; 
@@ -136,7 +150,7 @@ function ExpandableGroup({
         className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-sidebar-accent transition-colors"
       >
         <div className="flex items-center gap-3">
-          <Icon className="size-4" />
+          <span className="size-4 text-center">{iconText}</span>
           <span>{label}</span>
         </div>
         <ChevronDown 
@@ -172,13 +186,13 @@ function SubNavItem({ to, label }: { to: string; label: string }) {
   );
 }
 
-function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+function QuickAction({ to, iconText, label }: { to: string; iconText?: string; label: string }) {
   return (
     <NavLink
       to={to}
       className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
     >
-      <Icon className="size-4" />
+      <span className="size-4 text-center">{iconText || '•'}</span>
       <span>{label}</span>
     </NavLink>
   );

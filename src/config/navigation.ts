@@ -1,164 +1,110 @@
-import {
-  LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
-  BarChart3, Headphones, Building2, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt, Scale, ListChecks, HelpCircle, ClipboardList
-} from "lucide-react";
-
-export interface NavItem {
-  label: string;
-  path: string;
-  icon?: any;
+// Navigation types
+export type NavItem = { 
+  label: string; 
+  path: string; 
+  icon?: string; 
   devOnly?: boolean;
-}
+};
 
-export interface NavSection {
-  title: string;
-  icon?: any;
-  devOnly?: boolean;
+export type NavSection = { 
+  title: string; 
+  devOnly?: boolean; 
   items: NavItem[];
-  expandable?: boolean;
-}
-
-// Single source of truth for all navigation
-export const NAVIGATION_CONFIG: NavSection[] = [
-  {
-    title: "Dashboard",
-    expandable: false,
-    items: [
-      { label: "Mission Control", path: "/", icon: LayoutDashboard }
-    ]
-  },
-  {
-    title: "Pipeline", 
-    icon: MapPinned,
-    expandable: true,
-    items: [
-      { label: "All Prospects", path: "/prospects" },
-      { label: "New Prospect", path: "/prospects/new" },
-      { label: "Convert → Contract", path: "/prospects/convert" },
-      { label: "Contract Management", path: "/contracts" }
-    ]
-  },
-  {
-    title: "Business Flow",
-    expandable: false, 
-    items: [
-      { label: "Business Flow", path: "/business-flow", icon: Building2 }
-    ]
-  },
-  {
-    title: "Operations",
-    icon: Factory,
-    expandable: true,
-    items: [
-      { label: "Machines", path: "/machines" },
-      { label: "Inventory", path: "/inventory" },
-      { label: "Locations", path: "/locations" },
-      { label: "New Location", path: "/locations/new" },
-      { label: "Machine Setup", path: "/setup" },
-      { label: "Slot Planner", path: "/slots" }
-    ]
-  },
-  {
-    title: "Supply Chain",
-    icon: Package2,
-    expandable: true,
-    items: [
-      { label: "Products", path: "/products" },
-      { label: "Purchase Orders", path: "/purchase-orders" },
-      { label: "Suppliers", path: "/suppliers" }
-    ]
-  },
-  {
-    title: "Finance", 
-    icon: DollarSign,
-    expandable: true,
-    items: [
-      { label: "Overview", path: "/finance" },
-      { label: "Commissions", path: "/finance/commissions" },
-      { label: "Payment Processors", path: "/finance/processors" },
-      { label: "Product Profitability", path: "/finance/profitability" }
-    ]
-  },
-  {
-    title: "Reports",
-    icon: BarChart3,
-    expandable: true, 
-    items: [
-      { label: "All Reports", path: "/reports" },
-      { label: "Sales Summary", path: "/reports/sales-summary" },
-      { label: "Machine ROI", path: "/reports/machine-roi" },
-      { label: "Location Performance", path: "/reports/location-performance" },
-      { label: "Location Commissions", path: "/reports/location-commissions" },
-      { label: "Product Profitability", path: "/reports/product-profitability-net" },
-      { label: "Prospect Funnel", path: "/reports/prospect-funnel" },
-      { label: "Route Efficiency", path: "/reports/route-efficiency" },
-      { label: "Inventory Health", path: "/reports/inventory-health" },
-      { label: "Processor Reconciliation", path: "/reports/processor-reconciliation", icon: Scale }
-    ]
-  },
-  {
-    title: "Support",
-    icon: Headphones,
-    expandable: true,
-    items: [
-      { label: "Tickets", path: "/tickets" },
-      { label: "Delivery Routes", path: "/delivery-routes" },
-      { label: "Staff", path: "/staff" },
-      { label: "Audit Logs", path: "/audit" }
-    ]
-  },
-  {
-    title: "Help & QA",
-    icon: HelpCircle,
-    expandable: true,
-    devOnly: false, // Always show help
-    items: [
-      { label: "Help Center", path: "/help" },
-      { label: "QA Launcher", path: "/qa/launcher2", devOnly: true },
-      { label: "Quick Seed", path: "/qa/seed", devOnly: true },
-      { label: "QA Smoke Test", path: "/qa/smoke", devOnly: true },
-      { label: "Ops Console", path: "/ops/console", devOnly: true }
-    ]
-  },
-  {
-    title: "Quick Actions",
-    expandable: false,
-    items: [
-      { label: "Quick Restock", path: "/restock", icon: Box },
-      { label: "Record Sale", path: "/sales", icon: TrendingUp },
-      { label: "Field Actions", path: "/mobile", icon: Smartphone }
-    ]
-  },
-  {
-    title: "Admin",
-    expandable: false,
-    items: [
-      { label: "Settings", path: "/account", icon: Settings },
-      { label: "Review Snapshot", path: "/admin/review-snapshot", icon: BarChart3, devOnly: true },
-      { label: "Ops Kickstart", path: "/admin/kickstart", icon: Play, devOnly: true },
-      { label: "QA Smoke Test", path: "/qa/smoke", icon: Play, devOnly: true },
-      { label: "QA Validation", path: "/qa/verify", icon: ListChecks, devOnly: true },
-      { label: "QA Control", path: "/qa/control", icon: ListChecks, devOnly: true },
-      { label: "QA Tools", path: "/qa", icon: Wrench, devOnly: true }
-    ]
-  }
-];
+  expandable?: boolean; // Keep for backward compatibility
+};
 
 // Environment detection
-export const ENV = typeof window !== 'undefined' 
-  ? (window.location.hostname.match(/(localhost|127\.0\.0\.1|qa|staging)/i) ? 'dev' : 'prod')
-  : 'prod';
+export const isDevEnv = () =>
+  /localhost|127\.0\.0\.1|qa|staging/i.test(window.location.hostname) ||
+  (import.meta as any)?.env?.MODE === 'development';
+
+// Navigation configuration
+export const NAV: NavSection[] = [
+  { title: 'Dashboard', expandable: false, items: [
+    { label: 'Mission Control', path: '/', icon: '📊' },
+  ]},
+  { title: 'Pipeline', expandable: true, items: [
+    { label: 'All Prospects', path: '/prospects', icon: '🧲' },
+    { label: 'New Prospect', path: '/prospects/new', icon: '➕' },
+    { label: 'Convert → Contract', path: '/prospects/convert', icon: '🔄' },
+    { label: 'Contract Management', path: '/contracts', icon: '📋' },
+  ]},
+  { title: 'Business Flow', expandable: false, items: [
+    { label: 'Business Flow', path: '/business-flow', icon: '🏢' },
+  ]},
+  { title: 'Operations', expandable: true, items: [
+    { label: 'Machines', path: '/machines', icon: '🗂️' },
+    { label: 'Inventory', path: '/inventory', icon: '📦' },
+    { label: 'Locations', path: '/locations', icon: '📍' },
+    { label: 'New Location', path: '/locations/new', icon: '➕' },
+    { label: 'Machine Setup', path: '/setup', icon: '🛠️' },
+    { label: 'Slot Planner', path: '/slots', icon: '🎰' },
+  ]},
+  { title: 'Supply Chain', expandable: true, items: [
+    { label: 'Products', path: '/products', icon: '🛒' },
+    { label: 'Purchase Orders', path: '/purchase-orders', icon: '🧾' },
+    { label: 'Suppliers', path: '/suppliers', icon: '🏭' },
+  ]},
+  { title: 'Finance', expandable: true, items: [
+    { label: 'Overview', path: '/finance', icon: '💰' },
+    { label: 'Commissions', path: '/finance/commissions', icon: '💸' },
+    { label: 'Payment Processors', path: '/finance/processors', icon: '💳' },
+    { label: 'Product Profitability', path: '/finance/profitability', icon: '📈' },
+  ]},
+  { title: 'Reports', expandable: true, items: [
+    { label: 'All Reports', path: '/reports', icon: '📊' },
+    { label: 'Sales Summary', path: '/reports/sales-summary', icon: '🧮' },
+    { label: 'Machine ROI', path: '/reports/machine-roi', icon: '🤖' },
+    { label: 'Location Performance', path: '/reports/location-performance', icon: '🗺️' },
+    { label: 'Location Commissions', path: '/reports/location-commissions', icon: '💰' },
+    { label: 'Product Profitability', path: '/reports/product-profitability-net', icon: '🍫' },
+    { label: 'Prospect Funnel', path: '/reports/prospect-funnel', icon: '🧲' },
+    { label: 'Route Efficiency', path: '/reports/route-efficiency', icon: '🚚' },
+    { label: 'Inventory Health', path: '/reports/inventory-health', icon: '⏳' },
+    { label: 'Processor Reconciliation', path: '/reports/processor-reconciliation', icon: '⚖️' },
+  ]},
+  { title: 'Support', expandable: true, items: [
+    { label: 'Tickets', path: '/tickets', icon: '🎫' },
+    { label: 'Delivery Routes', path: '/delivery-routes', icon: '🚚' },
+    { label: 'Staff', path: '/staff', icon: '👥' },
+    { label: 'Audit Logs', path: '/audit', icon: '📝' },
+  ]},
+  { title: 'Help & QA', expandable: true, items: [
+    { label: 'Help Center', path: '/help', icon: '❓' },
+    { label: 'QA Launcher', path: '/qa/launcher2', icon: '🚀', devOnly: true },
+    { label: 'Quick Seed', path: '/qa/seed', icon: '🌱', devOnly: true },
+    { label: 'QA Smoke Test', path: '/qa/smoke', icon: '🧪', devOnly: true },
+    { label: 'Ops Console', path: '/ops/console', icon: '🖥️', devOnly: true },
+  ]},
+  { title: 'Quick Actions', expandable: false, items: [
+    { label: 'Quick Restock', path: '/restock', icon: '📦' },
+    { label: 'Record Sale', path: '/sales', icon: '📈' },
+    { label: 'Field Actions', path: '/mobile', icon: '📱' },
+  ]},
+  { title: 'Admin', expandable: false, items: [
+    { label: 'Settings', path: '/account', icon: '⚙️' },
+    { label: 'Review Snapshot', path: '/admin/review-snapshot', icon: '📊', devOnly: true },
+    { label: 'Ops Kickstart', path: '/admin/kickstart', icon: '▶️', devOnly: true },
+    { label: 'QA Smoke Test', path: '/qa/smoke', icon: '▶️', devOnly: true },
+    { label: 'QA Validation', path: '/qa/verify', icon: '✅', devOnly: true },
+    { label: 'QA Control', path: '/qa/control', icon: '🎛️', devOnly: true },
+    { label: 'QA Tools', path: '/qa', icon: '🔧', devOnly: true },
+  ]},
+];
+
+// Backward compatibility - keep existing functions but use new config
+export const NAVIGATION_CONFIG = NAV; // Alias for backward compatibility
+export const ENV = isDevEnv() ? 'dev' : 'prod';
 
 // Helper to filter navigation based on environment and demo mode
 export function getFilteredNavigation(isDemo?: boolean) {
-  return NAVIGATION_CONFIG.map(section => {
+  return NAV.map(section => {
     // Filter section by dev mode
-    if (section.devOnly && ENV !== 'dev') return null;
+    if (section.devOnly && !isDevEnv()) return null;
     
     // Filter items by dev mode and demo mode
     const filteredItems = section.items.filter(item => {
-      if (item.devOnly && ENV !== 'dev') return false;
+      if (item.devOnly && !isDevEnv()) return false;
       // Special QA Tools logic for demo mode
       if (item.path === '/qa' && !isDemo) return false;
       return true;
@@ -172,7 +118,7 @@ export function getFilteredNavigation(isDemo?: boolean) {
 export function findCurrentNavItem(pathname: string) {
   const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
   
-  for (const section of NAVIGATION_CONFIG) {
+  for (const section of NAV) {
     for (const item of section.items) {
       if (item.path === normalizedPath || 
           (item.path !== '/' && normalizedPath.startsWith(item.path))) {
