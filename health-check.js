@@ -110,8 +110,15 @@ window.exportSalesCSV = async function(days = 30) {
 (function wireCsvButton() {
   const btn = document.getElementById("exportCsvBtn");
   if (!btn) return;
-  btn.addEventListener("click", () => window.exportSalesCSV(30));
-  console.log("Export CSV button wired.");
+  
+  btn.addEventListener("click", () => {
+    // Check for days input field
+    const daysInput = document.getElementById("exportDays");
+    const days = daysInput ? parseInt(daysInput.value) || 30 : 30;
+    window.exportSalesCSV(days);
+  });
+  
+  console.log("Export CSV button wired with dynamic days input.");
 })();
 
 // === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
