@@ -61,6 +61,9 @@ import CommissionDashboard from "./pages/CommissionDashboard";
 import CommissionStatements from "./pages/CommissionStatements";
 import ContractManagement from "./pages/ContractManagement";
 import LocationPerformance from "./pages/LocationPerformance";
+import LocationPerformanceEdge from "./pages/reports/LocationPerformanceEdge";
+import Trends from "./pages/reports/Trends";
+import Stockouts from "./pages/reports/Stockouts";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -141,6 +144,9 @@ const App = () => (
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
+            <Route path="/reports/location-performance-edge" element={<LocationPerformanceEdge />} />
+            <Route path="/reports/trends" element={<Trends />} />
+            <Route path="/reports/stockouts" element={<Stockouts />} />
             <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
             <Route path="/reports/location-commissions" element={<ProtectedRoute><LocationCommission /></ProtectedRoute>} />
             <Route path="/reports/inventory-health" element={<ProtectedRoute><InventoryHealth /></ProtectedRoute>} />
