@@ -1,18 +1,18 @@
-console.log("Site starting...");
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { HashRouter } from 'react-router-dom';
+import AppRoutes from './components/AppRoutes';
+import './styles/theme.css';
 
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import { DemoProvider } from "./lib/demo";
-import { ScopeProvider } from "@/context/Scope";
-import "./index.css";
+function Root() {
+  return (
+    <HashRouter>
+      <AppRoutes />
+    </HashRouter>
+  );
+}
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ScopeProvider>
-      <DemoProvider>
-        <App />
-      </DemoProvider>
-    </ScopeProvider>
-  </React.StrictMode>
-);
+const root = document.getElementById('root') || (() => {
+  const el = document.createElement('div'); el.id = 'root'; document.body.appendChild(el); return el;
+})();
+ReactDOM.createRoot(root).render(<Root />);
