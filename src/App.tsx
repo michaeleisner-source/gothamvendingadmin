@@ -28,6 +28,7 @@ import ProductsEnhanced from "./pages/ProductsEnhanced";
 import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
+import ProspectDashboard from "./pages/ProspectDashboard";
 import NewProspect from "./pages/NewProspect";
 import ProspectDetail from "./pages/ProspectDetail";
 import ProspectFunnel from "./pages/reports/ProspectFunnel";
@@ -131,6 +132,7 @@ const App = () => (
                 columns={['Date','Machine','Action','Notes','Parts Cost']} />
             } />
             <Route path="/prospects" element={<Prospects />} />
+            <Route path="/prospects/dashboard" element={<ProspectDashboard />} />
             <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/convert" element={<ConvertProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
