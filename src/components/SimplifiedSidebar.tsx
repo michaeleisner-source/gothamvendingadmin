@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 
 const keyFor = (title: string) => `gv:navCollapsed:${title}`;
 
+// add near top of file
+const norm = (p: string) => (p || '/').replace(/\/+$/,'') || '/';
+const isActivePath = (current: string, base: string) => {
+  const c = norm(current);
+  const b = norm(base);
+  return c === b || c.startsWith(b + '/');
+};
+
 export default function SimplifiedSidebar() {
   const loc = useLocation();
   const currentPath = (loc.pathname.replace(/\/+$/,'') || '/') as string;
@@ -55,7 +63,7 @@ export default function SimplifiedSidebar() {
                     key={item.path}
                     to={item.path}
                     className={({ isActive }) =>
-                      'gv-nav-item' + (isActive || to === currentPath ? ' active' : '')
+                      'gv-nav-item' + (isActivePath(currentPath, item.path) ? ' active' : '')
                     }
                   >
                     <span className="gv-icon">{item.icon ?? '•'}</span>
