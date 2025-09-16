@@ -99,8 +99,8 @@ const Inventory = () => {
       const lowStockItems = inventoryData.filter(item => item.current_qty <= item.reorder_point && item.current_qty > 0).length;
       const outOfStockItems = inventoryData.filter(item => item.current_qty === 0).length;
       const avgDaysOfSupply = inventoryData.reduce((sum, item) => sum + (item.days_of_supply || 0), 0) / totalItems || 0;
-      const totalStockValue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products.cost || 0)), 0);
-      const totalPotentialRevenue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products.price || 0)), 0);
+      const totalStockValue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products?.cost || 0)), 0);
+      const totalPotentialRevenue = inventoryData.reduce((sum, item) => sum + (item.current_qty * (item.products?.price || 0)), 0);
 
       setStats({
         total_items: totalItems,
@@ -191,15 +191,15 @@ const Inventory = () => {
     const csvContent = [
       headers.join(','),
       ...inventory.map(item => [
-        item.machines.name,
-        item.machine_slots.label,
-        item.products.name,
+        item.machines?.name || 'Unknown Machine',
+        item.machine_slots?.label || 'Unknown Slot',
+        item.products?.name || 'Unknown Product',
         item.current_qty,
         item.par_level,
         item.reorder_point,
         item.sales_velocity.toFixed(1),
         item.days_of_supply === 999 ? '∞' : Math.round(item.days_of_supply),
-        (item.current_qty * (item.products.cost || 0)).toFixed(2),
+        (item.current_qty * (item.products?.cost || 0)).toFixed(2),
         getStockStatusText(getStockStatus(item))
       ].map(field => `"${field}"`).join(','))
     ].join('\n');
@@ -222,10 +222,10 @@ const Inventory = () => {
     const machineMatch = filterMachine === 'all' || item.machine_id === filterMachine;
     const statusMatch = filterStatus === 'all' || getStockStatus(item) === filterStatus;
     const searchMatch = !searchTerm || 
-      item.products.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.machines.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.machine_slots.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.products.sku.toLowerCase().includes(searchTerm.toLowerCase());
+      item.products?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.machines?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.machine_slots?.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.products?.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     return machineMatch && statusMatch && searchMatch;
   });
 
@@ -383,7 +383,7 @@ const Inventory = () => {
                     </div>
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <div className="text-lg font-semibold">
-                        ${filteredInventory.reduce((sum, item) => sum + (item.current_qty * (item.products.cost || 0)), 0).toFixed(0)}
+                        ${filteredInventory.reduce((sum, item) => sum + (item.current_qty * (item.products?.cost || 0)), 0).toFixed(0)}
                       </div>
                       <div className="text-xs text-muted-foreground">Total Value</div>
                     </div>
@@ -476,7 +476,7 @@ const Inventory = () => {
                             if (aStatus === 'low' && bStatus === 'medium') return -1;
                             if (bStatus === 'low' && aStatus === 'medium') return 1;
                           }
-                          return a.products.name.localeCompare(b.products.name);
+                          return a.products?.name?.localeCompare(b.products?.name || '') || 0;
                         })
                         .map((item) => {
                           const status = getStockStatus(item);
@@ -488,11 +488,11 @@ const Inventory = () => {
                               <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                   <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h3 className="font-medium">{item.products.name}</h3>
-                                      <Badge variant="secondary" className="text-xs">
-                                        {item.products.sku}
-                                      </Badge>
+                                     <div className="flex items-center gap-2 mb-1">
+                                       <h3 className="font-medium">{item.products?.name || 'Unknown Product'}</h3>
+                                       <Badge variant="secondary" className="text-xs">
+                                         {item.products?.sku || 'No SKU'}
+                                       </Badge>
                                       {isUrgent && activeWorkflowStep >= 3 && (
                                         <Badge variant="destructive" className="text-xs">
                                           <AlertTriangle className="w-3 h-3 mr-1" />
@@ -502,9 +502,9 @@ const Inventory = () => {
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                       <MapPin className="w-4 h-4" />
-                                      <span>{item.machines.name}</span>
+                                      <span>{item.machines?.name || 'Unknown Machine'}</span>
                                       <span>•</span>
-                                      <span>Slot {item.machine_slots.label}</span>
+                                      <span>Slot {item.machine_slots?.label || 'Unknown'}</span>
                                     </div>
                                   </div>
                                   <Badge className={getStockStatusColor(status)}>
@@ -538,7 +538,7 @@ const Inventory = () => {
                                     </div>
                                     <div>
                                       <div className="text-muted-foreground">Stock Value</div>
-                                      <div className="font-medium">${(item.current_qty * (item.products.cost || 0)).toFixed(0)}</div>
+                                      <div className="font-medium">${(item.current_qty * (item.products?.cost || 0)).toFixed(0)}</div>
                                     </div>
                                   </div>
 
@@ -651,14 +651,14 @@ const Inventory = () => {
                       return (
                         <TableRow key={item.id} className={item.current_qty === 0 ? 'bg-red-50 dark:bg-red-950/20' : ''}>
                           <TableCell>
-                            <div>
-                              <div className="font-medium">{item.products.name}</div>
-                              <div className="text-xs text-muted-foreground">{item.products.sku}</div>
-                            </div>
+                                     <div>
+                                       <div className="font-medium">{item.products?.name || 'Unknown Product'}</div>
+                                       <div className="text-xs text-muted-foreground">{item.products?.sku || 'No SKU'}</div>
+                                     </div>
                           </TableCell>
-                          <TableCell>{item.machines.name}</TableCell>
+                          <TableCell>{item.machines?.name || 'Unknown Machine'}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{item.machine_slots.label}</Badge>
+                            <Badge variant="outline">{item.machine_slots?.label || 'Unknown'}</Badge>
                           </TableCell>
                           <TableCell className="font-medium">{item.current_qty}</TableCell>
                           <TableCell>{item.reorder_point}</TableCell>
