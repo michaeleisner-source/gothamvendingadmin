@@ -25,11 +25,22 @@ function QAOverviewInline() {
   const [ts] = useState(() => new Date().toLocaleString());
   // tiny proof-of-life check: ensure hash router path contains /qa/overview
   const [path, setPath] = useState<string>(location.hash || location.pathname);
+  
+  console.log('QAOverviewInline rendering, current path:', path);
+  console.log('location.hash:', location.hash);
+  console.log('location.pathname:', location.pathname);
+  
   useEffect(() => {
-    const onHash = () => setPath(location.hash || location.pathname);
+    console.log('QAOverviewInline useEffect running');
+    const onHash = () => {
+      const newPath = location.hash || location.pathname;
+      console.log('Hash change detected, new path:', newPath);
+      setPath(newPath);
+    };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+  
   return (
     <div style={{padding:16}}>
       <div className="card" style={{marginBottom:12}}>
@@ -38,6 +49,8 @@ function QAOverviewInline() {
       </div>
       <div className="card">
         <p style={{marginTop:0}}>Router path: <code>{path || '(empty)'}</code></p>
+        <p>Hash: <code>{location.hash}</code></p>
+        <p>Pathname: <code>{location.pathname}</code></p>
         <p style={{marginBottom:0}}>This proves the <b>/qa/overview</b> route is rendering. Next we can swap in the full audit UI.</p>
       </div>
     </div>
@@ -45,6 +58,10 @@ function QAOverviewInline() {
 }
 
 export default function AppRoutes() {
+  console.log('AppRoutes rendering');
+  console.log('Current location.hash:', location.hash);
+  console.log('Current location.pathname:', location.pathname);
+  
   return (
     <Routes>
       {/* land on dashboard */}
