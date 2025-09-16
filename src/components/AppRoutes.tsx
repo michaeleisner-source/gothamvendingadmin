@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./AppSidebar";
 
 function Card({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
@@ -9,6 +11,27 @@ function Card({ title, children }: { title: string; children?: React.ReactNode }
       </div>
       {children && <div className="card">{children}</div>}
     </div>
+  );
+}
+
+function Layout() {
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          <header className="h-12 flex items-center border-b bg-background">
+            <SidebarTrigger className="ml-2" />
+            <h1 className="ml-4 font-semibold">Application</h1>
+          </header>
+          
+          <main className="flex-1 p-4">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
 
@@ -42,7 +65,7 @@ function QAOverviewInline() {
   }, []);
   
   return (
-    <div style={{padding:16}}>
+    <div>
       <div className="card" style={{marginBottom:12}}>
         <div style={{fontWeight:800}}>QA Overview — Online</div>
         <div style={{color:'var(--muted)'}}>Loaded at {ts}</div>
@@ -64,18 +87,23 @@ export default function AppRoutes() {
   
   return (
     <Routes>
-      {/* land on dashboard */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* working routes */}
-      <Route path="/dashboard" element={<DashboardStub />} />
-      <Route path="/qa/overview" element={<QAOverviewInline />} />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardStub />} />
+        <Route path="qa/overview" element={<QAOverviewInline />} />
+        
+        {/* Placeholder routes for sidebar navigation */}
+        <Route path="analytics" element={<Card title="Analytics">Coming soon...</Card>} />
+        <Route path="reports" element={<Card title="Reports">Coming soon...</Card>} />
+        <Route path="settings" element={<Card title="Settings">Coming soon...</Card>} />
+        <Route path="qa/smoke" element={<Card title="QA Smoke Test">Coming soon...</Card>} />
+      </Route>
 
       {/* 404 shows current path to help debugging */}
       <Route path="*" element={
         <Card title="Not Found">
           <p style={{marginTop:0}}>Path: <code>{location.hash || location.pathname}</code></p>
-          <p style={{marginBottom:0}}>If you expected /qa/overview, open <code>/#/qa/overview</code>.</p>
+          <p style={{marginBottom:0}}>If you expected /qa/overview, open <code>/qa/overview</code>.</p>
         </Card>
       } />
     </Routes>
