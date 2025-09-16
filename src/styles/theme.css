@@ -1,40 +1,43 @@
-/* GOTHAM VENDING THEMES */
+/* THEMES - Light Base */
+
+/* Emerald (default) */
 :root[data-theme="emerald"] {
-  --bg: #0b1220;
-  --bg-elev: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #22c55e;
-  --primary-600: #16a34a;
-  --accent: #0ea5a4;
+  --bg:#f9fafb;           /* page background */
+  --bg-elev:#ffffff;      /* header/sidebar cards */
+  --card:#ffffff;         /* panels */
+  --text:#111827;         /* dark text */
+  --muted:#6b7280;        /* gray-500 */
+  --border:#e5e7eb;       /* subtle border */
+  --primary:#10b981;      /* emerald-500 */
+  --primary-600:#059669;  /* emerald-600 */
+  --accent:#0ea5a4;       /* teal-500 */
 }
 
+/* Sapphire (alt) */
 :root[data-theme="sapphire"] {
-  --bg: #0a0f1a;
-  --bg-elev: #0c1424;
-  --card: #0f1a2b;
-  --text: #e6eef8;
-  --muted: #9db2ce;
-  --border: #152238;
-  --primary: #3b82f6;
-  --primary-600: #2563eb;
-  --accent: #06b6d4;
+  --bg:#f9fafb;
+  --bg-elev:#ffffff;
+  --card:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --primary:#3b82f6;       /* blue-500 */
+  --primary-600:#2563eb;   /* blue-600 */
+  --accent:#06b6d4;        /* cyan-500 */
 }
 
-/* Default theme (emerald) if none set */
-:root {
-  color-scheme: dark;
-  --bg: #0b1220;
-  --bg-elev: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #22c55e;
-  --primary-600: #16a34a;
-  --accent: #0ea5a4;
+/* default theme if none set */
+:root { 
+  color-scheme: light;
+  --bg:#f9fafb;           
+  --bg-elev:#ffffff;      
+  --card:#ffffff;         
+  --text:#111827;         
+  --muted:#6b7280;        
+  --border:#e5e7eb;       
+  --primary:#10b981;      
+  --primary-600:#059669;  
+  --accent:#0ea5a4;       
 }
 
 /* Base Styles */
