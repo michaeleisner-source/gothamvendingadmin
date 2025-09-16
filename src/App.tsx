@@ -105,10 +105,8 @@ const App = () => (
       <Sonner />
       <Router>
         <Routes>
-          {/* Public auth route */}
-          <Route path="/auth" element={<Auth />} />
-          {/* Protected routes with demo support */}
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          {/* All routes are public in demo mode */}
+          <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
@@ -126,15 +124,15 @@ const App = () => (
             } />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/new" element={<NewProspect />} />
-            <Route path="/prospects/convert" element={<ProtectedRoute><ConvertProspect /></ProtectedRoute>} />
+            <Route path="/prospects/convert" element={<ConvertProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
             <Route path="/prospects/funnel" element={<ProspectFunnel />} />
             <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
             <Route path="/reports/pipeline-analytics" element={<PipelineAnalytics />} />
             <Route path="/locations" element={<LocationsEnhanced />} />
-            <Route path="/locations/new" element={<ProtectedRoute><NewLocation /></ProtectedRoute>} />
+            <Route path="/locations/new" element={<NewLocation />} />
             <Route path="/locations/:id" element={<LocationDetail />} />
-            <Route path="/locations/:id/contract" element={<ProtectedRoute><LocationContract /></ProtectedRoute>} />
+            <Route path="/locations/:id/contract" element={<LocationContract />} />
             <Route path="/machines" element={<MachinesEnhanced />} />
             <Route path="/machines/:id" element={<MachineDetail />} />
             <Route path="/products" element={<ProductsEnhanced />} />
@@ -170,9 +168,9 @@ const App = () => (
             <Route path="/reports/locations" element={<LocationPerformanceReports />} />
             <Route path="/reports/trends" element={<Trends />} />
             <Route path="/reports/stockouts" element={<Stockouts />} />
-            <Route path="/reports/route-efficiency" element={<ProtectedRoute><RouteEfficiency /></ProtectedRoute>} />
-            <Route path="/reports/location-commissions" element={<ProtectedRoute><LocationCommission /></ProtectedRoute>} />
-            <Route path="/reports/inventory-health" element={<ProtectedRoute><InventoryHealth /></ProtectedRoute>} />
+            <Route path="/reports/route-efficiency" element={<RouteEfficiency />} />
+            <Route path="/reports/location-commissions" element={<LocationCommission />} />
+            <Route path="/reports/inventory-health" element={<InventoryHealth />} />
             <Route path="/finance/commissions" element={<CommissionDashboard />} />
             <Route path="/finance/commission-statements" element={<CommissionStatements />} />
             <Route path="/contracts" element={<ContractManagement />} />
@@ -209,19 +207,19 @@ const App = () => (
             <Route path="/business-flow" element={<BusinessFlow />} />
             <Route path="/ops" element={<DailyOps />} />
             {/* Feature pack routes with navigation */}
-            {MachineOpsRoutes({ ProtectedRoute })}
-            {ProcessorStatementsRoutes({ ProtectedRoute })}
-            {CommissionsRoutes({ ProtectedRoute })}
-            {FlowRefreshRoutes({ ProtectedRoute })}
-            {LeanFlowRoutes({ ProtectedRoute })}
+            {MachineOpsRoutes({ ProtectedRoute: null })}
+            {ProcessorStatementsRoutes({ ProtectedRoute: null })}
+            {CommissionsRoutes({ ProtectedRoute: null })}
+            {FlowRefreshRoutes({ ProtectedRoute: null })}
+            {LeanFlowRoutes({ ProtectedRoute: null })}
             {/* Phase 2 Business Intelligence Reports */}
-            {Phase2Routes({ ProtectedRoute })}
+            {Phase2Routes({ ProtectedRoute: null })}
             {/* Phase 3 Advanced Business Intelligence */}
-            {Phase3Routes({ ProtectedRoute })}
+            {Phase3Routes({ ProtectedRoute: null })}
             {/* Phase 4 Polish & System Health */}
-            {Phase4Routes({ ProtectedRoute })}
+            {Phase4Routes({ ProtectedRoute: null })}
             {/* Review Snapshot Diagnostic Tool */}
-            {ReviewSnapshotRoutes({ ProtectedRoute })}
+            {ReviewSnapshotRoutes({ ProtectedRoute: null })}
             {/* Ops Kickstart Tool - using direct route instead */}
             {/* {OpsKickstartRoutes({ ProtectedRoute })} */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
