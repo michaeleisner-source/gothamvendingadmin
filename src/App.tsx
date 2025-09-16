@@ -114,7 +114,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<EnhancedDashboard />} />
+            <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
             <Route path="/leads" element={<LeadsPage />} />
