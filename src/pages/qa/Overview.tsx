@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react';
-import { checkRoutes, getSidebarPaths, probeEdgeFunctions } from '@/lib/qaAudit';
-import { windowFromDays } from '@/lib/dateWindow';
-import { isDemoMode, getAuthHeaders } from '@/lib/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { checkRoutes, getSidebarPaths, probeEdgeFunctions } from '../../lib/qaAudit';
+import { windowFromDays } from '../../lib/dateWindow';
+import { isDemoMode, getAuthHeaders } from '../../lib/auth';
 
 const EXPECTED = [
   '/leads','/installs',
@@ -31,7 +28,7 @@ export default function QAOverview(){
   const demo = isDemoMode();
 
   const summary = useMemo(() => {
-    const broken = routes.filter(r => r.status !== 'OK' || (!r.hasTable && !r.hasCard));
+    const broken = routes.filter((r:any) => r.status !== 'OK' || (!r.hasTable && !r.hasCard));
     const sidebar = getSidebarPaths();
     const missingLinks = EXPECTED.filter(p => !sidebar.includes(p));
     return { broken, missingLinks, sidebar };
@@ -53,123 +50,77 @@ export default function QAOverview(){
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-2xl font-bold">QA Overview</h1>
-            <span className="text-muted-foreground">Demo mode: <b>{demo ? 'ON' : 'OFF'}</b></span>
-            <div className="flex items-center gap-2">
-              <label htmlFor="days-input" className="text-sm font-medium">Range (days):</label>
-              <Input
-                id="days-input"
-                type="number"
-                min={1}
-                max={365}
-                value={days}
-                onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
-                className="w-20"
-              />
-            </div>
-            <Button onClick={runAll} disabled={busy}>
-              {busy ? 'Running…' : 'Run Audit'}
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={()=>{
-                const payload = (window as any).__qaOverview || { routes, edges };
-                const text = JSON.stringify(payload, null, 2);
-                navigator.clipboard.writeText(text);
-                window.dispatchEvent(new CustomEvent('gv:notify',{ detail:{ kind:'success', title:'Copied', message:'QA results copied to clipboard'}}));
-              }}
-            >
-              Copy Results JSON
-            </Button>
-            <Button variant="outline" onClick={()=>{
-              localStorage.setItem('gv:demo','1'); location.reload();
-            }}>
-              Enable Demo
-            </Button>
-            <Button variant="outline" onClick={()=>{
-              localStorage.removeItem('gv:demo'); location.reload();
-            }}>
-              Disable Demo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div>
+      <div className="card" style={{marginBottom:12, display:'flex', gap:12, alignItems:'center', flexWrap:'wrap'}}>
+        <div style={{fontWeight:800}}>QA Overview</div>
+        <span style={{color:'var(--muted)'}}>Demo mode: <b>{demo ? 'ON' : 'OFF'}</b></span>
+        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
+          Range (days)
+          <input className="gv-input" type="number" min={1} max={365} value={days}
+                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))} style={{width:80}} />
+        </label>
+        <button className="btn" onClick={runAll} disabled={busy}>{busy ? 'Running…' : 'Run Audit'}</button>
+        <button className="btn" onClick={()=>{
+          const payload = (window as any).__qaOverview || { routes, edges };
+          const text = JSON.stringify(payload, null, 2);
+          navigator.clipboard.writeText(text);
+          window.dispatchEvent(new CustomEvent('gv:notify',{ detail:{ kind:'success', title:'Copied', message:'QA results copied'}}));
+        }}>Copy Results JSON</button>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Routes — Broken / Empty</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {routes.length === 0 ? (
-            <div className="text-muted-foreground">No results yet — click <b>Run Audit</b>.</div>
-          ) : (
-            <table className="gv-table">
-              <thead>
-                <tr><th>Path</th><th>Status</th><th>ms</th><th>Breadcrumb</th><th>UI</th></tr>
-              </thead>
-              <tbody>
-                {summary.broken.map(r => (
-                  <tr key={r.path}>
-                    <td>{r.path}</td><td>{r.status}</td><td>{r.ms}</td>
-                    <td>{r.breadcrumb || '—'}</td>
-                    <td>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</td>
-                  </tr>
-                ))}
-                {summary.broken.length === 0 && (
-                  <tr><td colSpan={5} className="text-muted-foreground text-center p-4">All routes OK 🎉</td></tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="card" style={{marginBottom:12}}>
+        <div style={{fontWeight:700, marginBottom:6}}>Routes — Broken / Empty</div>
+        {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Click <b>Run Audit</b> to begin.</div> : (
+          <table className="gv-table">
+            <thead>
+              <tr><th>Path</th><th>Status</th><th>ms</th><th>Breadcrumb</th><th>UI</th></tr>
+            </thead>
+            <tbody>
+              {summary.broken.map((r:any) => (
+                <tr key={r.path}>
+                  <td>{r.path}</td><td>{r.status}</td><td>{r.ms}</td>
+                  <td>{r.breadcrumb || '—'}</td>
+                  <td>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</td>
+                </tr>
+              ))}
+              {summary.broken.length === 0 && (
+                <tr><td colSpan={5} style={{color:'var(--muted)', padding:'12px'}}>All routes OK 🎉</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Missing from Sidebar</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {routes.length === 0 ? (
-            <div className="text-muted-foreground">Run audit first.</div>
-          ) : (
-            <ul className="list-disc pl-6 space-y-1">
-              {summary.missingLinks.map(p => <li key={p}>{p}</li>)}
-              {summary.missingLinks.length === 0 && <li className="text-muted-foreground">None ✅</li>}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <div className="card" style={{marginBottom:12}}>
+        <div style={{fontWeight:700, marginBottom:6}}>Missing from Sidebar</div>
+        {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Run audit first.</div> : (
+          <ul style={{margin:0, paddingLeft:18}}>
+            {summary.missingLinks.map(p => <li key={p}>{p}</li>)}
+            {summary.missingLinks.length === 0 && <li style={{color:'var(--muted)'}}>None ✅</li>}
+          </ul>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edge Functions — Probe</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {edges.length === 0 ? (
-            <div className="text-muted-foreground">Run audit to test functions.</div>
-          ) : (
-            <table className="gv-table">
-              <thead>
-                <tr><th>Function</th><th>OK</th><th>Error</th><th>Sample</th></tr>
-              </thead>
-              <tbody>
-                {edges.map(e => (
-                  <tr key={e.fn}>
-                    <td>{e.fn}</td>
-                    <td>{e.ok ? '✅' : '❌'}</td>
-                    <td className={e.ok ? 'text-muted-foreground' : 'text-destructive'}>{e.error || '—'}</td>
-                    <td><pre className="text-xs whitespace-pre-wrap">{e.sample ? JSON.stringify(e.sample).slice(0,200) : '—'}</pre></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="card">
+        <div style={{fontWeight:700, marginBottom:6}}>Edge Functions — Probe</div>
+        {edges.length === 0 ? <div style={{color:'var(--muted)'}}>Run audit to test functions.</div> : (
+          <table className="gv-table">
+            <thead>
+              <tr><th>Function</th><th>OK</th><th>Error</th><th>Sample</th></tr>
+            </thead>
+            <tbody>
+              {edges.map((e:any) => (
+                <tr key={e.fn}>
+                  <td>{e.fn}</td>
+                  <td>{e.ok ? '✅' : '❌'}</td>
+                  <td style={{color:e.ok ? 'var(--muted)' : 'crimson'}}>{e.error || '—'}</td>
+                  <td><pre style={{margin:0, whiteSpace:'pre-wrap'}}>{e.sample ? JSON.stringify(e.sample).slice(0,200) : '—'}</pre></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
