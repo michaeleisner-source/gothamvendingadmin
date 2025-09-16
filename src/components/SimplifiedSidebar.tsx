@@ -4,7 +4,7 @@ import { useDemo } from "@/lib/demo";
 import {
   LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
   BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt, Scale, ListChecks
+  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt, Scale, ListChecks, HelpCircle, ClipboardList
 } from "lucide-react";
 
 export function SimplifiedSidebar() {
@@ -16,6 +16,7 @@ export function SimplifiedSidebar() {
     finance: false,
     reports: false,
     support: false,
+    helpQA: false,
   });
 
   const toggleGroup = (group: string) => {
@@ -123,6 +124,18 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/delivery-routes" label="Delivery Routes" />
           <SubNavItem to="/staff" label="Staff" />
           <SubNavItem to="/audit" label="Audit Logs" />
+        </ExpandableGroup>
+
+        {/* Help & QA - Expandable */}
+        <ExpandableGroup
+          label="Help & QA"
+          icon={HelpCircle}
+          isOpen={openGroups.helpQA}
+          onClick={() => toggleGroup('helpQA')}
+        >
+          <SubNavItem to="/help" label="Help Center" />
+          <SubNavItem to="/qa/launcher2" label="QA Launcher" />
+          <SubNavItem to="/ops/console" label="Ops Console" />
         </ExpandableGroup>
 
         {/* Quick Actions */}
