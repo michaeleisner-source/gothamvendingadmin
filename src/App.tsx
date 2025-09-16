@@ -80,6 +80,8 @@ import { Insurance } from "./pages/Insurance";
 import SmokeTest from "./pages/qa/SmokeTest";
 import VerifySmoke from "./pages/qa/VerifySmoke";
 import QAControl from "./pages/qa/QAControl";
+import OpsConsole from "./pages/ops/OpsConsole";
+import QALauncher2 from "./pages/qa/QALauncher2";
 
 const queryClient = new QueryClient();
 
@@ -156,6 +158,8 @@ const App = () => (
             <Route path="/qa/smoke" element={<ProtectedRoute><SmokeTest /></ProtectedRoute>} />
             <Route path="/qa/verify" element={<VerifySmoke />} />
             <Route path="/qa/control" element={<QAControl />} />
+            <Route path="/ops/console" element={<OpsConsole />} />
+            <Route path="/qa/launcher2" element={<QALauncher2 />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
