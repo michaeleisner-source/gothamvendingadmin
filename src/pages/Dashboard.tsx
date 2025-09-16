@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGlobalDays } from '@/hooks/useGlobalDays';
-import { invokeReport } from '@/lib/reports';
+import { invokeReport } from '@/lib/reportsApi';
 
 type KPIs = { revenue:number; cogs:number; profit:number; orders:number; units:number; margin:number };
 
