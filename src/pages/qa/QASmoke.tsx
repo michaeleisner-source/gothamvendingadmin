@@ -202,6 +202,7 @@ export default function QASmoke() {
 
   /** ---------- verification (reads) ---------- */
   async function verifySales() {
+    if (safeMode) { say("Safe Mode: skipping sales verification (no writes were made)."); return; }
     const { machine } = ids; if (!machine) throw new Error("No machine id; run Base.");
     const from = daysAgo(8).toISOString();
     const r = await supabase
@@ -231,6 +232,7 @@ export default function QASmoke() {
     say("✔ Processor verified.");
   }
   async function verifyTicket() {
+    if (safeMode) { say("Safe Mode: skipping ticket verification (no writes were made)."); return; }
     const r = await supabase.from("tickets").select("id").ilike("title","QA:%").limit(1);
     if (r.error || !r.data?.length) throw new Error("No QA ticket found.");
     say("✔ Ticket verified.");
