@@ -146,34 +146,33 @@ window.exportSalesCSV = async function(days = 30, opts = {}) {
   if (eIn && !eIn.value) eIn.value = todayISO();
 
   btn.addEventListener("click", () => {
-    // If both dates are valid and Start <= End, compute days (inclusive)
+    const toISO = d => new Date(d).toISOString().slice(0,10);
+
+    // If both dates valid and Start <= End, compute inclusive days (cap 365)
     let daysToExport = null;
     let filenameHint = null;
-    
+
     if (sIn?.value && eIn?.value) {
       const start = new Date(sIn.value + "T00:00:00");
-      const end   = new Date(eIn.value + "T23:59:59"); // inclusive end
+      const end   = new Date(eIn.value + "T23:59:59");
       const ms    = end - start;
       if (Number.isFinite(ms) && ms >= 0) {
-        // Convert ms → days, inclusive (min 1, max 365)
-        const days = Math.floor(ms / (24*60*60*1000)) + 1;
-        if (days >= 1 && days <= 365) {
-          daysToExport = days;
-          filenameHint = `${sIn.value}-to-${eIn.value}`;
+        const days = Math.min(Math.floor(ms / 86400000) + 1, 365);
+        if (days >= 1) {
+          daysToExport  = days;
+          filenameHint  = `${toISO(sIn.value)}_to_${toISO(eIn.value)}`;
         }
       }
     }
 
-    // Fall back to numeric "Days" input if date range not usable
+    // Fall back to numeric Days input if no valid range
     if (daysToExport == null) {
       const val = Number(dIn?.value);
       daysToExport = (Number.isFinite(val) && val >= 1 && val <= 365) ? val : 30;
-      // filenameHint will remain null, function will use default
+      filenameHint = `last-${daysToExport}-days`;
     }
 
-    // Kick off export with optional filename hint
-    const opts = filenameHint ? { filenameHint } : {};
-    window.exportSalesCSV?.(daysToExport, opts);
+    window.exportSalesCSV?.(daysToExport, { filenameHint });
   });
 
   console.log("Export CSV wired with Start/End date range (falls back to Days).");
