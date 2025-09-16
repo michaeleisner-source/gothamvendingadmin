@@ -294,6 +294,30 @@ body {
   color: var(--text);
 }
 
+/* Gotham Vending Table Styles */
+.gv-table { 
+  width: 100%; 
+  border-collapse: separate; 
+  border-spacing: 0; 
+}
+
+.gv-table th, .gv-table td { 
+  text-align: left; 
+  padding: 10px 12px; 
+  border-bottom: 1px solid var(--border); 
+}
+
+.gv-table thead th { 
+  font-size: 12px; 
+  text-transform: uppercase; 
+  letter-spacing: .06em; 
+  color: var(--muted-foreground); 
+}
+
+.gv-table tbody tr:hover { 
+  background: hsl(var(--muted) / 0.5); 
+}
+
 .sr-only {
   position: absolute;
   left: -9999px;
