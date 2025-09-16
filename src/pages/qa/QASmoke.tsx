@@ -91,10 +91,7 @@ export default function QASmoke() {
 
   /** ---------- test steps (writes) ---------- */
   async function stepBase() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping base entity creation (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Base (writes)."); return; }
     say("Creating base: Product, Location, Machine…");
     const pid = await ensureProduct();  setIds(i => ({ ...i, product: pid }));
     const lid = await ensureLocation(); setIds(i => ({ ...i, location: lid }));
@@ -102,10 +99,7 @@ export default function QASmoke() {
     say("✔ Base created/verified.");
   }
   async function stepSales() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping sales insertion (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Sales (writes)."); return; }
     const { product, machine } = ids;
     if (!product || !machine) throw new Error("Base missing — run Base step first.");
     say("Adding 10 sales over last 7 days…");
@@ -127,10 +121,7 @@ export default function QASmoke() {
     say("✔ Sales inserted.");
   }
   async function stepFinance() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping finance record creation (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Finance (writes)."); return; }
     if (!flags.machine_finance_table) { say("machine_finance not present — skipping."); return; }
     const { machine } = ids; if (!machine) throw new Error("Base missing — run Base step first.");
     const probe = await supabase.from("machine_finance").select("machine_id").eq("machine_id", machine).maybeSingle();
@@ -142,10 +133,7 @@ export default function QASmoke() {
     say("✔ Finance added.");
   }
   async function stepProcessor() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping processor mapping creation (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Processor mapping (writes)."); return; }
     if (!flags.processors_table || !flags.mappings_table) { say("processor tables missing — skipping."); return; }
     const p = await supabase.from("payment_processors").select("id").eq("name","Cantaloupe").maybeSingle();
     let pid = p.data?.id as string|undefined;
@@ -162,10 +150,7 @@ export default function QASmoke() {
     say("✔ Processor mapping added.");
   }
   async function stepInsurance() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping insurance allocation creation (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Insurance (writes)."); return; }
     if (!flags.insurance_policies_table || !flags.insurance_allocations_table) { say("insurance tables missing — skipping."); return; }
     const { machine } = ids; if (!machine) throw new Error("Base missing — run Base step first.");
     const today = new Date(); const y = today.getFullYear(); const m = today.getMonth();
@@ -195,10 +180,7 @@ export default function QASmoke() {
     say("✔ Insurance allocation added.");
   }
   async function stepTicket() {
-    if (safeMode) {
-      say("🔒 Safe Mode: Skipping ticket creation (read-only)");
-      return;
-    }
+    if (safeMode) { say("Safe Mode: skipping Ticket (writes)."); return; }
     const { machine, location } = ids;
     if (!machine || !location) throw new Error("Base missing — run Base step first.");
     let due: string | null = null;
