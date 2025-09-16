@@ -106,19 +106,19 @@ window.exportSalesCSV = async function(days = 30) {
   }
 };
 
-// Wire the button automatically if present
-(function wireCsvButton() {
+// Smart-wire the export button to use the "Days" input if present
+(function wireCsvDays() {
   const btn = document.getElementById("exportCsvBtn");
+  const daysInput = document.getElementById("exportDays");
   if (!btn) return;
-  
+
   btn.addEventListener("click", () => {
-    // Check for days input field
-    const daysInput = document.getElementById("exportDays");
-    const days = daysInput ? parseInt(daysInput.value) || 30 : 30;
-    window.exportSalesCSV(days);
+    const val = daysInput ? Number(daysInput.value) : 30;
+    const days = Number.isFinite(val) && val >= 1 && val <= 365 ? val : 30;
+    window.exportSalesCSV?.(days);
   });
-  
-  console.log("Export CSV button wired with dynamic days input.");
+
+  console.log("Export CSV button wired with days control.");
 })();
 
 // === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
