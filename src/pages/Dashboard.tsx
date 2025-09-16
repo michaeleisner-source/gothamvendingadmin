@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGlobalDays } from '@/hooks/useGlobalDays';
-import { windowFromDays } from '@/lib/dateWindow';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeReport } from '@/lib/reports';
 
 type KPIs = { revenue:number; cogs:number; profit:number; orders:number; units:number; margin:number };
 
@@ -16,21 +15,26 @@ export default function DashboardPage() {
     (async () => {
       setLoading(true); setErr(null);
       try {
-        const { startISO, endISO } = windowFromDays(days);
-        const session = await supabase.auth.getSession();
-        const token = session.data?.session?.access_token;
-        const { data, error } = await supabase.functions.invoke('reports-sales-summary', {
-          body: { startISO, endISO }, headers: token ? { Authorization:`Bearer ${token}` } : undefined
-        });
-        if (error) throw new Error(error.message);
+        const { data, error } = await invokeReport('reports-sales-summary', { days });
+        if (error) throw new Error(error.message || 'Failed to load KPIs');
         if (!cancel) {
-          const d = data || {};
-          const revenue = Number(d.revenue||0), cogs = Number(d.cogs||0);
-          const profit = revenue - cogs; const margin = revenue ? profit/revenue : 0;
-          setKpis({ revenue, cogs, profit, orders:Number(d.orders||0), units:Number(d.units||0), margin });
+          const revenue = Number(data.revenue||0), cogs = Number(data.cogs||0);
+          const profit = revenue - cogs; 
+          const margin = revenue ? profit/revenue : 0;
+          setKpis({ 
+            revenue, 
+            cogs, 
+            profit, 
+            orders: Number(data.orders||0), 
+            units: Number(data.units||0), 
+            margin 
+          });
         }
-      } catch(e:any){ if(!cancel) setErr(e?.message||'Failed to load KPIs'); }
-      finally { if(!cancel) setLoading(false); }
+      } catch(e:any){ 
+        if(!cancel) setErr(e?.message||'Failed to load KPIs'); 
+      } finally { 
+        if(!cancel) setLoading(false); 
+      }
     })();
     return () => { cancel = true; };
   }, [days]);
