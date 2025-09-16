@@ -80,8 +80,11 @@ export default function QAOverview() {
   const [routes, setRoutes] = useState<RouteCheck[]>([]);
   const drag = useRef<{x:number;y:number;dx:number;dy:number}|null>(null);
 
+  console.log('QA Overview page component rendering');
+
   // Auto-open if ?qa=1 or local flag
   useEffect(() => {
+    console.log('QA Overview useEffect running');
     const qp = new URLSearchParams(location.search);
     if (qp.get('qa') === '1' || localStorage.getItem('gv:qa') === '1') setOpen(true);
     const onKey = (e: KeyboardEvent) => {
@@ -111,94 +114,123 @@ export default function QAOverview() {
 
   if (!open) {
     return (
-      <button
-        aria-label="Open QA"
-        onClick={() => setOpen(true)}
-        style={{
-          position:'fixed', right:12, bottom:12, zIndex: 999999,
-          padding:'10px 12px', borderRadius:10, border:'1px solid var(--border)',
-          background:'#fff', boxShadow:'0 6px 18px rgba(0,0,0,.12)', cursor:'pointer'
-        }}
-      >QA</button>
+      <>
+        <div style={{padding: '20px'}}>
+          <div className="card">
+            <h1>QA Overview Page</h1>
+            <p>QA overlay is closed. Click the button below to open it, or use Ctrl/⌘+Shift+Q</p>
+            <button 
+              onClick={() => setOpen(true)}
+              style={{
+                padding: '8px 16px', 
+                background: 'var(--primary)', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Open QA Overlay
+            </button>
+          </div>
+        </div>
+        <button
+          aria-label="Open QA"
+          onClick={() => setOpen(true)}
+          style={{
+            position:'fixed', right:12, bottom:12, zIndex: 999999,
+            padding:'10px 12px', borderRadius:10, border:'1px solid var(--border)',
+            background:'#fff', boxShadow:'0 6px 18px rgba(0,0,0,.12)', cursor:'pointer'
+          }}
+        >QA</button>
+      </>
     );
   }
 
   return (
-    <div
-      role="dialog" aria-label="QA Overlay"
-      style={{
-        position:'fixed', right:12, bottom:12, width: 520, maxWidth:'95vw', maxHeight:'80vh',
-        zIndex: 999999, background:'#fff', border:'1px solid var(--border)', borderRadius:12,
-        boxShadow:'0 10px 28px rgba(0,0,0,.18)', display:'flex', flexDirection:'column', overflow:'hidden'
-      }}
-      onMouseDown={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        if ((e.target as HTMLElement).dataset.drag !== '1') return;
-        const r = el.getBoundingClientRect();
-        drag.current = { x: r.left, y: r.top, dx: e.clientX - r.left, dy: e.clientY - r.top };
-        const move = (ev:MouseEvent) => {
-          if (!drag.current) return;
-          const nx = Math.max(8, Math.min(window.innerWidth - r.width - 8, ev.clientX - drag.current.dx));
-          const ny = Math.max(8, Math.min(window.innerHeight - 40, ev.clientY - drag.current.dy));
-          el.style.left = nx + 'px'; el.style.top = ny + 'px';
-          el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.position = 'fixed';
-        };
-        const up = () => { drag.current = null; window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
-        window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
-      }}
-    >
-      <div data-drag="1" style={{padding:'10px 12px', fontWeight:800, background:'#fafafa', borderBottom:'1px solid var(--border)', cursor:'move'}}>
-        QA Overview
-        <button onClick={() => setOpen(false)} style={{float:'right', border:'none', background:'transparent', cursor:'pointer'}}>✕</button>
-      </div>
-
-      <div style={{padding:12, display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid var(--border)'}}>
-        <button className="btn" onClick={runAudit} disabled={busy}>{busy ? 'Running…' : 'Run Audit'}</button>
-        <button className="btn" onClick={()=>{
-          const payload = { when:new Date().toISOString(), routes };
-          navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-        }}>Copy JSON</button>
-        <button className="btn" onClick={()=>{
-          localStorage.setItem('gv:qa','1'); alert('QA overlay will auto-open on reload'); location.reload();
-        }}>Pin Overlay</button>
-        <span style={{color:'var(--muted)'}}>Tip: <kbd>Ctrl/⌘</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> toggles</span>
-      </div>
-
-      <div style={{padding:12, overflow:'auto'}}>
-        <div className="card" style={{marginBottom:12}}>
-          <div style={{fontWeight:700, marginBottom:6}}>Routes — Broken / Empty</div>
-          {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Click <b>Run Audit</b>.</div> : (
-            <table className="gv-table">
-              <thead><tr><th>Path</th><th>Status</th><th>ms</th><th>Breadcrumb</th><th>UI</th></tr></thead>
-              <tbody>
-                {summary.broken.map((r:any) => (
-                  <tr key={r.path}>
-                    <td>{r.path}</td><td>{r.status}</td><td>{r.ms}</td>
-                    <td>{r.breadcrumb || '—'}</td>
-                    <td>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</td>
-                  </tr>
-                ))}
-                {summary.broken.length === 0 && (
-                  <tr><td colSpan={5} style={{color:'var(--muted)', padding:'12px'}}>All routes OK 🎉</td></tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-
+    <>
+      <div style={{padding: '20px'}}>
         <div className="card">
-          <div style={{fontWeight:700, marginBottom:6}}>Missing from Sidebar</div>
-          {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Run audit first.</div> : (
-            <ul style={{margin:0, paddingLeft:18}}>
-              {(() => {
-                const sidebar = getSidebarPaths();
-                const missing = EXPECTED.filter(p => !sidebar.includes(p));
-                return missing.length ? missing.map(p => <li key={p}>{p}</li>) : <li style={{color:'var(--muted)'}}>None ✅</li>;
-              })()}
-            </ul>
-          )}
+          <h1>QA Overview Page</h1>
+          <p>The QA overlay is now open. You can drag it around and use it to audit routes.</p>
         </div>
       </div>
-    </div>
+      <div
+        role="dialog" aria-label="QA Overlay"
+        style={{
+          position:'fixed', right:12, bottom:12, width: 520, maxWidth:'95vw', maxHeight:'80vh',
+          zIndex: 999999, background:'#fff', border:'1px solid var(--border)', borderRadius:12,
+          boxShadow:'0 10px 28px rgba(0,0,0,.18)', display:'flex', flexDirection:'column', overflow:'hidden'
+        }}
+        onMouseDown={(e) => {
+          const el = e.currentTarget as HTMLDivElement;
+          if ((e.target as HTMLElement).dataset.drag !== '1') return;
+          const r = el.getBoundingClientRect();
+          drag.current = { x: r.left, y: r.top, dx: e.clientX - r.left, dy: e.clientY - r.top };
+          const move = (ev:MouseEvent) => {
+            if (!drag.current) return;
+            const nx = Math.max(8, Math.min(window.innerWidth - r.width - 8, ev.clientX - drag.current.dx));
+            const ny = Math.max(8, Math.min(window.innerHeight - 40, ev.clientY - drag.current.dy));
+            el.style.left = nx + 'px'; el.style.top = ny + 'px';
+            el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.position = 'fixed';
+          };
+          const up = () => { drag.current = null; window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+          window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+        }}
+      >
+        <div data-drag="1" style={{padding:'10px 12px', fontWeight:800, background:'#fafafa', borderBottom:'1px solid var(--border)', cursor:'move'}}>
+          QA Overview
+          <button onClick={() => setOpen(false)} style={{float:'right', border:'none', background:'transparent', cursor:'pointer'}}>✕</button>
+        </div>
+
+        <div style={{padding:12, display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid var(--border)'}}>
+          <button className="btn" onClick={runAudit} disabled={busy}>{busy ? 'Running…' : 'Run Audit'}</button>
+          <button className="btn" onClick={()=>{
+            const payload = { when:new Date().toISOString(), routes };
+            navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+          }}>Copy JSON</button>
+          <button className="btn" onClick={()=>{
+            localStorage.setItem('gv:qa','1'); alert('QA overlay will auto-open on reload'); location.reload();
+          }}>Pin Overlay</button>
+          <span style={{color:'var(--muted)'}}>Tip: <kbd>Ctrl/⌘</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> toggles</span>
+        </div>
+
+        <div style={{padding:12, overflow:'auto'}}>
+          <div className="card" style={{marginBottom:12}}>
+            <div style={{fontWeight:700, marginBottom:6}}>Routes — Broken / Empty</div>
+            {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Click <b>Run Audit</b>.</div> : (
+              <table className="gv-table">
+                <thead><tr><th>Path</th><th>Status</th><th>ms</th><th>Breadcrumb</th><th>UI</th></tr></thead>
+                <tbody>
+                  {summary.broken.map((r:any) => (
+                    <tr key={r.path}>
+                      <td>{r.path}</td><td>{r.status}</td><td>{r.ms}</td>
+                      <td>{r.breadcrumb || '—'}</td>
+                      <td>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</td>
+                    </tr>
+                  ))}
+                  {summary.broken.length === 0 && (
+                    <tr><td colSpan={5} style={{color:'var(--muted)', padding:'12px'}}>All routes OK 🎉</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="card">
+            <div style={{fontWeight:700, marginBottom:6}}>Missing from Sidebar</div>
+            {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Run audit first.</div> : (
+              <ul style={{margin:0, paddingLeft:18}}>
+                {(() => {
+                  const sidebar = getSidebarPaths();
+                  const missing = EXPECTED.filter(p => !sidebar.includes(p));
+                  return missing.length ? missing.map(p => <li key={p}>{p}</li>) : <li style={{color:'var(--muted)'}}>None ✅</li>;
+                })()}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
