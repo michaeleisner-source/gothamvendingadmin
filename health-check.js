@@ -109,32 +109,22 @@ async function fetchSalesForCSV(days = 30, startDate = null, endDate = null) {
   return rows;
 }
 
-window.exportSalesCSV = async function(days = 30, startDate = null, endDate = null) {
+window.exportSalesCSV = async function(days = 30, opts = {}) {
   try {
-    const rows = await fetchSalesForCSV(days, startDate, endDate);
+    const rows = await fetchSalesForCSV(days);
     const csv = toCSV(rows);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    
-    // Create filename based on date range or days
-    let filename;
-    if (startDate && endDate) {
-      const start = new Date(startDate).toISOString().slice(0,10);
-      const end = new Date(endDate).toISOString().slice(0,10);
-      filename = `gotham-sales-${start}-to-${end}`;
-    } else {
-      filename = `gotham-sales-last-${days}-days`;
-    }
-    
     const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    const hint = opts.filenameHint ? `-${opts.filenameHint}` : `-last-${days}-days`;
     a.href = url;
-    a.download = `${filename}-${stamp}.csv`;
+    a.download = `gotham-sales${hint}-${stamp}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    console.log(`Exported ${rows.length} rows to CSV.`);
+    console.log(`Exported ${rows.length} rows to CSV as ${a.download}`);
   } catch (e) {
     console.error("CSV export failed:", e?.message || e);
     alert(`CSV export failed: ${e?.message || e}`);
@@ -158,6 +148,8 @@ window.exportSalesCSV = async function(days = 30, startDate = null, endDate = nu
   btn.addEventListener("click", () => {
     // If both dates are valid and Start <= End, compute days (inclusive)
     let daysToExport = null;
+    let filenameHint = null;
+    
     if (sIn?.value && eIn?.value) {
       const start = new Date(sIn.value + "T00:00:00");
       const end   = new Date(eIn.value + "T23:59:59"); // inclusive end
@@ -165,7 +157,10 @@ window.exportSalesCSV = async function(days = 30, startDate = null, endDate = nu
       if (Number.isFinite(ms) && ms >= 0) {
         // Convert ms → days, inclusive (min 1, max 365)
         const days = Math.floor(ms / (24*60*60*1000)) + 1;
-        if (days >= 1 && days <= 365) daysToExport = days;
+        if (days >= 1 && days <= 365) {
+          daysToExport = days;
+          filenameHint = `${sIn.value}-to-${eIn.value}`;
+        }
       }
     }
 
@@ -173,10 +168,12 @@ window.exportSalesCSV = async function(days = 30, startDate = null, endDate = nu
     if (daysToExport == null) {
       const val = Number(dIn?.value);
       daysToExport = (Number.isFinite(val) && val >= 1 && val <= 365) ? val : 30;
+      // filenameHint will remain null, function will use default
     }
 
-    // Kick off export
-    window.exportSalesCSV?.(daysToExport);
+    // Kick off export with optional filename hint
+    const opts = filenameHint ? { filenameHint } : {};
+    window.exportSalesCSV?.(daysToExport, opts);
   });
 
   console.log("Export CSV wired with Start/End date range (falls back to Days).");
