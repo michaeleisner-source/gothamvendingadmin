@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import Breadcrumbs from './AppBreadcrumbs';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function AppHeader() {
+  const { theme, setTheme } = useTheme();
+  
   const [days, setDays] = useState<number>(() => {
     const saved = localStorage.getItem('gv:dateRangeDays');
     return saved ? Number(saved) : 30;
@@ -45,6 +48,11 @@ export default function AppHeader() {
             <option value={90}>Last 90 days</option>
             <option value={180}>Last 6 months</option>
             <option value={365}>Last year</option>
+          </select>
+
+          <select value={theme} onChange={e => setTheme(e.target.value as any)} title="Theme" className="gv-input">
+            <option value="emerald">🟢 Emerald</option>
+            <option value="sapphire">🔵 Sapphire</option>
           </select>
 
           <input 
