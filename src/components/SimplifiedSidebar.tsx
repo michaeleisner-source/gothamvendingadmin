@@ -1,26 +1,33 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useDemo } from "@/lib/demo";
-import {
-  LayoutDashboard, MapPinned, Factory, Package2, DollarSign, 
-  BarChart3, Headphones, Building2, ChevronDown, Settings, 
-  Box, Wrench, TrendingUp, Smartphone, Play, Route, FileText, Receipt, Scale, ListChecks, HelpCircle, ClipboardList
-} from "lucide-react";
+import { ChevronDown, Factory } from "lucide-react";
+import { getFilteredNavigation } from "@/config/navigation";
 
 export function SimplifiedSidebar() {
   const { isDemo } = useDemo();
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    pipeline: false,
-    operations: false,
-    supply: false,
-    finance: false,
-    reports: false,
-    support: false,
-    helpQA: false,
+  const navigation = getFilteredNavigation(isDemo);
+  const location = useLocation();
+  
+  // Smart initial state - keep groups open if they contain active route
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const state: Record<string, boolean> = {};
+    const currentPath = location.pathname;
+    
+    navigation.forEach(section => {
+      if (section.expandable) {
+        const hasActiveRoute = section.items.some(item => 
+          currentPath === item.path || 
+          (item.path !== '/' && currentPath.startsWith(item.path))
+        );
+        state[section.title] = hasActiveRoute;
+      }
+    });
+    return state;
   });
 
-  const toggleGroup = (group: string) => {
-    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  const toggleGroup = (sectionTitle: string) => {
+    setOpenGroups(prev => ({ ...prev, [sectionTitle]: !prev[sectionTitle] }));
   };
 
   return (
@@ -33,132 +40,55 @@ export function SimplifiedSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
-        {/* Dashboard */}
-        <NavItem to="/" icon={LayoutDashboard} label="Mission Control" />
+        {navigation.map((section, index) => {
+          if (!section.expandable && section.items.length === 1) {
+            // Single item sections (Dashboard, Business Flow)
+            const item = section.items[0];
+            return (
+              <NavItem 
+                key={item.path} 
+                to={item.path} 
+                icon={item.icon} 
+                label={item.label} 
+              />
+            );
+          }
 
-        {/* Pipeline - Expandable */}
-        <ExpandableGroup
-          label="Pipeline"
-          icon={MapPinned}
-          isOpen={openGroups.pipeline}
-          onClick={() => toggleGroup('pipeline')}
-        >
-          <SubNavItem to="/prospects" label="All Prospects" />
-          <SubNavItem to="/prospects/new" label="New Prospect" />
-          <SubNavItem to="/prospects/convert" label="Convert → Contract" />
-          <SubNavItem to="/contracts" label="Contract Management" />
-        </ExpandableGroup>
-        
-        {/* Business Flow Guide */}
-        <NavItem to="/business-flow" icon={Building2} label="Business Flow" />
-        
-        {/* Operations - Expandable */}
-        <ExpandableGroup
-          label="Operations"
-          icon={Factory}
-          isOpen={openGroups.operations}
-          onClick={() => toggleGroup('operations')}
-        >
-          <SubNavItem to="/machines" label="Machines" />
-          <SubNavItem to="/inventory" label="Inventory" />
-          <SubNavItem to="/locations" label="Locations" />
-          <SubNavItem to="/locations/new" label="New Location" />
-          <SubNavItem to="/setup" label="Machine Setup" />
-          <SubNavItem to="/slots" label="Slot Planner" />
-        </ExpandableGroup>
+          if (!section.expandable) {
+            // Multiple items, non-expandable (Quick Actions, Admin)
+            const showBorder = section.title === 'Quick Actions' || section.title === 'Admin';
+            return (
+              <div key={section.title} className={showBorder ? "pt-4 border-t border-sidebar-border space-y-2" : "space-y-2"}>
+                {section.items.map(item => {
+                  const Component = section.title === 'Quick Actions' ? QuickAction : NavItem;
+                  return (
+                    <Component
+                      key={item.path}
+                      to={item.path}
+                      icon={item.icon}
+                      label={item.label}
+                    />
+                  );
+                })}
+              </div>
+            );
+          }
 
-        {/* Supply Chain - Expandable */}
-        <ExpandableGroup
-          label="Supply Chain"
-          icon={Package2}
-          isOpen={openGroups.supply}
-          onClick={() => toggleGroup('supply')}
-        >
-          <SubNavItem to="/products" label="Products" />
-          <SubNavItem to="/purchase-orders" label="Purchase Orders" />
-          <SubNavItem to="/suppliers" label="Suppliers" />
-        </ExpandableGroup>
-
-        {/* Finance - Expandable */}
-        <ExpandableGroup
-          label="Finance"
-          icon={DollarSign}
-          isOpen={openGroups.finance}
-          onClick={() => toggleGroup('finance')}
-        >
-          <SubNavItem to="/finance" label="Overview" />
-          <SubNavItem to="/finance/commissions" label="Commissions" />
-          <SubNavItem to="/finance/processors" label="Payment Processors" />
-          <SubNavItem to="/finance/profitability" label="Product Profitability" />
-        </ExpandableGroup>
-
-        {/* Reports - Expandable */}
-        <ExpandableGroup
-          label="Reports"
-          icon={BarChart3}
-          isOpen={openGroups.reports}
-          onClick={() => toggleGroup('reports')}
-        >
-          <SubNavItem to="/reports" label="All Reports" />
-          <SubNavItem to="/reports/sales-summary" label="Sales Summary" />
-          <SubNavItem to="/reports/machine-roi" label="Machine ROI" />
-          <SubNavItem to="/reports/location-performance" label="Location Performance" />
-          <SubNavItem to="/reports/location-commissions" label="Location Commissions" />
-          <SubNavItem to="/reports/product-profitability-net" label="Product Profitability" />
-          <SubNavItem to="/reports/prospect-funnel" label="Prospect Funnel" />
-          <SubNavItem to="/reports/route-efficiency" label="Route Efficiency" />
-          <SubNavItem to="/reports/inventory-health" label="Inventory Health" />
-        </ExpandableGroup>
-
-        {/* Processor Reconciliation - Standalone */}
-        <NavItem to="/reports/processor-reconciliation" icon={Scale} label="Processor Reconciliation" />
-
-        {/* Support - Expandable */}
-        <ExpandableGroup
-          label="Support"
-          icon={Headphones}
-          isOpen={openGroups.support}
-          onClick={() => toggleGroup('support')}
-        >
-          <SubNavItem to="/tickets" label="Tickets" />
-          <SubNavItem to="/delivery-routes" label="Delivery Routes" />
-          <SubNavItem to="/staff" label="Staff" />
-          <SubNavItem to="/audit" label="Audit Logs" />
-        </ExpandableGroup>
-
-        {/* Help & QA - Expandable */}
-        <ExpandableGroup
-          label="Help & QA"
-          icon={HelpCircle}
-          isOpen={openGroups.helpQA}
-          onClick={() => toggleGroup('helpQA')}
-        >
-          <SubNavItem to="/help" label="Help Center" />
-          <SubNavItem to="/qa/launcher2" label="QA Launcher" />
-          <SubNavItem to="/qa/seed" label="Quick Seed" />
-          <SubNavItem to="/qa/smoke" label="QA Smoke Test" />
-          <SubNavItem to="/ops/console" label="Ops Console" />
-        </ExpandableGroup>
-
-        {/* Quick Actions */}
-        <div className="pt-4 border-t border-sidebar-border space-y-2">
-          <QuickAction to="/restock" icon={Box} label="Quick Restock" />
-          <QuickAction to="/sales" icon={TrendingUp} label="Record Sale" />
-          <QuickAction to="/mobile" icon={Smartphone} label="Field Actions" />
-        </div>
-
-        {/* Admin */}
-        <div className="pt-4 border-t border-sidebar-border">
-          <NavItem to="/account" icon={Settings} label="Settings" />
-          <NavItem to="/admin/review-snapshot" icon={BarChart3} label="Review Snapshot" />
-          <NavItem to="/admin/kickstart" icon={Play} label="Ops Kickstart" />
-          <NavItem to="/qa/smoke" icon={Play} label="QA Smoke Test" />
-          <NavItem to="/qa/verify" icon={ListChecks} label="QA Validation" />
-          <NavItem to="/qa/control" icon={ListChecks} label="QA Control" />
-          {isDemo && (
-            <NavItem to="/qa" icon={Wrench} label="QA Tools" />
-          )}
-        </div>
+          // Expandable sections
+          return (
+            <ExpandableGroup
+              key={section.title}
+              label={section.title}
+              icon={section.icon}
+              isOpen={openGroups[section.title] || false}
+              onClick={() => toggleGroup(section.title)}
+            >
+              {section.items.map(item => (
+                <SubNavItem key={item.path} to={item.path} label={item.label} />
+              ))}
+            </ExpandableGroup>
+          );
+        })}
       </nav>
 
       <div className="px-4 py-3 border-t border-sidebar-border text-xs text-muted-foreground">
