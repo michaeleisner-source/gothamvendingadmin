@@ -129,10 +129,13 @@ const sampleProspects: Prospect[] = [
 ];
 
 export default function ProspectDashboard() {
+  console.log("ProspectDashboard component loading...");
   const [prospects] = useState<Prospect[]>(sampleProspects);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  
+  console.log("ProspectDashboard prospects:", prospects.length);
 
   // Smart filtering and sorting
   const filteredProspects = useMemo(() => {
