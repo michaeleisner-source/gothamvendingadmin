@@ -1,5 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 
+type SalesTotalsParams = {
+  startISO?: string;
+  endISO?: string;
+  days?: number;
+};
+
 export class EdgeFunctionClient {
   /**
    * Call an edge function with automatic auth header handling
@@ -28,8 +34,18 @@ export class EdgeFunctionClient {
   static async callDemoProtected() {
     return this.call('demo-protected');
   }
+
+  /**
+   * Get sales totals for a date range
+   */
+  static async getSalesTotals(params?: SalesTotalsParams) {
+    return this.call('sales-totals', params);
+  }
 }
 
 // Example usage:
 // const result = await EdgeFunctionClient.callDemoProtected();
 // console.log('Demo protected result:', result);
+//
+// const totals = await EdgeFunctionClient.getSalesTotals({ days: 30 });
+// console.log('Sales totals:', totals);
