@@ -427,11 +427,7 @@ function BarIcon(props:any){ return (
 
 /** Route helper — import this in App.tsx */
 export function OpsKickstartRoutes({ ProtectedRoute }: { ProtectedRoute?: React.ComponentType<{children:React.ReactNode}> }) {
-  const Wrap: React.FC<{children:React.ReactNode}> = ({ children }) =>
-    ProtectedRoute ? <ProtectedRoute>{children}</ProtectedRoute> : <>{children}</>;
-  return (
-    <>
-      <Route path="/admin/kickstart" element={<Wrap><OpsKickstartPage /></Wrap>} />
-    </>
-  );
+  // This function has been removed to prevent circular imports
+  // The route is defined directly in App.tsx instead
+  return null;
 }

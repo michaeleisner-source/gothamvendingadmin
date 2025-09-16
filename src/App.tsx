@@ -16,7 +16,6 @@ import { Phase2Routes } from "@/feature-pack/Phase2ReportsPack";
 import { Phase3Routes } from "@/feature-pack/Phase3OpsPack";
 import { Phase4Routes } from "@/feature-pack/Phase4PolishPack";
 import { ReviewSnapshotRoutes } from "@/feature-pack/ReviewSnapshot";
-import { OpsKickstartRoutes } from "@/feature-pack/OpsKickstart";
 import OpsKickstartPage from "@/feature-pack/OpsKickstart";
 import AppLayout from "@/layouts/AppLayout";
 import HomeDashboard from "./pages/HomeDashboard";
