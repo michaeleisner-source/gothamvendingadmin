@@ -82,6 +82,25 @@ export default function QAOverlay() {
 
   // Auto-open if ?qa=1 or local flag
   useEffect(() => {
+    // Debug DOM structure
+    console.log('root?', !!document.getElementById('root'));
+    console.log('gv-page?', !!document.querySelector('.gv-page'));
+    console.log('QAOverlay mount test:');
+    try {
+      const n = document.querySelector('.gv-page');
+      if (!n) throw new Error('No .gv-page container found');
+      const test = document.createElement('div');
+      test.textContent = 'QA MOUNT OK';
+      test.style.cssText='position:fixed;right:12px;bottom:70px;background:#fff;border:1px solid #ddd;padding:6px 8px;border-radius:6px;z-index:999999;';
+      document.body.appendChild(test);
+      console.log('QA Mount: OK');
+      
+      // Clean up test element after 3 seconds
+      setTimeout(() => test.remove(), 3000);
+    } catch(e){ 
+      console.error('QA Mount Error:', e.message); 
+    }
+
     const qp = new URLSearchParams(location.search);
     if (qp.get('qa') === '1' || localStorage.getItem('gv:qa') === '1') setOpen(true);
     const onKey = (e: KeyboardEvent) => {
