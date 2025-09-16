@@ -197,14 +197,14 @@ export default function QASmoke() {
     if (!machine || !location) throw new Error("Base missing — run Base step first.");
     let due: string | null = null;
     if (flags.ticket_sla_policies_table) {
-      const sla = await (supabase as any).from("ticket_sla_policies").select("minutes_to_resolve").eq("priority","normal").eq("active",true).maybeSingle();
+      const sla = await (supabase as any).from("ticket_sla_policies").select("minutes_to_resolve").eq("priority","medium").eq("active",true).maybeSingle();
       if (!sla.error && sla.data) {
         const d = new Date(); d.setMinutes(d.getMinutes() + (Number(sla.data.minutes_to_resolve)||1440));
         due = iso(d);
       }
     }
     const ins = await (supabase as any).from("tickets").insert({
-      title:"QA: coin jam", status:"open", priority:"normal",
+      title:"QA: coin jam", status:"open", priority:"medium",
       machine_id: machine, location_id: location, due_at: due
     }).select("id").single();
     if (ins.error) throw ins.error;
