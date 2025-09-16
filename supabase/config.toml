@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.audit-run]
 verify_jwt = false
+
+[functions.demo-protected]
+verify_jwt = false
