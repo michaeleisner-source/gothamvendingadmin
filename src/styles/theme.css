@@ -207,14 +207,20 @@ body {
   gap: 10px;
 }
 
-.gv-input{
-  background:var(--bg-elev); border:1px solid var(--border); color:var(--text);
-  border-radius:8px; padding:7px 10px; height:34px;
+.gv-input {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  height: 34px;
+  font-size: 14px;
 }
 
 .gv-input:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 2px hsl(from var(--primary) h s l / 0.2);
 }
 
 .gv-input::placeholder {
