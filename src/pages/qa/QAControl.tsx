@@ -118,14 +118,26 @@ export default function QAControl() {
     setErr(null); clearLog(); setBusy(true);
     try {
       say("Creating base test entities (product, location, machine) …");
-      const pid = await ensureProduct("QA-SODA-12","QA Soda 12oz",50,say);
-      const lid = await ensureLocation("QA Test Site", {}, say);
-      const mid = await ensureMachine("QA-001", lid, say);
-      await recordSale(mid, pid, 1, 175, 50, say);
+
+      say("→ Ensure Product (products)");
+      const pid = await ensureProduct("QA-SODA-12", "QA Soda 12oz", 50, say);
+
+      say("→ Ensure Location (locations)");
+      const lid = await ensureLocation("QA Test Site", {
+        commission_model: "percent_gross",
+        commission_pct_bps: 1000,
+        commission_flat_cents: 0,
+        commission_min_cents: 0,
+      }, say);
+
+      say("→ Ensure Machine (machines)");
+      await ensureMachine("QA-001", lid, say);
+
       say("✅ Base complete.");
     } catch (e: any) {
       const msg = prettyErr(e);
-      setErr(msg); say(`❌ Base failed\n${msg}`);
+      setErr(msg);
+      say(`❌ Base failed\n${msg}`);
     } finally { setBusy(false); }
   }
 
