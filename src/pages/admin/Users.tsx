@@ -1,4 +1,4 @@
-export default function Users() {
+export default function UsersPage() {
   return (
     <div className="card">
       <div style={{fontWeight:700, marginBottom:6}}>Users & Roles</div>

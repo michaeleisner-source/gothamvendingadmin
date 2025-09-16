@@ -1,4 +1,4 @@
-export default function Glossary() {
+export default function GlossaryPage() {
   const rows = [
     ['Revenue', 'Σ(qty × price)'],
     ['COGS', 'Σ(qty × cost)'],

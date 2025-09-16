@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 type KPIs = { revenue:number; cogs:number; profit:number; orders:number; units:number; margin:number };
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const days = useGlobalDays();
   const [kpis, setKpis] = useState<KPIs | null>(null);
   const [loading, setLoading] = useState(false);

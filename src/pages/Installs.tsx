@@ -1,4 +1,4 @@
-export default function Installs() {
+export default function InstallsPage() {
   return (
     <div>
       <div className="card" style={{marginBottom:12}}>

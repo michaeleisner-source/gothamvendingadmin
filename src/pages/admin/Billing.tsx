@@ -1,4 +1,4 @@
-export default function Billing() {
+export default function BillingPage() {
   return (
     <div className="card">
       <div style={{fontWeight:700, marginBottom:6}}>Billing & Subscriptions</div>

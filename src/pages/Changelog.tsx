@@ -1,4 +1,4 @@
-export default function Changelog() {
+export default function ChangelogPage() {
   const items = [
     { date:'2025-09-16', text:'New shell (nav, header, breadcrumbs), light theme, toasts, global date range.' },
     { date:'2025-09-16', text:'Reports: Trends, Stock-outs, Exports page scaffold.' },

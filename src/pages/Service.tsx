@@ -1,4 +1,4 @@
-export default function Service() {
+export default function ServicePage() {
   return (
     <div>
       <div className="card" style={{marginBottom:12}}>

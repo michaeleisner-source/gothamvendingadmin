@@ -1,4 +1,4 @@
-export default function Leads() {
+export default function LeadsPage() {
   return (
     <div>
       <div className="card" style={{marginBottom:12}}>

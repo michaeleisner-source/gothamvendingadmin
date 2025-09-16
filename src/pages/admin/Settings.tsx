@@ -1,4 +1,4 @@
-export default function Settings() {
+export default function SettingsPage() {
   return (
     <div className="card">
       <div style={{fontWeight:700, marginBottom:6}}>Organization Settings</div>
