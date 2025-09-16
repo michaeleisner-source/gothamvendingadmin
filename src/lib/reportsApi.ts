@@ -51,55 +51,61 @@ function mockResponse(fn: string, body: any) {
     case 'reports-machines': {
       const machines = ['M-001','M-002','M-101','M-202','M-303','M-404'];
       const locs = ['Downtown Gym','Midtown Offices','River Mall','Tech Park','U Campus','Metro Hub'];
-      return machines.map((code, i) => {
-        const revenue = rnd(120, 620);
-        const cogs = revenue * rnd(0.45, 0.62);
-        const profit = revenue - cogs;
-        return {
-          machine_id: code, machine_code: code,
-          location_name: locs[i],
-          revenue: money(revenue), cogs: money(cogs), profit: money(profit),
-          profit_pct: profit / revenue, orders: Math.floor(revenue / rnd(3, 6)),
-          units: Math.floor(revenue / rnd(1.8, 3.0)),
-        };
-      });
+      return {
+        rows: machines.map((code, i) => {
+          const revenue = rnd(120, 620);
+          const cogs = revenue * rnd(0.45, 0.62);
+          const profit = revenue - cogs;
+          return {
+            machine_id: code, machine_code: code,
+            location_name: locs[i],
+            revenue: money(revenue), cogs: money(cogs), profit: money(profit),
+            profit_pct: profit / revenue, orders: Math.floor(revenue / rnd(3, 6)),
+            units: Math.floor(revenue / rnd(1.8, 3.0)),
+          };
+        })
+      };
     }
     case 'reports-products': {
       const products = [
         ['Snickers', 'Candy'], ['Twix', 'Candy'], ['Coke Zero', 'Beverage'],
         ['Pepsi', 'Beverage'], ["Lay's BBQ", 'Chips'], ['Doritos Nacho', 'Chips']
       ];
-      return products.map(([name, cat]) => {
-        const units = Math.floor(rnd(40, 240));
-        const price = rnd(1.5, 3.5);
-        const cost  = price * rnd(0.4, 0.65);
-        const revenue = units * price;
-        const cogs    = units * cost;
-        return {
-          product_id: name.toLowerCase().replace(/\s+/g,'-'),
-          product_name: name, category: cat,
-          revenue: money(revenue), cogs: money(cogs),
-          profit: money(revenue - cogs), profit_pct: (revenue - cogs) / revenue,
-          units, velocity_per_day: units / d,
-        };
-      });
+      return {
+        rows: products.map(([name, cat]) => {
+          const units = Math.floor(rnd(40, 240));
+          const price = rnd(1.5, 3.5);
+          const cost  = price * rnd(0.4, 0.65);
+          const revenue = units * price;
+          const cogs    = units * cost;
+          return {
+            product_id: name.toLowerCase().replace(/\s+/g,'-'),
+            product_name: name, category: cat,
+            revenue: money(revenue), cogs: money(cogs),
+            profit: money(revenue - cogs), profit_pct: (revenue - cogs) / revenue,
+            units, velocity_per_day: units / d,
+          };
+        })
+      };
     }
     case 'reports-locations': {
       const locs = ['Downtown Gym','Midtown Offices','River Mall','Tech Park','U Campus'];
-      return locs.map((name) => {
-        const machines = Math.floor(rnd(1, 5));
-        const rev = rnd(200, 1600);
-        const cogs = rev * rnd(0.45, 0.62);
-        const profit = rev - cogs;
-        return {
-          location_id: name.toLowerCase().replace(/\s+/g,'-'),
-          location_name: name,
-          machines,
-          revenue: money(rev), cogs: money(cogs), profit: money(profit),
-          profit_pct: profit / rev,
-          revenue_per_machine: money(rev / machines),
-        };
-      });
+      return {
+        rows: locs.map((name) => {
+          const machines = Math.floor(rnd(1, 5));
+          const rev = rnd(200, 1600);
+          const cogs = rev * rnd(0.45, 0.62);
+          const profit = rev - cogs;
+          return {
+            location_id: name.toLowerCase().replace(/\s+/g,'-'),
+            location_name: name,
+            machines,
+            revenue: money(rev), cogs: money(cogs), profit: money(profit),
+            profit_pct: profit / rev,
+            revenue_per_machine: money(rev / machines),
+          };
+        })
+      };
     }
     case 'reports-trends': {
       const group = body?.group ?? 'daily';
@@ -116,7 +122,7 @@ function mockResponse(fn: string, body: any) {
           group,
         });
       }
-      return out;
+      return { rows: out };
     }
     case 'reports-stockouts': {
       const rows = [
@@ -124,22 +130,24 @@ function mockResponse(fn: string, body: any) {
         ['M-101','River Mall','Coke Zero'],
         ['M-202','Tech Park','Doritos Nacho']
       ];
-      return rows.map(([machine, loc, prod]) => {
-        const current = Math.floor(rnd(0, 20));
-        const vel = rnd(0.5, 3.5);
-        const dts = current ? Math.max(0, Math.floor(current / vel)) : 0;
-        return {
-          machine_id: machine, machine_code: machine,
-          location_name: loc,
-          product_id: prod.toLowerCase().replace(/\s+/g,'-'),
-          product_name: prod,
-          par_level: 30,
-          current_qty: current,
-          velocity_per_day: vel,
-          days_to_stockout: dts,
-          restock_by: new Date(Date.now() + dts * 86400000).toISOString(),
-        };
-      });
+      return {
+        rows: rows.map(([machine, loc, prod]) => {
+          const current = Math.floor(rnd(0, 20));
+          const vel = rnd(0.5, 3.5);
+          const dts = current ? Math.max(0, Math.floor(current / vel)) : 0;
+          return {
+            machine_id: machine, machine_code: machine,
+            location_name: loc,
+            product_id: prod.toLowerCase().replace(/\s+/g,'-'),
+            product_name: prod,
+            par_level: 30,
+            current_qty: current,
+            velocity_per_day: vel,
+            days_to_stockout: dts,
+            restock_by: new Date(Date.now() + dts * 86400000).toISOString(),
+          };
+        })
+      };
     }
     case 'reports-sales-detail': {
       const prods = ['Snickers','Twix','Coke Zero','Pepsi',"Lay's BBQ",'Doritos Nacho'];
@@ -165,7 +173,7 @@ function mockResponse(fn: string, body: any) {
           revenue: money(qty * price), cogs: money(qty * cost),
         });
       }
-      return rows.sort((a,b) => (a.ts < b.ts ? 1 : -1));
+      return { rows: rows.sort((a,b) => (a.ts < b.ts ? 1 : -1)) };
     }
     default:
       return { ok: true, note: `No mock for ${fn}` };
