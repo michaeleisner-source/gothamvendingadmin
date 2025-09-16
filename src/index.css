@@ -200,7 +200,19 @@ body {
   font-weight: 600;
 }
 
-/* Gotham Vending Header */
+/* Gotham Vending Layout */
+.gv-content {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.gv-main-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .gv-header {
   height: 56px;
   background: var(--bg-elev);
@@ -219,13 +231,14 @@ body {
 }
 
 .gv-header-right {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .gv-input {
-  background: var(--bg);
+  background: #0b1320;
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 8px;
@@ -247,10 +260,16 @@ body {
 .gv-avatar {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: linear-gradient(135deg, var(--accent), var(--primary));
   border: 1px solid var(--border);
   cursor: pointer;
+}
+
+.gv-page {
+  padding: 16px 22px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .gv-icon {
