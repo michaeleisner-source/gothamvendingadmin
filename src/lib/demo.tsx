@@ -66,7 +66,7 @@ export function useDemo() {
   return useContext(Ctx);
 }
 
-// Protected Route - compatible with existing App.tsx usage
+// Protected Route - compatible with existing App.tsx usage  
 export function ProtectedRoute({ children }: { children: JSX.Element }) {
   // Always return children without authentication check for demo mode
   return children;
