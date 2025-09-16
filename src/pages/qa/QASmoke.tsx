@@ -66,12 +66,20 @@ export default function QASmoke() {
   async function ensureProduct() {
     const got = await supabase.from("products").select("id, sku").eq("sku","QA-SODA-12").maybeSingle();
     if (!got.error && got.data) return got.data.id as string;
+    
+    // Bootstrap QA org if needed
+    await supabase.rpc('bootstrap_qa_org');
+    
     const ins = await supabase.from("products").insert({ sku:"QA-SODA-12", name:"QA Soda 12oz", cost_cents: 70 }).select("id").single();
     if (ins.error) throw ins.error; return ins.data.id as string;
   }
   async function ensureLocation() {
     const got = await supabase.from("locations").select("id, name").eq("name","QA Test Site").maybeSingle();
     if (!got.error && got.data) return got.data.id as string;
+    
+    // Bootstrap QA org if needed
+    await supabase.rpc('bootstrap_qa_org');
+    
     // commission fields if exist
     const payload: Any = { name:"QA Test Site" };
     if (await hasColumn("locations","commission_model"))   payload.commission_model = "percent_gross";
@@ -85,6 +93,10 @@ export default function QASmoke() {
       if (!got.data.location_id) await supabase.from("machines").update({ location_id }).eq("id", got.data.id);
       return got.data.id as string;
     }
+    
+    // Bootstrap QA org if needed
+    await supabase.rpc('bootstrap_qa_org');
+    
     const ins = await supabase.from("machines").insert({ name:"QA-001", location_id }).select("id").single();
     if (ins.error) throw ins.error; return ins.data.id as string;
   }
