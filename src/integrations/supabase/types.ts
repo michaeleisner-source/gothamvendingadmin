@@ -3406,6 +3406,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_org_member: {
+        Args: { target_org_id: string }
+        Returns: boolean
+      }
+      check_org_owner: {
+        Args: { target_org_id: string }
+        Returns: boolean
+      }
       convert_prospect_to_location: {
         Args: { p_prospect_id: string }
         Returns: string
