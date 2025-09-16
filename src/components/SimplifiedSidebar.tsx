@@ -66,18 +66,16 @@ export default function SimplifiedSidebar() {
                       'gv-nav-item' + (isActivePath(currentPath, item.path) ? ' active' : '')
                     }
                   >
-                    <span className="gv-icon">
-                      {item.icon ? (
-                        <iconify-icon 
-                          icon={item.icon} 
-                          width="16" 
-                          height="16"
-                          style={{ display: 'inline-block' }}
-                        ></iconify-icon>
-                      ) : (
-                        '•'
-                      )}
-                    </span>
+                    {item.icon ? (
+                      <iconify-icon 
+                        icon={item.icon} 
+                        width="18" 
+                        height="18" 
+                        style={{marginRight: 8}}
+                      ></iconify-icon>
+                    ) : (
+                      <span className="gv-icon">•</span>
+                    )}
                     <span>{item.label}</span>
                   </NavLink>
                 );
