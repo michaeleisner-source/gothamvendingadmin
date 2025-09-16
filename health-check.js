@@ -63,7 +63,7 @@ function toCSV(rows) {
   return lines.join("\n");
 }
 
-async function fetchSalesForCSV(days = 30) {
+async function fetchSalesForCSV(days = 30, startDate = null, endDate = null) {
   const sb = window.supabase || window._qa_sb;
   if (!sb) throw new Error("Supabase client not found on page.");
 
@@ -74,8 +74,32 @@ async function fetchSalesForCSV(days = 30) {
     accessToken = data?.session?.access_token || null;
   } catch { /* ignore */ }
 
+  // Prepare request body based on available parameters
+  let body = {};
+  
+  if (startDate && endDate) {
+    // Use date range if both dates provided
+    body = { startDate, endDate };
+  } else if (startDate || endDate) {
+    // If only one date provided, use it with days calculation
+    if (startDate) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(end.getDate() + days);
+      body = { startDate: start.toISOString(), endDate: end.toISOString() };
+    } else {
+      const end = new Date(endDate);
+      const start = new Date(end);
+      start.setDate(start.getDate() - days);
+      body = { startDate: start.toISOString(), endDate: end.toISOString() };
+    }
+  } else {
+    // Fall back to days-based approach
+    body = { days };
+  }
+
   const { data, error } = await sb.functions.invoke("reports-sales-summary", {
-    body: { days },
+    body,
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
   });
 
@@ -85,16 +109,27 @@ async function fetchSalesForCSV(days = 30) {
   return rows;
 }
 
-window.exportSalesCSV = async function(days = 30) {
+window.exportSalesCSV = async function(days = 30, startDate = null, endDate = null) {
   try {
-    const rows = await fetchSalesForCSV(days);
+    const rows = await fetchSalesForCSV(days, startDate, endDate);
     const csv = toCSV(rows);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+    
+    // Create filename based on date range or days
+    let filename;
+    if (startDate && endDate) {
+      const start = new Date(startDate).toISOString().slice(0,10);
+      const end = new Date(endDate).toISOString().slice(0,10);
+      filename = `gotham-sales-${start}-to-${end}`;
+    } else {
+      filename = `gotham-sales-last-${days}-days`;
+    }
+    
     const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
     a.href = url;
-    a.download = `gotham-sales-last-${days}-days-${stamp}.csv`;
+    a.download = `${filename}-${stamp}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -106,19 +141,29 @@ window.exportSalesCSV = async function(days = 30) {
   }
 };
 
-// Smart-wire the export button to use the "Days" input if present
+// Smart-wire the export button to use date range or days input
 (function wireCsvDays() {
   const btn = document.getElementById("exportCsvBtn");
   const daysInput = document.getElementById("exportDays");
+  const startInput = document.getElementById("exportStart");
+  const endInput = document.getElementById("exportEnd");
+  
   if (!btn) return;
 
   btn.addEventListener("click", () => {
+    // Get date values
+    const startDate = startInput?.value || null;
+    const endDate = endInput?.value || null;
+    
+    // Get days value with validation
     const val = daysInput ? Number(daysInput.value) : 30;
     const days = Number.isFinite(val) && val >= 1 && val <= 365 ? val : 30;
-    window.exportSalesCSV?.(days);
+    
+    // Call export with date range or days
+    window.exportSalesCSV?.(days, startDate, endDate);
   });
 
-  console.log("Export CSV button wired with days control.");
+  console.log("Export CSV button wired with date range and days controls.");
 })();
 
 // === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
