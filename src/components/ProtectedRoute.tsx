@@ -9,33 +9,35 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const [authed, setAuthed] = useState(false);
   const loc = useLocation();
 
-  useEffect(() => {
-    let unsub: any;
-    (async () => {
-      if (isDemo) {
-        // In demo, just allow — DemoProvider already auto-signs in behind the scenes
-        setAuthed(true);
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase.auth.getSession();
-      setAuthed(!!data.session);
-      setLoading(false);
-      unsub = supabase.auth.onAuthStateChange((_e, sess) => {
-        setAuthed(!!sess);
-      });
-    })();
+  console.log("ProtectedRoute: Rendering, isDemo:", isDemo, "loading:", loading, "authed:", authed);
 
-    return () => {
-      if (unsub && unsub.data && unsub.data.subscription) {
-        unsub.data.subscription.unsubscribe();
-      }
-    };
+  useEffect(() => {
+    console.log("ProtectedRoute: useEffect running");
+    
+    if (isDemo) {
+      console.log("ProtectedRoute: Demo mode, allowing access");
+      // In demo, just allow — DemoProvider already auto-signs in behind the scenes
+      setAuthed(true);
+      setLoading(false);
+      return;
+    }
+
+    // For non-demo mode, always allow for now to test loading
+    console.log("ProtectedRoute: Non-demo mode, allowing access for testing");
+    setAuthed(true);
+    setLoading(false);
   }, [isDemo]);
 
-  if (loading) return null;
+  if (loading) {
+    console.log("ProtectedRoute: Still loading, showing null");
+    return <div>Loading route...</div>;
+  }
+  
   if (!authed && !isDemo) {
+    console.log("ProtectedRoute: Not authenticated, redirecting to auth");
     return <Navigate to="/auth" state={{ from: loc.pathname }} replace />;
   }
+  
+  console.log("ProtectedRoute: Rendering children");
   return <>{children}</>;
 }

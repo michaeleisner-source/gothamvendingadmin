@@ -18,47 +18,28 @@ function getDemoFlag() {
 }
 
 export function DemoProvider({ children }: { children: React.ReactNode }) {
+  console.log("DemoProvider: Component mounting");
+  
   const [user, setUser] = useState<any | null>(null);
-  const [ready, setReady] = useState(false);
-  const isDemo = useMemo(() => getDemoFlag(), []);
+  const [ready, setReady] = useState(true); // Start as ready to allow app to load
+  const isDemo = useMemo(() => {
+    try {
+      return getDemoFlag();
+    } catch (error) {
+      console.error("Error getting demo flag:", error);
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
-    let unsub: any;
-    (async () => {
-      // Track auth changes
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
-      unsub = supabase.auth.onAuthStateChange((_e, sess) => {
-        setUser(sess?.user ?? null);
-      });
-
-      if (isDemo) {
-        // Auto-sign in as demo user if no session
-        if (!data.session) {
-          const email = import.meta.env.VITE_DEMO_EMAIL || "demo@example.com";
-          const password = import.meta.env.VITE_DEMO_PASSWORD || "supersecret";
-          // Try sign-in; if it fails with invalid credentials, you likely need to create the user in Supabase Auth.
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) {
-            // OPTIONAL fallback: try signUp if your project allows it without email confirmation
-            // const { error: upErr } = await supabase.auth.signUp({ email, password });
-            // if (upErr) console.warn("Demo signUp failed:", upErr.message);
-            console.warn("Demo sign-in failed:", error.message);
-          }
-        }
-      }
-
-      setReady(true);
-    })();
-
-    return () => {
-      if (unsub && unsub.data && unsub.data.subscription) {
-        unsub.data.subscription.unsubscribe();
-      }
-    };
+    console.log("DemoProvider: useEffect running, isDemo:", isDemo);
+    // Simplified initialization without authentication to test loading
+    setReady(true);
   }, [isDemo]);
 
   const value = useMemo(() => ({ isDemo, ready, user }), [isDemo, ready, user]);
+  
+  console.log("DemoProvider: Rendering with value:", value);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
