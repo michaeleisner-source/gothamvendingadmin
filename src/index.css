@@ -284,11 +284,6 @@ body {
 .gv-breadcrumb a {
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.gv-breadcrumb a:hover {
-  color: var(--text);
 }
 
 .gv-breadcrumb .sep {
@@ -297,7 +292,14 @@ body {
 
 .gv-breadcrumb .current {
   color: var(--text);
-  font-weight: 500;
+}
+
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .gv-icon {
