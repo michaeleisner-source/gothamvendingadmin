@@ -136,6 +136,7 @@ export function SimplifiedSidebar() {
           <SubNavItem to="/help" label="Help Center" />
           <SubNavItem to="/qa/launcher2" label="QA Launcher" />
           <SubNavItem to="/qa/seed" label="Quick Seed" />
+          <SubNavItem to="/qa/smoke" label="QA Smoke Test" />
           <SubNavItem to="/ops/console" label="Ops Console" />
         </ExpandableGroup>
 

@@ -83,6 +83,7 @@ import QAControl from "./pages/qa/QAControl";
 import OpsConsole from "./pages/ops/OpsConsole";
 import QALauncher2 from "./pages/qa/QALauncher2";
 import QuickSeed from "./pages/qa/QuickSeed";
+import QASmoke from "./pages/qa/QASmoke";
 
 const queryClient = new QueryClient();
 
@@ -162,6 +163,7 @@ const App = () => (
             <Route path="/ops/console" element={<OpsConsole />} />
             <Route path="/qa/launcher2" element={<QALauncher2 />} />
             <Route path="/qa/seed" element={<QuickSeed />} />
+            <Route path="/qa/smoke" element={<QASmoke />} />
             <Route path="/admin/kickstart" element={<OpsKickstartPage />} />
             <Route path="/account" element={<Account />} />
             {/* Feature Pack Routes */}
