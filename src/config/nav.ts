@@ -21,7 +21,7 @@ export const isDevEnv = () =>
 // Navigation configuration
 export const NAV: NavSection[] = [
   { title: 'Dashboard', expandable: false, items: [
-    { label: 'Mission Control', path: '/', icon: '📊' },
+    { label: 'Dashboard', path: '/dashboard', icon: '📊' },
   ]},
   { title: 'Pipeline', expandable: true, items: [
     { label: 'Leads', path: '/leads', icon: '🎯' },
