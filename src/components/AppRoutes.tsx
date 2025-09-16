@@ -1,7 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+
+// Import all the pages
+import HomeDashboard from "@/pages/HomeDashboard";
+import Locations from "@/pages/Locations";
+import Machines from "@/pages/Machines";
+import Products from "@/pages/Products";
+import Inventory from "@/pages/Inventory";
+import PurchaseOrders from "@/pages/PurchaseOrders";
+import ExportsPage from "@/pages/ExportsPage";
+import HelpCenter from "@/pages/HelpCenter";
+import Glossary from "@/pages/help/Glossary";
+import Changelog from "@/pages/Changelog";
+import Staff from "@/pages/Staff";
+import MachineReports from "@/pages/reports/MachineReports";
+import ProductReports from "@/pages/reports/ProductReports";
+import LocationPerformance from "@/pages/reports/LocationPerformance";
+import Trends from "@/pages/reports/Trends";
+import Stockouts from "@/pages/reports/Stockouts";
+import QALauncher from "@/pages/QALauncher";
+import QuickSeed from "@/pages/qa/QuickSeed";
+import SalesEntry from "@/pages/SalesEntry";
+import Prospects from "@/pages/Prospects";
 
 function Card({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
@@ -23,7 +45,7 @@ function Layout() {
         <div className="flex-1 flex flex-col">
           <header className="h-12 flex items-center border-b bg-background">
             <SidebarTrigger className="ml-2" />
-            <h1 className="ml-4 font-semibold">Application</h1>
+            <h1 className="ml-4 font-semibold">Gotham Vending</h1>
           </header>
           
           <main className="flex-1 p-4">
@@ -35,75 +57,56 @@ function Layout() {
   );
 }
 
-function DashboardStub() {
-  return (
-    <Card title="Dashboard (Stub)">
-      <p style={{margin:0, color:'var(--muted)'}}>Temporary dashboard to verify routing.</p>
-    </Card>
-  );
-}
-
-/** Minimal QA page (inline, no imports) to prove the route renders */
-function QAOverviewInline() {
-  const [ts] = useState(() => new Date().toLocaleString());
-  // tiny proof-of-life check: ensure hash router path contains /qa/overview
-  const [path, setPath] = useState<string>(location.hash || location.pathname);
-  
-  console.log('QAOverviewInline rendering, current path:', path);
-  console.log('location.hash:', location.hash);
-  console.log('location.pathname:', location.pathname);
-  
-  useEffect(() => {
-    console.log('QAOverviewInline useEffect running');
-    const onHash = () => {
-      const newPath = location.hash || location.pathname;
-      console.log('Hash change detected, new path:', newPath);
-      setPath(newPath);
-    };
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-  
-  return (
-    <div>
-      <div className="card" style={{marginBottom:12}}>
-        <div style={{fontWeight:800}}>QA Overview — Online</div>
-        <div style={{color:'var(--muted)'}}>Loaded at {ts}</div>
-      </div>
-      <div className="card">
-        <p style={{marginTop:0}}>Router path: <code>{path || '(empty)'}</code></p>
-        <p>Hash: <code>{location.hash}</code></p>
-        <p>Pathname: <code>{location.pathname}</code></p>
-        <p style={{marginBottom:0}}>This proves the <b>/qa/overview</b> route is rendering. Next we can swap in the full audit UI.</p>
-      </div>
-    </div>
-  );
-}
-
 export default function AppRoutes() {
-  console.log('AppRoutes rendering');
-  console.log('Current location.hash:', location.hash);
-  console.log('Current location.pathname:', location.pathname);
-  
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardStub />} />
-        <Route path="qa/overview" element={<QAOverviewInline />} />
         
-        {/* Placeholder routes for sidebar navigation */}
-        <Route path="analytics" element={<Card title="Analytics">Coming soon...</Card>} />
-        <Route path="reports" element={<Card title="Reports">Coming soon...</Card>} />
-        <Route path="settings" element={<Card title="Settings">Coming soon...</Card>} />
-        <Route path="qa/smoke" element={<Card title="QA Smoke Test">Coming soon...</Card>} />
+        {/* Pipeline */}
+        <Route path="leads" element={<Prospects />} />
+        <Route path="installs" element={<Card title="Installs">Installation tracking coming soon...</Card>} />
+        
+        {/* Operations */}
+        <Route path="locations" element={<Locations />} />
+        <Route path="machines" element={<Machines />} />
+        <Route path="products" element={<Products />} />
+        <Route path="inventory" element={<Inventory />} />
+        <Route path="purchase-orders" element={<PurchaseOrders />} />
+        <Route path="service" element={<Card title="Service & Maintenance">Service management coming soon...</Card>} />
+        
+        {/* Sales & Reporting */}
+        <Route path="dashboard" element={<HomeDashboard />} />
+        <Route path="sales" element={<SalesEntry />} />
+        <Route path="reports/machines" element={<MachineReports />} />
+        <Route path="reports/products" element={<ProductReports />} />
+        <Route path="reports/locations" element={<LocationPerformance />} />
+        <Route path="reports/trends" element={<Trends />} />
+        <Route path="reports/stockouts" element={<Stockouts />} />
+        <Route path="exports" element={<ExportsPage />} />
+        
+        {/* Admin */}
+        <Route path="admin/users" element={<Staff />} />
+        <Route path="admin/settings" element={<Card title="Org Settings">Settings coming soon...</Card>} />
+        <Route path="admin/billing" element={<Card title="Billing">Billing management coming soon...</Card>} />
+        
+        {/* Help */}
+        <Route path="help" element={<HelpCenter />} />
+        <Route path="help/glossary" element={<Glossary />} />
+        <Route path="changelog" element={<Changelog />} />
+        
+        {/* QA & Tools (dev only) */}
+        <Route path="qa" element={<QALauncher />} />
+        <Route path="qa/overview" element={<Card title="QA Overview">QA Overview page coming soon...</Card>} />
+        <Route path="qa/smoke" element={<Card title="QA Smoke Test">Smoke test coming soon...</Card>} />
+        <Route path="qa/seed" element={<QuickSeed />} />
       </Route>
 
       {/* 404 shows current path to help debugging */}
       <Route path="*" element={
         <Card title="Not Found">
           <p style={{marginTop:0}}>Path: <code>{location.hash || location.pathname}</code></p>
-          <p style={{marginBottom:0}}>If you expected /qa/overview, open <code>/qa/overview</code>.</p>
+          <p style={{marginBottom:0}}>Page not found. Please check the navigation menu.</p>
         </Card>
       } />
     </Routes>
