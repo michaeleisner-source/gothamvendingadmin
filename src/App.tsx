@@ -100,7 +100,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminSettings from "./pages/AdminSettings";
 import AdminBilling from "./pages/AdminBilling";
 import ServiceMaintenance from "./pages/ServiceMaintenance";
-import QAOverview from "./pages/qa/Overview";
+import QAOverview from "@/pages/qa/Overview";
 
 const queryClient = new QueryClient();
 
