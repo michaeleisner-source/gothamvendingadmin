@@ -263,7 +263,7 @@ body {
 /* General Button Styles */
 .btn {
   background: var(--primary);
-  color: #062310;
+  color: white;
   border: none;
   height: 34px;
   padding: 0 12px;
