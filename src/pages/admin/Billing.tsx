@@ -1,8 +1,10 @@
+import ScaffoldPage from '@/components/ScaffoldPage';
+
 export default function BillingPage() {
   return (
-    <div className="card">
-      <div style={{fontWeight:700, marginBottom:6}}>Billing & Subscriptions</div>
-      <div style={{color:'var(--muted)'}}>Plan, invoices, and payment methods.</div>
-    </div>
+    <ScaffoldPage 
+      title="Billing & Subscriptions"
+      description="Plan, invoices, and payment methods."
+    />
   );
 }
