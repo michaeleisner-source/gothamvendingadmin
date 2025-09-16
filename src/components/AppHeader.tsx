@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Breadcrumbs from './AppBreadcrumbs';
 import ThemeSwitcher from './ThemeSwitcher';
+import RedactionBadge from './system/RedactionBadge';
 
 export default function AppHeader() {
   const [days, setDays] = useState<number>(() => {
@@ -56,6 +57,7 @@ export default function AppHeader() {
             onKeyDown={onSearch}
             style={{ width: '240px' }}
           />
+          <RedactionBadge />
           <div className="gv-avatar" title="Account" />
         </div>
       </header>
