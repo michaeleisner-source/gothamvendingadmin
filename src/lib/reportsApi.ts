@@ -1,28 +1,18 @@
 import { supabase } from '@/integrations/supabase/client';
-import { isDemoMode, getAuthHeaders } from '@/lib/auth';
 
-/** Call a Supabase Edge Function; if demo mode or it fails, return mock data. */
+/** Call a Supabase Edge Function with proper auth handling */
 export async function invokeReport<T = any>(fn: string, body: any): Promise<{ data: T; error?: any }> {
-  const demo = isDemoMode();
-  const tryReal = async () => {
-    const headers = await getAuthHeaders();
-    return supabase.functions.invoke(fn, { body, headers });
-  };
-
-  if (!demo) {
-    // normal mode → just call backend
-    return tryReal();
-  }
-
-  // DEMO: first try real (in case your backend allows anon), else fall back to mocks
-  try {
-    const res = await tryReal();
-    if (!res.error) return res;
-  } catch (_) { /* ignore */ }
-
-  // Fallback to mock
-  const data = mockResponse(fn, body);
-  return { data, error: undefined } as any;
+  const supa = (window as any).supabase || supabase;
+  const headers = await (async () => {
+    try {
+      const s = await supa?.auth?.getSession?.();
+      const t = s?.data?.session?.access_token;
+      return t ? { Authorization: `Bearer ${t}` } : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  return supa.functions.invoke(fn, { body, headers });
 }
 
 // ---------- MOCKS (demo mode only) ----------
