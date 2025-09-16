@@ -1,22 +1,20 @@
-import { PageHeader } from '@/components/common/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
-
 export default function Service() {
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Service Management"
-        description="Track maintenance, repairs, and service calls"
-      />
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-8 text-muted-foreground">
-            <h3 className="text-lg font-semibold mb-2">Service Operations</h3>
-            <p>Manage maintenance schedules, service calls, and machine repairs.</p>
-          </div>
-        </CardContent>
-      </Card>
+    <div>
+      <div className="card" style={{marginBottom:12}}>
+        <div style={{fontWeight:700, marginBottom:6}}>Service & Maintenance</div>
+        <div style={{color:'var(--muted)'}}>Track service logs, parts, and downtime.</div>
+      </div>
+      <div className="card">
+        <table className="gv-table">
+          <thead>
+            <tr><th>Date</th><th>Machine</th><th>Action</th><th>Notes</th><th style={{textAlign:'right'}}>Parts Cost</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colSpan={5} style={{color:'var(--muted)', padding:'12px'}}>No service records yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
