@@ -1,21 +1,33 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { NAV, isDevEnv } from '@/config/nav';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const keyFor = (title: string) => `gv:navCollapsed:${title}`;
 
 export default function SimplifiedSidebar() {
   const loc = useLocation();
-  const currentPath = loc.pathname.replace(/\/+$/,'') || '/';
+  const currentPath = (loc.pathname.replace(/\/+$/,'') || '/') as string;
   const dev = isDevEnv();
-  
-  // Track collapsed sections
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  
-  const toggleSection = (sectionTitle: string) => {
-    setCollapsed(prev => ({
-      ...prev,
-      [sectionTitle]: !prev[sectionTitle]
-    }));
-  };
+
+  // read initial collapsed states
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const obj: Record<string, boolean> = {};
+    NAV.forEach(sec => {
+      const raw = localStorage.getItem(keyFor(sec.title));
+      obj[sec.title] = raw === '1';
+    });
+    return obj;
+  });
+
+  useEffect(() => {
+    // persist whenever changed
+    Object.entries(collapsed).forEach(([title, val]) => {
+      localStorage.setItem(keyFor(title), val ? '1' : '0');
+    });
+  }, [collapsed]);
+
+  const toggle = (title: string) =>
+    setCollapsed(s => ({ ...s, [title]: !s[title] }));
 
   return (
     <aside className="gv-sidebar">
@@ -25,26 +37,16 @@ export default function SimplifiedSidebar() {
       </div>
 
       <nav className="gv-nav">
-        {NAV.map((section) => {
+        {NAV.map(section => {
           if (section.devOnly && !dev) return null;
-          
-          const sectionCollapsed = collapsed[section.title];
-          const hasMultipleItems = section.items.length > 1;
-          
+          const isColl = !!collapsed[section.title];
           return (
-            <div className={`gv-section ${sectionCollapsed ? 'collapsed' : ''}`} key={section.title}>
-              {hasMultipleItems ? (
-                <div 
-                  className="gv-section-header"
-                  onClick={() => toggleSection(section.title)}
-                >
-                  <div className="gv-section-title">{section.title}</div>
-                  <div className="gv-section-toggle">▼</div>
-                </div>
-              ) : (
+            <div className={`gv-section ${isColl ? 'collapsed' : ''}`} key={section.title}>
+              <div className="gv-section-header" onClick={() => toggle(section.title)}>
                 <div className="gv-section-title">{section.title}</div>
-              )}
-              
+                <div className="gv-section-toggle">{isColl ? '▸' : '▾'}</div>
+              </div>
+
               {section.items.map(item => {
                 if (item.devOnly && !dev) return null;
                 const to = item.path.replace(/\/+$/,'') || '/';
