@@ -74,14 +74,12 @@ body {
 
 /* Sidebar */
 .gv-sidebar {
-  width: 260px;
-  background: var(--bg-elev);
-  border-right: 1px solid var(--border);
-  min-height: 100dvh;
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
+  width:260px; 
+  background:var(--bg-elev); 
+  border-right:1px solid var(--border);
+  min-height:100dvh; 
+  position:sticky; 
+  top:0;
 }
 
 .gv-brand {
@@ -186,16 +184,16 @@ body {
 
 /* Header */
 .gv-header {
-  height: 56px;
-  background: var(--bg-elev);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  height:56px; 
+  background:var(--bg-elev); 
+  border-bottom:1px solid var(--border);
+  display:flex; 
+  align-items:center; 
+  gap:12px; 
+  padding:0 16px; 
+  position:sticky; 
+  top:0; 
+  z-index:10;
 }
 
 .gv-breadcrumb-slot {
