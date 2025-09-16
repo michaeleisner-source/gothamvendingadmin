@@ -3434,6 +3434,10 @@ export type Database = {
         Args: { p_cols: number; p_machine_id: string; p_rows: number }
         Returns: number
       }
+      get_current_org_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_machine_health_data: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -3451,6 +3455,10 @@ export type Database = {
       }
       is_org_member: {
         Args: { row_org: string }
+        Returns: boolean
+      }
+      is_org_member_safe: {
+        Args: { target_org_id: string }
         Returns: boolean
       }
       is_org_owner: {
