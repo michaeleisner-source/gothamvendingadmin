@@ -281,6 +281,109 @@ export default function QASmoke() {
     }
   }
 
+  /** ---------- CSV Export ---------- */
+  async function exportSalesCSV() {
+    setBusy(true);
+    try {
+      say("Fetching sales data for CSV export...");
+      
+      // Fetch sales with related data
+      const { data: sales, error } = await supabase
+        .from('sales')
+        .select(`
+          id,
+          machine_id,
+          product_id,
+          qty,
+          unit_price_cents,
+          unit_cost_cents,
+          occurred_at,
+          payment_method,
+          machines(name, location),
+          products(name, sku, category)
+        `)
+        .order('occurred_at', { ascending: false })
+        .limit(1000);
+
+      if (error) throw error;
+      
+      if (!sales || sales.length === 0) {
+        say("No sales data found to export.");
+        return;
+      }
+
+      // Convert to CSV
+      const headers = [
+        'Date',
+        'Machine',
+        'Product SKU',
+        'Product Name',
+        'Category',
+        'Quantity',
+        'Unit Price ($)',
+        'Unit Cost ($)',
+        'Revenue ($)',
+        'Profit ($)',
+        'Payment Method',
+        'Location'
+      ];
+
+      const csvRows = [headers.join(',')];
+
+      sales.forEach((sale: any) => {
+        const date = new Date(sale.occurred_at).toLocaleDateString();
+        const machine = sale.machines?.name || 'Unknown';
+        const productSku = sale.products?.sku || 'Unknown';
+        const productName = sale.products?.name || 'Unknown';
+        const category = sale.products?.category || '';
+        const quantity = sale.qty || 0;
+        const unitPrice = (sale.unit_price_cents || 0) / 100;
+        const unitCost = (sale.unit_cost_cents || 0) / 100;
+        const revenue = quantity * unitPrice;
+        const profit = quantity * (unitPrice - unitCost);
+        const paymentMethod = sale.payment_method || '';
+        const location = sale.machines?.location || '';
+
+        const row = [
+          `"${date}"`,
+          `"${machine}"`,
+          `"${productSku}"`,
+          `"${productName}"`,
+          `"${category}"`,
+          quantity,
+          unitPrice.toFixed(2),
+          unitCost.toFixed(2),
+          revenue.toFixed(2),
+          profit.toFixed(2),
+          `"${paymentMethod}"`,
+          `"${location}"`
+        ];
+        
+        csvRows.push(row.join(','));
+      });
+
+      const csvContent = csvRows.join('\n');
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `sales-export-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      say(`✔ CSV exported successfully (${sales.length} records)`);
+    } catch (e: any) {
+      setErr(pretty(e));
+      say(`❌ CSV export failed: ${pretty(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   /** ---------- UI ---------- */
   return (
     <div className="p-6 space-y-4">
@@ -302,6 +405,9 @@ export default function QASmoke() {
           </button>
           <button onClick={async()=>{ setErr(null); clear(); await detectSchema(); }} disabled={busy} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted disabled:opacity-50">
             <RefreshCw className="h-4 w-4" /> Re-detect schema
+          </button>
+          <button onClick={exportSalesCSV} disabled={busy} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted disabled:opacity-50">
+            <DollarSign className="h-4 w-4" /> Export Sales CSV
           </button>
         </div>
       </header>
