@@ -64,6 +64,7 @@ import LocationPerformance from "./pages/LocationPerformance";
 import LocationPerformanceEdge from "./pages/reports/LocationPerformanceEdge";
 import Trends from "./pages/reports/Trends";
 import Stockouts from "./pages/reports/Stockouts";
+import Exports from "./pages/Exports";
 import QALauncher from "./pages/QALauncher";
 import Health from "./pages/Health";
 import SalesSummary7d from "./pages/reports/SalesSummary";
@@ -136,6 +137,7 @@ const App = () => (
             <Route path="/setup" element={<MachineSetup />} />
             <Route path="/slots" element={<SlotPlanner />} />
             <Route path="/reports" element={<EnhancedReports />} />
+            <Route path="/exports" element={<Exports />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/finance" element={<FinanceManagement />} />
             <Route path="/finance/processors" element={<PaymentProcessors />} />

@@ -53,6 +53,7 @@ export const NAV: NavSection[] = [
   ]},
   { title: 'Reports', expandable: true, items: [
     { label: 'All Reports', path: '/reports', icon: '📊' },
+    { label: 'Data Exports', path: '/exports', icon: '📥' },
     { label: 'Sales Summary', path: '/reports/sales-summary', icon: '🧮' },
     { label: 'Machine ROI', path: '/reports/machine-roi', icon: '🤖' },
     { label: 'Location Performance', path: '/reports/location-performance', icon: '🗺️' },
