@@ -348,3 +348,9 @@ body {
   color: var(--muted); font-size:14px; line-height:1; padding:2px;
 }
 .gv-toast-close:hover{ color: var(--text); }
+
+/* Table Styles */
+.gv-table { width:100%; border-collapse:separate; border-spacing:0; }
+.gv-table th, .gv-table td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); }
+.gv-table thead th { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.gv-table tbody tr:hover { background:#f5f7fa; }
