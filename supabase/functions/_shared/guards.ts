@@ -31,7 +31,7 @@ export async function getUserFromAuth(req: Request) {
 }
 
 /** Wrap a handler: in demo (no JWT), allow a safe response; otherwise require auth. */
-export function withAuthOrDemo(
+export function withAuthOrDemo<T>(
   handler: (ctx: { req: Request; user: any|null; demo: boolean }) => Promise<Response>,
   opts: { allowDemo: boolean }
 ) {
@@ -70,13 +70,6 @@ export function scrubContacts<T extends Record<string, unknown>>(row: T): T {
   if ("machine_id" in r && typeof r.machine_id === "string") (r as any).machine_id = maskId(String(r.machine_id));
   return r;
 }
-
-/** Utilities to mask sensitive fields (legacy - keeping for compatibility) */
-export const redact = {
-  email: (e: string) => e.replace(/(.{2}).*(@.*)/, "$1***$2"),
-  phone: (p: string) => p.replace(/(\d{2})\d+(\d{2})$/, "$1***$2"),
-  name:  (n: string) => n ? n[0] + "****" : "",
-};
 
 // Export the admin client for direct use when needed
 export { admin };
