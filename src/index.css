@@ -104,90 +104,105 @@ All colors MUST be HSL.
   }
 }
 
-/* Gotham Vending Sidebar Styles */
+/* Gotham Vending Theme */
+:root {
+  --bg: #0b1220;
+  --bg-elev: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --border: #1f2937;
+  --primary: #22c55e;
+  --primary-600: #16a34a;
+  --accent: #0ea5a4;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Gotham Vending Sidebar */
 .gv-sidebar {
   width: 260px;
-  height: 100vh;
-  background: hsl(var(--sidebar-background));
-  color: hsl(var(--sidebar-foreground));
-  border-right: 1px solid hsl(var(--sidebar-border));
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  min-height: 100dvh;
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .gv-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border-bottom: 1px solid hsl(var(--sidebar-border));
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .gv-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #062310;
   display: grid;
   place-items: center;
-  color: hsl(var(--primary-foreground));
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 900;
+  font-size: 12px;
 }
 
 .gv-title {
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .gv-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 12px;
+  padding: 12px 0;
 }
 
 .gv-section {
-  margin-bottom: 20px;
+  margin-top: 8px;
 }
 
 .gv-section-title {
+  padding: 8px 16px;
   font-size: 11px;
-  font-weight: 600;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: hsl(var(--muted-foreground));
-  margin-bottom: 8px;
-  padding-left: 12px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
 }
 
 .gv-nav-item {
   display: flex;
-  align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  align-items: center;
+  padding: 10px 16px;
   text-decoration: none;
-  color: hsl(var(--sidebar-foreground));
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--text);
+  border-left: 3px solid transparent;
   transition: all 0.2s ease;
-  margin-bottom: 2px;
+  margin: 1px 0;
 }
 
 .gv-nav-item:hover {
-  background: hsl(var(--sidebar-accent));
-  color: hsl(var(--sidebar-accent-foreground));
+  background: rgba(148, 163, 184, 0.08);
 }
 
 .gv-nav-item.active {
-  background: hsl(var(--sidebar-primary));
-  color: hsl(var(--sidebar-primary-foreground));
+  background: rgba(34, 197, 94, 0.10);
+  border-left-color: var(--primary);
   font-weight: 600;
 }
 
 .gv-icon {
   width: 18px;
   text-align: center;
+  opacity: 0.9;
   font-size: 14px;
 }
