@@ -139,7 +139,7 @@ export default function QASmoke() {
     const probe = await supabase.from("machine_finance").select("machine_id").eq("machine_id", machine).maybeSingle();
     if (!probe.error && probe.data) { say("Finance exists — skipping."); return; }
     const ins = await (supabase as any).from("machine_finance").insert({
-      machine_id: machine, purchase_price: 3500, monthly_payment: 110, apr: 9.9, acquisition_type: "loan"
+      machine_id: machine, purchase_price: 3500, monthly_payment: 110, apr: 9.9, acquisition_type: "finance"
     });
     if (ins.error) throw ins.error;
     say("✔ Finance added.");
