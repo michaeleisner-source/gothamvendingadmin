@@ -60,6 +60,17 @@ import NewLocation from "./pages/NewLocation";
 import CommissionDashboard from "./pages/CommissionDashboard";
 import CommissionStatements from "./pages/CommissionStatements";
 import ContractManagement from "./pages/ContractManagement";
+import Leads from "./pages/Leads";
+import Installs from "./pages/Installs";
+import Service from "./pages/Service";
+import Dashboard from "./pages/Dashboard";
+import MachineReports from "./pages/reports/MachineReports";
+import ProductReports from "./pages/reports/ProductReports";
+import Users from "./pages/admin/Users";
+import Settings from "./pages/admin/Settings";
+import Billing from "./pages/admin/Billing";
+import Glossary from "./pages/help/Glossary";
+import Changelog from "./pages/Changelog";
 import LocationPerformance from "./pages/LocationPerformance";
 import LocationPerformanceReports from "./pages/reports/LocationPerformance";
 import Trends from "./pages/reports/Trends";
@@ -104,7 +115,11 @@ const App = () => (
           {/* Protected routes with demo support */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<EnhancedDashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/installs" element={<Installs />} />
+            <Route path="/service" element={<Service />} />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/convert" element={<ProtectedRoute><ConvertProspect /></ProtectedRoute>} />
@@ -145,6 +160,8 @@ const App = () => (
             <Route path="/reports/sales-summary" element={<SalesSummary7d />} />
             <Route path="/reports/product-profitability-net" element={<ProductProfitabilityNet />} />
             <Route path="/reports/machine-roi" element={<MachineROI />} />
+            <Route path="/reports/machines" element={<MachineReports />} />
+            <Route path="/reports/products" element={<ProductReports />} />
             <Route path="/reports/location-performance" element={<LocationPerformance />} />
             <Route path="/reports/locations" element={<LocationPerformanceReports />} />
             <Route path="/reports/trends" element={<Trends />} />
@@ -157,7 +174,12 @@ const App = () => (
             <Route path="/contracts" element={<ContractManagement />} />
             <Route path="/staff" element={<StaffEnhanced />} />
             <Route path="/help" element={<HelpCenter />} />
+            <Route path="/help/glossary" element={<Glossary />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
+            <Route path="/changelog" element={<Changelog />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/admin/billing" element={<Billing />} />
             <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
           <Route path="/insurance" element={<Insurance />} />
