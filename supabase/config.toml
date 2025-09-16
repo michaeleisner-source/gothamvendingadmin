@@ -1,1 +1,13 @@
 project_id = "wmbrnfocnlkhqflliaup"
+
+[functions.auth-whoami]
+verify_jwt = false
+
+[functions.org-current]
+verify_jwt = false
+
+[functions.reports-sales-summary]
+verify_jwt = false
+
+[functions.audit-run]
+verify_jwt = false
