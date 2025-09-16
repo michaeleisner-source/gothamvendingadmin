@@ -3,6 +3,7 @@ import SimplifiedSidebar from '../components/SimplifiedSidebar';
 import AppHeader from '../components/AppHeader';
 import Breadcrumbs from '../components/AppBreadcrumbs';
 import ErrorBoundary from '@/components/util/ErrorBoundary';
+import QAOverlay from '../pages/qa/QAOverlay';
 import '@/styles/theme.css';
 
 export default function AppLayout() {
@@ -19,6 +20,9 @@ export default function AppLayout() {
           </ErrorBoundary>
         </main>
       </div>
+      
+      {/* QA overlay available everywhere */}
+      <QAOverlay />
     </div>
   );
 }
