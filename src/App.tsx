@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ScaffoldPage from "@/components/ScaffoldPage";
 import { Workflow } from "@/feature-pack/VendingWorkflowPack";
 import { MachineOpsRoutes } from "@/feature-pack/MachineOpsPack";
 import { ProcessorStatementsRoutes } from "@/feature-pack/ProcessorStatementsPack";
@@ -60,15 +61,9 @@ import NewLocation from "./pages/NewLocation";
 import CommissionDashboard from "./pages/CommissionDashboard";
 import CommissionStatements from "./pages/CommissionStatements";
 import ContractManagement from "./pages/ContractManagement";
-import LeadsPage from "./pages/Leads";
-import InstallsPage from "./pages/Installs";
-import ServicePage from "./pages/Service";
 import DashboardPage from "./pages/Dashboard";
 import MachineReports from "./pages/reports/MachineReports";
 import ProductReports from "./pages/reports/ProductReports";
-import UsersPage from "./pages/admin/Users";
-import SettingsPage from "./pages/admin/Settings";
-import BillingPage from "./pages/admin/Billing";
 import GlossaryPage from "./pages/help/Glossary";
 import ChangelogPage from "./pages/Changelog";
 import LocationPerformance from "./pages/LocationPerformance";
@@ -117,9 +112,18 @@ const App = () => (
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mission-control" element={<EnhancedDashboard />} />
-            <Route path="/leads" element={<LeadsPage />} />
-            <Route path="/installs" element={<InstallsPage />} />
-            <Route path="/service" element={<ServicePage />} />
+            <Route path="/leads" element={
+              <ScaffoldPage title="Leads (Prospects)" description="Manage prospects and convert to Locations."
+                columns={['Name','Type','Status','Contact','Created']} />
+            } />
+            <Route path="/installs" element={
+              <ScaffoldPage title="Installs Pipeline" description="Survey → Contract → Install Scheduled → Live."
+                columns={['Location','Stage','Owner','Updated']} />
+            } />
+            <Route path="/service" element={
+              <ScaffoldPage title="Service & Maintenance" description="Track service logs, parts, and downtime."
+                columns={['Date','Machine','Action','Notes','Parts Cost']} />
+            } />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/convert" element={<ProtectedRoute><ConvertProspect /></ProtectedRoute>} />
@@ -177,9 +181,15 @@ const App = () => (
             <Route path="/help/glossary" element={<GlossaryPage />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/changelog" element={<ChangelogPage />} />
-            <Route path="/admin/users" element={<UsersPage />} />
-            <Route path="/admin/settings" element={<SettingsPage />} />
-            <Route path="/admin/billing" element={<BillingPage />} />
+            <Route path="/admin/users" element={
+              <ScaffoldPage title="Users & Roles" description="Manage user access and permissions (Owner, Manager, Tech, Read-only)." />
+            } />
+            <Route path="/admin/settings" element={
+              <ScaffoldPage title="Organization Settings" description="Currency, timezone, default margin target, and tax rate." />
+            } />
+            <Route path="/admin/billing" element={
+              <ScaffoldPage title="Billing & Subscriptions" description="Plan, invoices, and payment methods." />
+            } />
             <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
           <Route path="/insurance" element={<Insurance />} />
