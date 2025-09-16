@@ -1,22 +1,8 @@
-import { PageHeader } from '@/components/common/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
-
 export default function Users() {
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="User Management"
-        description="Manage user accounts, roles, and permissions"
-      />
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-8 text-muted-foreground">
-            <h3 className="text-lg font-semibold mb-2">User Administration</h3>
-            <p>Create, edit, and manage user accounts and access permissions.</p>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="card">
+      <div style={{fontWeight:700, marginBottom:6}}>Users & Roles</div>
+      <div style={{color:'var(--muted)'}}>Manage user access and permissions (Owner, Manager, Tech, Read-only).</div>
     </div>
   );
 }
