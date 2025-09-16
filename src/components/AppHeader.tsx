@@ -1,94 +1,58 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+import { AppBreadcrumbs } from './AppBreadcrumbs';
 
 export default function AppHeader() {
-  const [email, setEmail] = useState<string | null>(null);
-  const nav = useNavigate();
-  const loc = useLocation();
+  const [days, setDays] = useState<number>(() => {
+    const saved = localStorage.getItem('gv:dateRangeDays');
+    return saved ? Number(saved) : 30;
+  });
 
   useEffect(() => {
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setEmail(session?.user?.email ?? null);
-    })();
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-      setEmail(session?.user?.email ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    localStorage.setItem('gv:dateRangeDays', String(days));
+    window.dispatchEvent(new CustomEvent('gv:dateRangeChange', { detail: { days }}));
+  }, [days]);
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    nav("/auth");
-  }
+  const [org, setOrg] = useState<string>(() => localStorage.getItem('gv:org') || 'Gotham Vending');
+  useEffect(() => {
+    localStorage.setItem('gv:org', org);
+    window.dispatchEvent(new CustomEvent('gv:orgChange', { detail: { org }}));
+  }, [org]);
+
+  const onSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const q = (e.target as HTMLInputElement).value.trim();
+      window.dispatchEvent(new CustomEvent('gv:search', { detail: { q }}));
+    }
+  };
 
   return (
-    <header className="w-full border-b bg-background">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Top row */}
-        <div className="h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="font-semibold">
-              Gotham Vending
-            </Link>
-            <OrgSwitcher />
-          </div>
+    <header className="gv-header">
+      <div className="gv-breadcrumb-slot">
+        <AppBreadcrumbs />
+      </div>
+      <div className="gv-header-right">
+        <select value={org} onChange={e => setOrg(e.target.value)} title="Organization" className="gv-input">
+          <option value="Gotham Vending">Gotham Vending</option>
+          <option value="Wayne Enterprises">Wayne Enterprises</option>
+          <option value="Demo Corp">Demo Corp</option>
+        </select>
 
-          {/* User segment */}
-          <div className="flex items-center gap-3">
-            {email ? (
-              <>
-                <span className="text-sm text-muted-foreground">{email}</span>
-                <button
-                  onClick={signOut}
-                  className="text-sm bg-secondary text-secondary-foreground rounded px-3 py-2"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <Link to="/auth" className="text-sm text-primary hover:underline">
-                Sign in
-              </Link>
-            )}
-          </div>
-        </div>
+        <select value={days} onChange={e => setDays(Number(e.target.value))} title="Date Range" className="gv-input">
+          <option value={7}>Last 7 days</option>
+          <option value={30}>Last 30 days</option>
+          <option value={90}>Last 90 days</option>
+          <option value={180}>Last 6 months</option>
+          <option value={365}>Last year</option>
+        </select>
+
+        <input 
+          className="gv-input" 
+          placeholder="Search machines, products, locations" 
+          onKeyDown={onSearch}
+          style={{ width: '240px' }}
+        />
+        <div className="gv-avatar" title="Account" />
       </div>
     </header>
-  );
-}
-
-function OrgSwitcher() {
-  // Stub: replace with real org list if/when you build it
-  const [open, setOpen] = useState(false);
-  const [orgName, setOrgName] = useState<string>("My Organization");
-
-  return (
-    <div className="relative">
-      <button
-        className="text-xs px-2 py-1 rounded border hover:bg-muted"
-        onClick={() => setOpen((v) => !v)}
-      >
-        {orgName} ▾
-      </button>
-      {open && (
-        <div className="absolute z-30 mt-2 min-w-[200px] rounded-lg border bg-background shadow-lg">
-          <ul className="py-2 text-sm">
-            <li>
-              <button className="w-full text-left px-3 py-2 hover:bg-muted/50" onClick={() => setOpen(false)}>
-                (future) Switch organization…
-              </button>
-            </li>
-            <li>
-              <Link to="/account" className="block px-3 py-2 hover:bg-muted/50" onClick={() => setOpen(false)}>
-                Account & Org Settings
-              </Link>
-            </li>
-          </ul>
-        </div>
-      )}
-    </div>
   );
 }

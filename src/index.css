@@ -200,6 +200,59 @@ body {
   font-weight: 600;
 }
 
+/* Gotham Vending Header */
+.gv-header {
+  height: 56px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.gv-breadcrumb-slot {
+  flex: 1;
+}
+
+.gv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gv-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  height: 34px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.gv-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.gv-input::placeholder {
+  color: var(--muted);
+}
+
+.gv-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
 .gv-icon {
   width: 18px;
   text-align: center;
