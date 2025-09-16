@@ -24,7 +24,14 @@ export default function QAOverview(){
 
   async function runAudit(){
     setBusy(true);
-    try { setRoutes(await checkRoutes(EXPECTED)); }
+    try { 
+      // Debug page structure
+      console.log('root?', !!document.getElementById('root'));
+      console.log('gv-page?', !!document.querySelector('.gv-page'));
+      console.log('pathname:', location.pathname);
+      
+      setRoutes(await checkRoutes(EXPECTED)); 
+    }
     finally { setBusy(false); }
   }
 
