@@ -267,7 +267,7 @@ body {
 
 .btn {
   background: var(--primary);
-  color: #ffffff;   /* white text works better on color button */
+  color: #ffffff;
   border: none;
   height: 34px;
   padding: 0 12px;
@@ -275,7 +275,8 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-.btn:hover { background: var(--primary-600); }
+.btn:hover{ background: var(--primary-600); }
+.btn:disabled{ opacity: .6; cursor: not-allowed; }
 
 .btn:focus {
   outline: none;
