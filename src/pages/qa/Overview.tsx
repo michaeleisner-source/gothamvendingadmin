@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react';
 import { checkRoutes, getSidebarPaths } from '../../lib/qaAudit';
+import { Card } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 
 const EXPECTED = [
   '/leads','/installs',
@@ -29,47 +32,78 @@ export default function QAOverview(){
     finally { setBusy(false); }
   }
 
-  return (
-    <div>
-      <div className="card" style={{marginBottom:12, display:'flex', gap:12, alignItems:'center', flexWrap:'wrap'}}>
-        <div style={{fontWeight:800}}>QA Overview</div>
-        <button className="btn" onClick={runAudit} disabled={busy}>{busy ? 'Running…' : 'Run Audit'}</button>
-        <button className="btn" onClick={()=>{
-          const payload = { when:new Date().toISOString(), routes };
-          navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-        }}>Copy Results JSON</button>
-      </div>
+  console.log('QA Overview rendering...', { busy, routesCount: routes.length });
 
-      <div className="card" style={{marginBottom:12}}>
-        <div style={{fontWeight:700, marginBottom:6}}>Routes — Broken / Empty</div>
-        {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Click <b>Run Audit</b>.</div> : (
-          <table className="gv-table">
-            <thead><tr><th>Path</th><th>Status</th><th>ms</th><th>Breadcrumb</th><th>UI</th></tr></thead>
-            <tbody>
+  return (
+    <div className="p-6 space-y-6">
+      <Card className="p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold">QA Overview</h1>
+          <Button onClick={runAudit} disabled={busy}>
+            {busy ? 'Running…' : 'Run Audit'}
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={()=>{
+              const payload = { when:new Date().toISOString(), routes };
+              navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+            }}
+          >
+            Copy Results JSON
+          </Button>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Routes — Broken / Empty</h2>
+        {routes.length === 0 ? (
+          <p className="text-muted-foreground">Click <strong>Run Audit</strong> to begin.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Path</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>ms</TableHead>
+                <TableHead>Breadcrumb</TableHead>
+                <TableHead>UI</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {summary.broken.map((r:any) => (
-                <tr key={r.path}>
-                  <td>{r.path}</td><td>{r.status}</td><td>{r.ms}</td>
-                  <td>{r.breadcrumb || '—'}</td>
-                  <td>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</td>
-                </tr>
+                <TableRow key={r.path}>
+                  <TableCell>{r.path}</TableCell>
+                  <TableCell>{r.status}</TableCell>
+                  <TableCell>{r.ms}</TableCell>
+                  <TableCell>{r.breadcrumb || '—'}</TableCell>
+                  <TableCell>{r.hasTable ? 'table' : r.hasCard ? 'card' : 'none'}</TableCell>
+                </TableRow>
               ))}
               {summary.broken.length === 0 && (
-                <tr><td colSpan={5} style={{color:'var(--muted)', padding:'12px'}}>All routes OK 🎉</td></tr>
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-4">
+                    All routes OK 🎉
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </Card>
 
-      <div className="card">
-        <div style={{fontWeight:700, marginBottom:6}}>Missing from Sidebar</div>
-        {routes.length === 0 ? <div style={{color:'var(--muted)'}}>Run audit first.</div> : (
-          <ul style={{margin:0, paddingLeft:18}}>
-            {summary.missingLinks.map(p => <li key={p}>{p}</li>)}
-            {summary.missingLinks.length === 0 && <li style={{color:'var(--muted)'}}>None ✅</li>}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Missing from Sidebar</h2>
+        {routes.length === 0 ? (
+          <p className="text-muted-foreground">Run audit first.</p>
+        ) : (
+          <ul className="list-disc list-inside space-y-1">
+            {summary.missingLinks.map(p => <li key={p} className="text-sm">{p}</li>)}
+            {summary.missingLinks.length === 0 && (
+              <li className="text-muted-foreground text-sm">None ✅</li>
+            )}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
