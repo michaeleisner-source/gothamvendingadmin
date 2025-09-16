@@ -53,8 +53,10 @@ export const NAV: NavSection[] = [
     { label: "What's New", path: '/changelog', icon: '📰' },
   ]},
   { title: 'QA & Tools', expandable: true, devOnly: true, items: [
+    { label: 'QA Overview', path: '/qa/overview', icon: '🔍' },
     { label: 'QA Smoke Test', path: '/qa/smoke', icon: '🧪' },
     { label: 'Seed Demo Data', path: '/qa/seed', icon: '🌱' },
+    { label: 'QA Launcher', path: '/qa', icon: '🚀' },
   ]},
 ];
 
