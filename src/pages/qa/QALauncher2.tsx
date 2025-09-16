@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Gauge, FileText, MapPin, Factory, Package, DollarSign, Scale, Wrench, HelpCircle, ClipboardCheck, Building2, Receipt, Landmark, CreditCard, ShieldCheck, Truck, BarChart3 } from "lucide-react";
+import {
+  Gauge, FileText, MapPin, Factory, Package,
+  DollarSign, Scale, Wrench, HelpCircle, Building2,
+  Receipt, Landmark, CreditCard, ShieldCheck, Truck, BarChart3
+} from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ReactNode; note?: string; };
 const mk = (to:string, label:string, icon:React.ReactNode, note?:string): Item => ({ to, label, icon, note });
@@ -15,7 +19,7 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       mk("/prospects", "Prospects (Kanban)", <FileText className="h-4 w-4" />),
       mk("/locations", "Locations (Sites & Contracts)", <MapPin className="h-4 w-4" />),
-      mk("/prospects/convert", "Convert Prospect → Location", <ClipboardCheck className="h-4 w-4" />, "expects ?prospect=<id>")
+      mk("/prospects/convert", "Convert Prospect → Location", <Receipt className="h-4 w-4" />, "expects ?prospect=<id>")
     ]
   },
   {
