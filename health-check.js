@@ -1,4 +1,5 @@
-(async () => {
+// Define global QA smoke test function
+window.runQASmoke = async () => {
   // Minimal QA check using your Supabase Edge Functions
   const sb = window.supabase || window._qa_sb;
   if (!sb) { console.error('No Supabase client on page. Tell me: NO CLIENT'); return; }
@@ -44,4 +45,7 @@
   window.__qa = { me, org, sales, audit, out };
   console.log('Details stored at window.__qa — expand it and copy/paste here.');
   return out;
-})();
+};
+
+// Auto-run on script load (optional - comment out if you only want manual calls)
+// window.runQASmoke();
