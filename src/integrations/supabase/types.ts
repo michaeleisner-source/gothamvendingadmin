@@ -3385,6 +3385,10 @@ export type Database = {
         Args: { p_org_name?: string }
         Returns: string
       }
+      bootstrap_qa_org: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       calculate_processor_fees: {
         Args: {
           p_amount_cents: number
