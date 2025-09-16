@@ -231,9 +231,8 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--primary));
+  background: linear-gradient(135deg,var(--accent),var(--primary));
   border: 1px solid var(--border);
-  cursor: pointer;
 }
 
 /* Theme Switcher Button */
@@ -262,22 +261,17 @@ body {
   border-color: var(--primary);
 }
 
-/* General Button Styles */
 .btn {
   background: var(--primary);
-  color: white;
+  color: #ffffff;   /* white text works better on color button */
   border: none;
   height: 34px;
   padding: 0 12px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
 }
-
-.btn:hover {
-  background: var(--primary-600);
-}
+.btn:hover { background: var(--primary-600); }
 
 .btn:focus {
   outline: none;
