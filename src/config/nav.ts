@@ -83,8 +83,8 @@ export const NAV: NavSection[] = [
     { label: 'Glossary', path: '/help/glossary', icon: '📖' },
     { label: 'Changelog', path: '/changelog', icon: '📝' },
     { label: 'QA Launcher', path: '/qa/launcher2', icon: '🚀', devOnly: true },
-    { label: 'Quick Seed', path: '/qa/seed', icon: '🌱', devOnly: true },
-    { label: 'QA Smoke Test', path: '/qa/smoke', icon: '🧪', devOnly: true },
+    { label: 'Quick Seed', path: '/qa/seed', icon: '🌱' },
+    { label: 'QA Smoke Test', path: '/qa/smoke', icon: '🧪' },
     { label: 'Ops Console', path: '/ops/console', icon: '🖥️', devOnly: true },
   ]},
   { title: 'Quick Actions', expandable: false, items: [
