@@ -47,6 +47,73 @@ window.runQASmoke = async () => {
   return out;
 };
 
+// ---- CSV Export Helpers ----
+function toCSV(rows) {
+  if (!rows || !rows.length) return "id,org_id,machine_id,product_id,quantity,price,cost,created_at\n";
+  const headers = Object.keys(rows[0]);
+  const escape = (v) => {
+    if (v === null || v === undefined) return "";
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [
+    headers.join(","),
+    ...rows.map(r => headers.map(h => escape(r[h])).join(","))
+  ];
+  return lines.join("\n");
+}
+
+async function fetchSalesForCSV(days = 30) {
+  const sb = window.supabase || window._qa_sb;
+  if (!sb) throw new Error("Supabase client not found on page.");
+
+  // Pick up the current session token if present (same pattern as runQASmoke)
+  let accessToken = null;
+  try {
+    const { data } = await sb.auth.getSession();
+    accessToken = data?.session?.access_token || null;
+  } catch { /* ignore */ }
+
+  const { data, error } = await sb.functions.invoke("reports-sales-summary", {
+    body: { days },
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+  });
+
+  if (error) throw new Error(error.message || "Failed to fetch sales.");
+  // Accept either { rows: [...] } or an array
+  const rows = Array.isArray(data?.rows) ? data.rows : (Array.isArray(data) ? data : []);
+  return rows;
+}
+
+window.exportSalesCSV = async function(days = 30) {
+  try {
+    const rows = await fetchSalesForCSV(days);
+    const csv = toCSV(rows);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    a.href = url;
+    a.download = `gotham-sales-last-${days}-days-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    console.log(`Exported ${rows.length} rows to CSV.`);
+  } catch (e) {
+    console.error("CSV export failed:", e?.message || e);
+    alert(`CSV export failed: ${e?.message || e}`);
+  }
+};
+
+// Wire the button automatically if present
+(function wireCsvButton() {
+  const btn = document.getElementById("exportCsvBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => window.exportSalesCSV(30));
+  console.log("Export CSV button wired.");
+})();
+
 // === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
 window.runQADiagnose = () => {
   const qa = window.__qa || {};
