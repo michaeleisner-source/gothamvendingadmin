@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import SimplifiedSidebar from '../components/SimplifiedSidebar';
 import AppHeader from '../components/AppHeader';
 import Breadcrumbs from '../components/AppBreadcrumbs';
+import ErrorBoundary from '@/components/util/ErrorBoundary';
 import '@/styles/theme.css';
 
 export default function AppLayout() {
@@ -12,8 +13,10 @@ export default function AppLayout() {
         <AppHeader />
         {/* Accessible crumbs; visible crumbs live in header slot */}
         <Breadcrumbs />
-        <main className="gv-page">
-          <Outlet />
+        <main className="gv-page" id="gv-page" style={{padding:'16px'}}>
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
