@@ -4,7 +4,6 @@ import Sidebar from "../components/Sidebar";
 import HelpBot from "../components/HelpBot";
 import ScopeBar from "@/components/ScopeBar";
 import AppHeader from "@/components/AppHeader";
-import { AppBreadcrumbs } from "@/components/AppBreadcrumbs";
 import { useRouterLinkInterceptor } from "../hooks/useRouterLinkInterceptor";
 
 export default function AppLayout() {

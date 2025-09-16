@@ -1,62 +1,62 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
-import { findCurrentNavItem } from '@/config/nav';
+import { useLocation, Link } from 'react-router-dom';
+import { NAV, NavSection } from '@/config/nav';
+import { useEffect } from 'react';
 
-export function AppBreadcrumbs() {
-  const location = useLocation();
-  const currentNav = findCurrentNavItem(location.pathname);
-
-  if (!currentNav) {
-    // Fallback for unknown routes
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    return (
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Home className="size-4" />
-        <ChevronRight className="size-4" />
-        <span className="text-foreground capitalize">
-          {pathSegments[pathSegments.length - 1] || 'Home'}
-        </span>
-      </nav>
-    );
+function matchNav(path: string) {
+  const norm = (p:string)=> (p || '/').replace(/\/+$/,'') || '/';
+  for (const sec of NAV) {
+    for (const item of sec.items) {
+      if (norm(item.path) === norm(path)) {
+        return { section: sec, item };
+      }
+    }
   }
+  return null;
+}
 
-  const { section, item } = currentNav;
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const isDetailPage = pathSegments.length > 2;
+export default function Breadcrumbs() {
+  const loc = useLocation();
+  const path = loc.pathname;
+  const normPath = path.replace(/\/+$/,'') || '/';
 
+  // push current breadcrumb into header slot (keeps header clean)
+  useEffect(() => {
+    const slot = document.getElementById('gv-breadcrumb-slot');
+    if (!slot) return;
+    const container = document.createElement('div');
+    container.className = 'gv-breadcrumb';
+    const matched = matchNav(normPath);
+
+    const parts: string[] = [];
+    if (matched) {
+      const sectionFirst = matched.section.items[0]?.path || '/';
+      parts.push(`<a href="${sectionFirst}">${matched.section.title}</a>`);
+      parts.push(`<span class="sep">›</span>`);
+      parts.push(`<a href="${matched.item.path}">${matched.item.label}</a>`);
+      const segs = normPath.split('/').filter(Boolean);
+      if (segs.length > 2) {
+        parts.push(`<span class="sep">›</span>`);
+        parts.push(`<span class="current">${decodeURIComponent(segs[segs.length - 1])}</span>`);
+      }
+    } else {
+      parts.push(`<span class="current">${normPath}</span>`);
+    }
+    container.innerHTML = parts.join('');
+
+    slot.innerHTML = '';
+    slot.appendChild(container);
+  }, [normPath]);
+
+  // also render an accessible breadcrumb in-page
+  const matched = matchNav(normPath);
   return (
-    <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-      {/* Home icon */}
-      <Home className="size-4" />
-      
-      {/* Section link */}
-      <ChevronRight className="size-4" />
-      <Link 
-        to={section.items[0]?.path || '/'} 
-        className="hover:text-foreground transition-colors"
-      >
-        {section.title}
-      </Link>
-      
-      {/* Current item */}
-      <ChevronRight className="size-4" />
-      <Link 
-        to={item.path} 
-        className={isDetailPage ? "hover:text-foreground transition-colors" : "text-foreground font-medium"}
-      >
-        {item.label}
-      </Link>
-      
-      {/* Detail page indicator */}
-      {isDetailPage && (
-        <>
-          <ChevronRight className="size-4" />
-          <span className="text-foreground font-medium capitalize">
-            {decodeURIComponent(pathSegments[pathSegments.length - 1])}
-          </span>
-        </>
-      )}
+    <nav aria-label="Breadcrumb" className="sr-only">
+      {matched ? (
+        <ol>
+          <li><Link to={matched.section.items[0]?.path || '/'}>{matched.section.title}</Link></li>
+          <li><Link to={matched.item.path}>{matched.item.label}</Link></li>
+        </ol>
+      ) : <span>{normPath}</span>}
     </nav>
   );
 }
