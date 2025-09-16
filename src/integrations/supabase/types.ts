@@ -3126,6 +3126,48 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          body: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          org_id: string
+          priority: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          body?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          org_id: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          body?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          org_id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tax_configs: {
         Row: {
           applies_to: string | null
