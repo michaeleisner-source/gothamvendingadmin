@@ -1,8 +1,4 @@
 import { useGlobalDays } from '@/hooks/useGlobalDays';
-import { PageHeader } from '@/components/common/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download, FileSpreadsheet } from 'lucide-react';
 
 export default function ExportsPage(){
   const days = useGlobalDays();
@@ -19,52 +15,17 @@ export default function ExportsPage(){
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Data Exports"
-        description={`Export CSV reports for the last ${days} days`}
-      />
+    <div>
+      <div style={{color:'var(--muted)', fontSize:12, marginBottom:12}}>
+        Global window: last <b>{days}</b> days
+      </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="grid gap-4 max-w-md">
-            <Button 
-              onClick={() => call('exportSalesCSV', `sales-last-${days}-days`)}
-              className="flex items-center gap-2 justify-start"
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              Export Sales (CSV)
-            </Button>
-            
-            <Button 
-              onClick={() => call('exportSalesCSV', `machines-last-${days}-days`)}
-              className="flex items-center gap-2 justify-start"
-              variant="outline"
-            >
-              <Download className="h-4 w-4" />
-              Export Machine Performance (CSV)
-            </Button>
-            
-            <Button 
-              onClick={() => call('exportSalesCSV', `products-last-${days}-days`)}
-              className="flex items-center gap-2 justify-start"
-              variant="outline"
-            >
-              <Download className="h-4 w-4" />
-              Export Product Performance (CSV)
-            </Button>
-            
-            <Button 
-              onClick={() => call('exportSalesCSV', `locations-last-${days}-days`)}
-              className="flex items-center gap-2 justify-start"
-              variant="outline"
-            >
-              <Download className="h-4 w-4" />
-              Export Location Performance (CSV)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="card" style={{display:'grid', gap:10, padding:16, maxWidth:520}}>
+        <button className="btn" onClick={() => call('exportSalesCSV', `sales-last-${days}-days`)}>Export Sales (CSV)</button>
+        <button className="btn" onClick={() => call('exportSalesCSV', `machines-last-${days}-days`)}>Export Machine Performance (CSV)</button>
+        <button className="btn" onClick={() => call('exportSalesCSV', `products-last-${days}-days`)}>Export Product Performance (CSV)</button>
+        <button className="btn" onClick={() => call('exportSalesCSV', `locations-last-${days}-days`)}>Export Location Performance (CSV)</button>
+      </div>
     </div>
   );
 }
