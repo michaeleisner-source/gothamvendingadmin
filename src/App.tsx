@@ -96,6 +96,10 @@ import QASmoke from "./pages/qa/QASmoke";
 import SystemHealth from "./pages/qa/SystemHealth";
 import DatabaseProbe from "./pages/qa/DatabaseProbe";
 import PerformanceTest from "./pages/qa/PerformanceTest";
+import AdminUsers from "./pages/AdminUsers";
+import AdminSettings from "./pages/AdminSettings";
+import AdminBilling from "./pages/AdminBilling";
+import ServiceMaintenance from "./pages/ServiceMaintenance";
 import QAOverview from "./pages/qa/Overview";
 
 const queryClient = new QueryClient();
@@ -183,15 +187,9 @@ const App = () => (
             <Route path="/help/glossary" element={<GlossaryPage />} />
             <Route path="/help/article/:id" element={<HelpArticle />} />
             <Route path="/changelog" element={<ChangelogPage />} />
-            <Route path="/admin/users" element={
-              <ScaffoldPage title="Users & Roles" description="Manage user access and permissions (Owner, Manager, Tech, Read-only)." />
-            } />
-            <Route path="/admin/settings" element={
-              <ScaffoldPage title="Organization Settings" description="Currency, timezone, default margin target, and tax rate." />
-            } />
-            <Route path="/admin/billing" element={
-              <ScaffoldPage title="Billing & Subscriptions" description="Plan, invoices, and payment methods." />
-            } />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/billing" element={<AdminBilling />} />
             <Route path="/contracts/:id" element={<ContractView />} />
             <Route path="/health" element={<Health />} />
           <Route path="/insurance" element={<Insurance />} />
