@@ -47,5 +47,137 @@ window.runQASmoke = async () => {
   return out;
 };
 
+// === DIAGNOSTIC SUGGESTIONS (append below your runQASmoke) ===
+window.runQADiagnose = () => {
+  const qa = window.__qa || {};
+  const out = qa.out || [];
+  const advice = [];
+
+  const find = (name) => out.find(x => x.check === name) || { status:'', info:'' };
+
+  // 1) auth-whoami
+  {
+    const a = find('auth-whoami');
+    if (a.status === 'FAIL') {
+      advice.push({
+        title: 'auth-whoami failing',
+        why: 'Likely not logged in or function deployed with wrong JWT settings.',
+        fix: [
+          'Make sure you are logged in on the QA page.',
+          'Deploy with JWT verification ON:',
+          '  supabase functions deploy auth-whoami',
+        ].join('\n')
+      });
+    }
+  }
+
+  // 2) org-current
+  {
+    const a = find('org-current');
+    if (a.status === 'FAIL') {
+      advice.push({
+        title: 'org-current failing',
+        why: 'No default org mapped for the current user, or memberships/orgs table mismatch.',
+        fix: [
+          '-- In SQL editor, seed org + membership (replace YOUR_USER_ID if needed):',
+          "insert into orgs (id, name) values (gen_random_uuid(), 'Gotham Vending') on conflict do nothing;",
+          "insert into memberships (user_id, org_id, is_default)",
+          "select auth.uid(), id, true from orgs where name='Gotham Vending' limit 1",
+          "on conflict (user_id, org_id) do update set is_default = excluded.is_default;",
+        ].join('\n')
+      });
+    }
+  }
+
+  // 3) reports-sales-summary
+  {
+    const a = find('reports-sales-summary');
+    const rowsMatch = a.info?.match(/rows=(\d+)/);
+    const rows = rowsMatch ? Number(rowsMatch[1]) : NaN;
+
+    if (a.status === 'FAIL') {
+      advice.push({
+        title: 'reports-sales-summary failing',
+        why: 'Function error, wrong payload, or RLS/policies blocking.',
+        fix: [
+          'Redeploy function:',
+          '  supabase functions deploy reports-sales-summary',
+          'Ensure request body is JSON with { days: 30 } and Authorization header is Bearer <token>.',
+          'Check RLS: the current user must be a member of the org whose sales are queried.'
+        ].join('\n')
+      });
+    } else if (!isNaN(rows) && rows === 0) {
+      advice.push({
+        title: 'reports-sales-summary has 0 rows',
+        why: 'No recent data for your org — seed a couple of rows to validate the pipeline.',
+        fix: [
+          "-- Replace org_id with real one or use the subselect:",
+          "insert into sales (org_id, machine_id, product_id, quantity, price, cost, created_at) values",
+          "((select id from orgs where name='Gotham Vending' limit 1), 'M-001','P-COKE', 2, 2.00, 0.75, now() - interval '1 day'),",
+          "((select id from orgs where name='Gotham Vending' limit 1), 'M-001','P-CHIPS',1, 1.50, 0.50, now() - interval '2 hours');"
+        ].join('\n')
+      });
+    }
+  }
+
+  // 4) audit-run
+  {
+    const a = find('audit-run');
+    if (a.status === 'FAIL') {
+      advice.push({
+        title: 'audit-run failing',
+        why: 'This function is meant to be callable without JWT. If it 401/NETWORKs, deploy with no-verify-jwt.',
+        fix: [
+          'Deploy with JWT OFF:',
+          '  supabase functions deploy audit-run --no-verify-jwt'
+        ].join('\n')
+      });
+    }
+  }
+
+  // 5) Generic org_id null guard
+  const anyOrgNullHint = /org_id/.test(
+    [qa.sales?.data?.message, qa.me?.data?.message, qa.org?.data?.message].filter(Boolean).join(' ')
+  );
+  if (anyOrgNullHint) {
+    advice.push({
+      title: 'org_id NULL risk detected',
+      why: 'Writes missing org_id cause NOT NULL or policy failures.',
+      fix: [
+        '-- Add trigger to default org_id from user mapping:',
+        'create table if not exists user_org_default (',
+        '  user_id uuid primary key references auth.users(id) on delete cascade,',
+        '  org_id uuid not null references orgs(id)',
+        ');',
+        'create or replace function set_org_id_from_default()',
+        'returns trigger language plpgsql as $$',
+        'begin',
+        '  if NEW.org_id is null then',
+        '    select uod.org_id into NEW.org_id from user_org_default uod where uod.user_id = auth.uid();',
+        '  end if;',
+        '  return NEW;',
+        'end; $$;',
+        'drop trigger if exists trg_sales_set_org on public.sales;',
+        'create trigger trg_sales_set_org',
+        'before insert on public.sales',
+        'for each row execute function set_org_id_from_default();'
+      ].join('\n')
+    });
+  }
+
+  // Print nicely
+  if (!advice.length) {
+    console.log('%cAll checks look good. Nothing to fix ✅', 'color: green; font-weight: bold;');
+  } else {
+    console.log('%cSuggested next actions:', 'color:#0af; font-weight:bold;');
+    advice.forEach((a, i) => {
+      console.group(`${i+1}) ${a.title}`);
+      console.log('Why:', a.why);
+      console.log('Fix:\n' + a.fix);
+      console.groupEnd();
+    });
+  }
+};
+
 // Auto-run on script load (optional - comment out if you only want manual calls)
 // window.runQASmoke();
