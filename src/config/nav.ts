@@ -20,43 +20,41 @@ export const isDevEnv = () =>
 
 // Navigation configuration
 export const NAV: NavSection[] = [
-  { title: 'Pipeline', expandable: true, items: [
-    { label: 'Leads', path: '/leads', icon: '🧲' },
-    { label: 'Installs', path: '/installs', icon: '🛠️' },
+  { title: 'Pipeline', items: [
+    { label: 'Leads',    path: '/leads',    icon: 'lucide:user-plus' },
+    { label: 'Installs', path: '/installs', icon: 'lucide:hammer' },
   ]},
-  { title: 'Operations', expandable: true, items: [
-    { label: 'Locations', path: '/locations', icon: '📍' },
-    { label: 'Machines', path: '/machines', icon: '🗂️' },
-    { label: 'Products', path: '/products', icon: '🛒' },
-    { label: 'Inventory', path: '/inventory', icon: '📦' },
-    { label: 'Purchase Orders', path: '/purchase-orders', icon: '🧾' },
-    { label: 'Service & Maintenance', path: '/service', icon: '🧰' },
+  { title: 'Operations', items: [
+    { label: 'Locations',        path: '/locations',        icon: 'lucide:map-pin' },
+    { label: 'Machines',         path: '/machines',         icon: 'lucide:cpu' },
+    { label: 'Products',         path: '/products',         icon: 'lucide:shopping-bag' },
+    { label: 'Inventory',        path: '/inventory',        icon: 'lucide:boxes' },
+    { label: 'Purchase Orders',  path: '/purchase-orders',  icon: 'lucide:clipboard-list' },
+    { label: 'Service',          path: '/service',          icon: 'lucide:wrench' },
   ]},
-  { title: 'Sales & Reporting', expandable: true, items: [
-    { label: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { label: 'Sales Detail', path: '/sales', icon: '🧮' },
-    { label: 'Machine Performance', path: '/reports/machines', icon: '🤖' },
-    { label: 'Product Performance', path: '/reports/products', icon: '🍫' },
-    { label: 'Location Performance', path: '/reports/locations', icon: '🗺️' },
-    { label: 'Trends', path: '/reports/trends', icon: '📈' },
-    { label: 'Inventory & Stock-outs', path: '/reports/stockouts', icon: '⏳' },
-    { label: 'Exports', path: '/exports', icon: '📥' },
+  { title: 'Sales & Reporting', items: [
+    { label: 'Dashboard',                path: '/dashboard',           icon: 'lucide:layout-dashboard' },
+    { label: 'Sales Detail',             path: '/sales',               icon: 'lucide:receipt-text' },
+    { label: 'Machine Performance',      path: '/reports/machines',    icon: 'lucide:robot' },
+    { label: 'Product Performance',      path: '/reports/products',    icon: 'lucide:candy' },
+    { label: 'Location Performance',     path: '/reports/locations',   icon: 'lucide:map' },
+    { label: 'Trends',                   path: '/reports/trends',      icon: 'lucide:line-chart' },
+    { label: 'Inventory & Stock-outs',   path: '/reports/stockouts',   icon: 'lucide:triangle-alert' },
+    { label: 'Exports',                  path: '/exports',             icon: 'lucide:download' },
   ]},
-  { title: 'Admin', expandable: true, items: [
-    { label: 'Users & Roles', path: '/admin/users', icon: '👥' },
-    { label: 'Org Settings', path: '/admin/settings', icon: '⚙️' },
-    { label: 'Billing', path: '/admin/billing', icon: '💳' },
+  { title: 'Admin', items: [
+    { label: 'Users & Roles', path: '/admin/users',    icon: 'lucide:users' },
+    { label: 'Org Settings',  path: '/admin/settings', icon: 'lucide:settings' },
+    { label: 'Billing',       path: '/admin/billing',  icon: 'lucide:credit-card' },
   ]},
-  { title: 'Help', expandable: true, items: [
-    { label: 'Help Center', path: '/help', icon: '❓' },
-    { label: 'Glossary', path: '/help/glossary', icon: '🔤' },
-    { label: "What's New", path: '/changelog', icon: '📰' },
+  { title: 'Help', items: [
+    { label: 'Help Center', path: '/help',           icon: 'lucide:circle-help' },
+    { label: 'Glossary',    path: '/help/glossary',  icon: 'lucide:book-text' },
+    { label: "What's New",  path: '/changelog',      icon: 'lucide:history' },
   ]},
-  { title: 'QA & Tools', expandable: true, devOnly: true, items: [
-    { label: 'QA Overview', path: '/qa/overview', icon: '🧭' },
-    { label: 'QA Smoke Test', path: '/qa/smoke', icon: '🧪' },
-    { label: 'Seed Demo Data', path: '/qa/seed', icon: '🌱' },
-    { label: 'QA Launcher', path: '/qa', icon: '🚀' },
+  { title: 'QA & Tools', devOnly: true, items: [
+    { label: 'QA Overview', path: '/qa/overview', icon: 'lucide:compass' },
+    { label: 'QA Smoke',    path: '/qa/smoke',    icon: 'lucide:flask-conical' },
   ]},
 ];
 
