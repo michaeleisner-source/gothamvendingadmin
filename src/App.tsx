@@ -157,7 +157,6 @@ const App = () => (
           <Route path="/reports/machine-roi" element={<MachineRoi />} />
           <Route path="/reports/processor-reconciliation" element={<ProcessorReconciliation />} />
             <Route path="/qa" element={<QALauncher />} />
-            <Route path="/qa/smoke" element={<ProtectedRoute><SmokeTest /></ProtectedRoute>} />
             <Route path="/qa/verify" element={<VerifySmoke />} />
             <Route path="/qa/control" element={<QAControl />} />
             <Route path="/ops/console" element={<OpsConsole />} />
