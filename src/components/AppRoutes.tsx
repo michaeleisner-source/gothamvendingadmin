@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import OverviewSmoke from '../pages/qa/OverviewSmoke';
+import QAOverview from '../pages/qa/Overview';
 
 export default function AppRoutes() {
   return (
@@ -8,7 +8,7 @@ export default function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* ✅ SMOKE ROUTE */}
-      <Route path="/qa/overview" element={<OverviewSmoke />} />
+      <Route path="/qa/overview" element={<QAOverview />} />
 
       {/* 404 */}
       <Route path="*" element={<div className="card">Not Found</div>} />
