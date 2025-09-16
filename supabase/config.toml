@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.sales-totals]
 verify_jwt = false
+
+[functions.product-performance]
+verify_jwt = false

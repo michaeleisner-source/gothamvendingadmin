@@ -6,6 +6,12 @@ type SalesTotalsParams = {
   days?: number;
 };
 
+type ProductPerformanceParams = {
+  startISO?: string;
+  endISO?: string;
+  days?: number;
+};
+
 export class EdgeFunctionClient {
   /**
    * Call an edge function with automatic auth header handling
@@ -41,6 +47,13 @@ export class EdgeFunctionClient {
   static async getSalesTotals(params?: SalesTotalsParams) {
     return this.call('sales-totals', params);
   }
+
+  /**
+   * Get product performance metrics for a date range
+   */
+  static async getProductPerformance(params?: ProductPerformanceParams) {
+    return this.call('product-performance', params);
+  }
 }
 
 // Example usage:
@@ -49,3 +62,6 @@ export class EdgeFunctionClient {
 //
 // const totals = await EdgeFunctionClient.getSalesTotals({ days: 30 });
 // console.log('Sales totals:', totals);
+//
+// const products = await EdgeFunctionClient.getProductPerformance({ days: 30 });
+// console.log('Product performance:', products);
