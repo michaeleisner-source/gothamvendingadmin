@@ -133,6 +133,7 @@ const App = () => (
             } />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/dashboard" element={<ProspectDashboard />} />
+            <Route path="/prospectsdashboard" element={<ProspectDashboard />} />
             <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/convert" element={<ConvertProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
