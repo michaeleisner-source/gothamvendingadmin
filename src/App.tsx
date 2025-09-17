@@ -90,6 +90,17 @@ function getDemoSales(days = 30): SaleRow[] {
   rows.sort((a,b)=> (a.date<b.date?1:-1));
   return rows;
 }
+function sum(arr:number[]) { return arr.reduce((a,b)=>a+b,0); }
+function uniq<T>(arr:T[]) { return Array.from(new Set(arr)); }
+function pct(n:number, d:number) { if (!d) return '0%'; return `${((n/d)*100).toFixed(1)}%`; }
+function Bar({value, max}:{value:number; max:number}) {
+  const w = max ? Math.max(2, (value/max)*100) : 0;
+  return (
+    <div style={{height:8, background:'#eef2ff', borderRadius:999}}>
+      <div style={{height:'100%', width:`${w}%`, background:'#6366f1', borderRadius:999}} />
+    </div>
+  );
+}
 
 /* =========================================================
    PAGES
@@ -161,8 +172,325 @@ function SalesDetailPage() {
   );
 }
 
+/* ---------- Aggregations shared by performance pages ---------- */
+type AggRow = { key:string; tx:number; qty:number; revenue:number };
+function aggregateBy(rows: SaleRow[], key: keyof SaleRow): AggRow[] {
+  const map = new Map<string, AggRow>();
+  for (const r of rows) {
+    const k = String(r[key]);
+    const prev = map.get(k) || { key:k, tx:0, qty:0, revenue:0 };
+    prev.tx += 1; prev.qty += r.qty; prev.revenue += r.revenue;
+    map.set(k, prev);
+  }
+  const arr = Array.from(map.values());
+  arr.forEach(a => a.revenue = +a.revenue.toFixed(2));
+  arr.sort((a,b)=> b.revenue - a.revenue);
+  return arr;
+}
+function KPI({label, value}:{label:string; value:string}) {
+  return (
+    <div style={{...cardStyle, padding:'12px'}}>
+      <div style={{fontSize:12, color:'#64748b'}}>{label}</div>
+      <div style={{fontWeight:800, fontSize:20, marginTop:4}}>{value}</div>
+    </div>
+  );
+}
+
+/* ---------- Product Performance ---------- */
+function ProductPerformancePage() {
+  const [days, setDays] = React.useState(30);
+  const rows = React.useMemo(()=>getDemoSales(days),[days]);
+  const byProd = React.useMemo(()=>aggregateBy(rows,'product'),[rows]);
+  const totalRev = +rows.reduce((s,r)=>s+r.revenue,0).toFixed(2);
+  const maxRev = byProd[0]?.revenue || 0;
+
+  React.useEffect(()=>{
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Product Performance' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  },[]);
+
+  const view = byProd.map(r => ({
+    product: r.key,
+    tx: r.tx,
+    qty: r.qty,
+    revenueFmt: `$${r.revenue.toFixed(2)}`,
+    share: pct(r.revenue, totalRev),
+    _rev: r.revenue
+  }));
+
+  const cols = [
+    { key:'product',   label:'Product' },
+    { key:'tx',        label:'Tx', align:'right', width:80 },
+    { key:'qty',       label:'Qty', align:'right', width:80 },
+    { key:'revenueFmt',label:'Revenue', align:'right', width:110 },
+    { key:'share',     label:'Share', align:'right', width:90 },
+  ] as Col<any>[];
+
+  function exportCSV(){
+    const csv = toCSV(byProd);
+    downloadCSV(`gotham-products-last-${days}-days`, csv);
+  }
+
+  return (
+    <div style={{display:'grid', gap:12}}>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12}}>
+        <KPI label="Days" value={`${days}`} />
+        <KPI label="Products" value={`${byProd.length}`} />
+        <KPI label="Total Tx" value={String(rows.length)} />
+        <KPI label="Total Revenue" value={`$${totalRev.toLocaleString()}`} />
+      </div>
+
+      <div className="card" style={{...cardStyle, display:'flex', alignItems:'center', gap:12}}>
+        <div style={{fontWeight:800}}>Product Performance</div>
+        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
+          Days
+          <input type="number" min={1} max={365} value={days}
+                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
+                 style={{width:80, padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:8}}/>
+        </label>
+        <button onClick={exportCSV} className="btn"
+                style={{marginLeft:'auto', padding:'8px 12px', border:'1px solid #e5e7eb', borderRadius:8, background:'#fff'}}>
+          Export CSV
+        </button>
+      </div>
+
+      <div className="card" style={cardStyle}>
+        <div style={{display:'grid', gap:10}}>
+          {byProd.slice(0,5).map((r)=>(
+            <div key={r.key}>
+              <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#475569', marginBottom:6}}>
+                <div>{r.key}</div>
+                <div><b>${r.revenue.toFixed(2)}</b> • {pct(r.revenue,totalRev)}</div>
+              </div>
+              <Bar value={r.revenue} max={maxRev} />
+            </div>
+          ))}
+        </div>
+        <div style={{height:12}} />
+        <SimpleTable columns={cols as any} rows={view as any} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Machine Performance ---------- */
+function MachinePerformancePage() {
+  const [days, setDays] = React.useState(30);
+  const rows = React.useMemo(()=>getDemoSales(days),[days]);
+  const byMachine = React.useMemo(()=>aggregateBy(rows,'machine'),[rows]);
+  const totalRev = +rows.reduce((s,r)=>s+r.revenue,0).toFixed(2);
+  const maxRev = byMachine[0]?.revenue || 0;
+
+  React.useEffect(()=>{
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Machine Performance' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  },[]);
+
+  const machineToLocs = new Map<string, Set<string>>();
+  for (const r of rows) {
+    if (!machineToLocs.has(r.machine)) machineToLocs.set(r.machine, new Set());
+    machineToLocs.get(r.machine)!.add(r.location);
+  }
+
+  const view = byMachine.map(r => ({
+    machine: r.key,
+    tx: r.tx,
+    qty: r.qty,
+    revenueFmt: `$${r.revenue.toFixed(2)}`,
+    locations: machineToLocs.get(r.key)?.size || 1,
+    share: pct(r.revenue, totalRev),
+    _rev: r.revenue
+  }));
+
+  const cols = [
+    { key:'machine',   label:'Machine', width:100 },
+    { key:'locations', label:'#Locations', align:'right', width:110 },
+    { key:'tx',        label:'Tx', align:'right', width:80 },
+    { key:'qty',       label:'Qty', align:'right', width:80 },
+    { key:'revenueFmt',label:'Revenue', align:'right', width:110 },
+    { key:'share',     label:'Share', align:'right', width:90 },
+  ] as Col<any>[];
+
+  function exportCSV(){
+    const csv = toCSV(byMachine);
+    downloadCSV(`gotham-machines-last-${days}-days`, csv);
+  }
+
+  return (
+    <div style={{display:'grid', gap:12}}>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12}}>
+        <KPI label="Days" value={`${days}`} />
+        <KPI label="Machines" value={`${byMachine.length}`} />
+        <KPI label="Total Tx" value={String(rows.length)} />
+        <KPI label="Total Revenue" value={`$${totalRev.toLocaleString()}`} />
+      </div>
+
+      <div className="card" style={{...cardStyle, display:'flex', alignItems:'center', gap:12}}>
+        <div style={{fontWeight:800}}>Machine Performance</div>
+        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
+          Days
+          <input type="number" min={1} max={365} value={days}
+                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
+                 style={{width:80, padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:8}}/>
+        </label>
+        <button onClick={exportCSV} className="btn"
+                style={{marginLeft:'auto', padding:'8px 12px', border:'1px solid #e5e7eb', borderRadius:8, background:'#fff'}}>
+          Export CSV
+        </button>
+      </div>
+
+      <div className="card" style={cardStyle}>
+        <div style={{display:'grid', gap:10}}>
+          {byMachine.slice(0,5).map((r)=>(
+            <div key={r.key}>
+              <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#475569', marginBottom:6}}>
+                <div>{r.key}</div>
+                <div><b>${r.revenue.toFixed(2)}</b> • {pct(r.revenue,totalRev)}</div>
+              </div>
+              <Bar value={r.revenue} max={maxRev} />
+            </div>
+          ))}
+        </div>
+        <div style={{height:12}} />
+        <SimpleTable columns={cols as any} rows={view as any} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Location Performance ---------- */
+function LocationPerformancePage() {
+  const [days, setDays] = React.useState(30);
+  const rows = React.useMemo(()=>getDemoSales(days),[days]);
+  const byLoc = React.useMemo(()=>aggregateBy(rows,'location'),[rows]);
+  const totalRev = +rows.reduce((s,r)=>s+r.revenue,0).toFixed(2);
+  const maxRev = byLoc[0]?.revenue || 0;
+
+  React.useEffect(()=>{
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Location Performance' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  },[]);
+
+  const locToMachines = new Map<string, Set<string>>();
+  for (const r of rows) {
+    if (!locToMachines.has(r.location)) locToMachines.set(r.location, new Set());
+    locToMachines.get(r.location)!.add(r.machine);
+  }
+
+  const view = byLoc.map(r => ({
+    location: r.key,
+    machines: locToMachines.get(r.key)?.size || 1,
+    tx: r.tx,
+    qty: r.qty,
+    revenueFmt: `$${r.revenue.toFixed(2)}`,
+    share: pct(r.revenue, totalRev),
+    _rev: r.revenue
+  }));
+
+  const cols = [
+    { key:'location',  label:'Location' },
+    { key:'machines',  label:'#Machines', align:'right', width:110 },
+    { key:'tx',        label:'Tx', align:'right', width:80 },
+    { key:'qty',       label:'Qty', align:'right', width:80 },
+    { key:'revenueFmt',label:'Revenue', align:'right', width:110 },
+    { key:'share',     label:'Share', align:'right', width:90 },
+  ] as Col<any>[];
+
+  function exportCSV(){
+    const csv = toCSV(byLoc);
+    downloadCSV(`gotham-locations-last-${days}-days`, csv);
+  }
+
+  return (
+    <div style={{display:'grid', gap:12}}>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12}}>
+        <KPI label="Days" value={`${days}`} />
+        <KPI label="Locations" value={`${byLoc.length}`} />
+        <KPI label="Total Tx" value={String(rows.length)} />
+        <KPI label="Total Revenue" value={`$${totalRev.toLocaleString()}`} />
+      </div>
+
+      <div className="card" style={{...cardStyle, display:'flex', alignItems:'center', gap:12}}>
+        <div style={{fontWeight:800}}>Location Performance</div>
+        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
+          Days
+          <input type="number" min={1} max={365} value={days}
+                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
+                 style={{width:80, padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:8}}/>
+        </label>
+        <button onClick={exportCSV} className="btn"
+                style={{marginLeft:'auto', padding:'8px 12px', border:'1px solid #e5e7eb', borderRadius:8, background:'#fff'}}>
+          Export CSV
+        </button>
+      </div>
+
+      <div className="card" style={cardStyle}>
+        <div style={{display:'grid', gap:10}}>
+          {byLoc.slice(0,5).map((r)=>(
+            <div key={r.key}>
+              <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#475569', marginBottom:6}}>
+                <div>{r.key}</div>
+                <div><b>${r.revenue.toFixed(2)}</b> • {pct(r.revenue,totalRev)}</div>
+              </div>
+              <Bar value={r.revenue} max={maxRev} />
+            </div>
+          ))}
+        </div>
+        <div style={{height:12}} />
+        <SimpleTable columns={cols as any} rows={view as any} />
+      </div>
+    </div>
+  );
+}
+
 /* =========================================================
-   LAYOUT (SIDEBAR + BREADCRUMBS + MAIN)
+   MODERN INLINE ICONS (minimal, crisp)
+========================================================= */
+function Icon({name}:{name:string}) {
+  const common = { fill:'none', stroke:'currentColor', strokeWidth:1.8, strokeLinecap:'round', strokeLinejoin:'round' } as any;
+  const c = '#334155';
+  const size = 18;
+  const paths: Record<string, JSX.Element> = {
+    chart: (<> <path d="M4 4v12a2 2 0 0 0 2 2h12" {...common}/> <path d="M8 14V9"/><path d="M12 14V6"/><path d="M16 14v-4"/></>),
+    table: (<> <rect x="3" y="5" width="18" height="14" rx="2" {...common}/> <path d="M3 10h18"/><path d="M9 5v14"/></>),
+    box:   (<> <rect x="3" y="6" width="18" height="12" rx="2" {...common}/><path d="M3 10h18"/></>),
+    pin:   (<> <path d="M12 21s7-5.4 7-11a7 7 0 0 0-14 0c0 5.6 7 11 7 11Z" {...common}/><circle cx="12" cy="10" r="2" {...common}/></>),
+    sliders: (<> <path d="M4 6h16"/><path d="M10 6v8"/><path d="M4 12h16"/><path d="M14 12v8"/><path d="M4 18h16"/><path d="M6 18v-8" /></>),
+    users: (<> <path d="M16 11a4 4 0 1 0-8 0"/><path d="M3 20a7 7 0 0 1 18 0"/></>),
+    card: (<> <rect x="3" y="6" width="18" height="12" rx="2" {...common}/><path d="M3 10h18"/></>),
+    help: (<> <circle cx="12" cy="12" r="9" {...common}/><path d="M9.5 9a3 3 0 1 1 4.9 2.4c-.9.6-1.4 1.1-1.4 2.1"/><path d="M12 17h.01"/></>),
+    book: (<> <path d="M4 19h12a2 2 0 0 0 2-2V6"/><path d="M4 19a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12"/><path d="M8 7h8"/></>),
+    activity: (<> <path d="M22 12h-4l-3 7-6-14-3 7H2"/></>)
+  };
+  const node = paths[name] || paths.table;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{color:c, flex:'0 0 auto'}} aria-hidden>
+      {node}
+    </svg>
+  );
+}
+function iconFor(label:string){
+  const l = label.toLowerCase();
+  if (l.includes('dashboard') || l.includes('trends')) return 'activity';
+  if (l.includes('sales') || l.includes('performance') || l.includes('reports')) return 'chart';
+  if (l.includes('locations') || l.includes('installs')) return 'pin';
+  if (l.includes('machines') || l.includes('inventory') || l.includes('products') || l.includes('purchase')) return 'box';
+  if (l.includes('users') || l.includes('roles')) return 'users';
+  if (l.includes('billing') || l.includes('card')) return 'card';
+  if (l.includes('settings') || l.includes('service')) return 'sliders';
+  if (l.includes('help') || l.includes('glossary')) return 'help';
+  if (l.includes('changelog')) return 'book';
+  return 'table';
+}
+
+/* =========================================================
+   NAV / LAYOUT (SIDEBAR + BREADCRUMBS + MAIN)
 ========================================================= */
 const NAV = [
   { title:'Pipeline', items:[ {label:'Leads', path:'/leads'}, {label:'Installs', path:'/installs'} ] },
@@ -216,6 +544,7 @@ function Sidebar(){
                     background:isActive ? '#eef2ff' : 'transparent'
                   })}
                 >
+                  <Icon name={iconFor(item.label)} />
                   <span>{item.label}</span>
                 </NavLink>
               ))}
@@ -280,8 +609,11 @@ export default function App(){
         <Routes>
           {/* default → Sales so you immediately see data */}
           <Route index element={<Navigate to="/sales" replace />} />
-          {/* real page with data */}
-          <Route path="/sales" element={<SalesDetailPage />} />
+          {/* real pages with data */}
+          <Route path="/sales"               element={<SalesDetailPage />} />
+          <Route path="/reports/products"    element={<ProductPerformancePage />} />
+          <Route path="/reports/machines"    element={<MachinePerformancePage />} />
+          <Route path="/reports/locations"   element={<LocationPerformancePage />} />
           {/* the rest are scaffolds so nav works */}
           <Route path="/leads"              element={<ScaffoldPage title="Leads" />} />
           <Route path="/installs"           element={<ScaffoldPage title="Installs" />} />
@@ -292,9 +624,6 @@ export default function App(){
           <Route path="/inventory"          element={<ScaffoldPage title="Inventory" />} />
           <Route path="/purchase-orders"    element={<ScaffoldPage title="Purchase Orders" />} />
           <Route path="/service"            element={<ScaffoldPage title="Service" />} />
-          <Route path="/reports/machines"   element={<ScaffoldPage title="Machine Performance" />} />
-          <Route path="/reports/products"   element={<ScaffoldPage title="Product Performance" />} />
-          <Route path="/reports/locations"  element={<ScaffoldPage title="Location Performance" />} />
           <Route path="/reports/trends"     element={<ScaffoldPage title="Trends" />} />
           <Route path="/reports/stockouts"  element={<ScaffoldPage title="Inventory & Stock-outs" />} />
           <Route path="/exports"            element={<ScaffoldPage title="Exports" />} />
