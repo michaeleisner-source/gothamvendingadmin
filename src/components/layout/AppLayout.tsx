@@ -1,22 +1,27 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '@/components/Sidebar';
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from '@/components/AppSidebar';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function AppLayout() {
   return (
-    <div className="gv-app" style={{display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'100vh', background:'#f8fafc'}}>
-      <Sidebar />
-      <div style={{display:'grid', gridTemplateRows:'auto auto 1fr'}}>
-        <header style={{display:'flex', alignItems:'center', justifyContent:'space-between',
-                        padding:'10px 16px', background:'#ffffff', borderBottom:'1px solid #e5e7eb'}}>
-          <div style={{fontWeight:800}}>Gotham Vending</div>
-          <div />
-        </header>
-        <Breadcrumbs />
-        <main className="gv-page" id="gv-page" style={{padding:16}}>
-          <Outlet />
-        </main>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          <header className="h-12 flex items-center border-b bg-background">
+            <SidebarTrigger className="ml-2" />
+            <h1 className="ml-4 font-semibold">Gotham Vending</h1>
+          </header>
+          
+          <Breadcrumbs />
+          
+          <main className="flex-1 p-4">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

@@ -1,3 +1,3 @@
-// Updated to use SimplifiedSidebar
-import SimplifiedSidebar from "./SimplifiedSidebar";
-export default SimplifiedSidebar;
+// Updated to use shadcn AppSidebar
+import { AppSidebar } from "./AppSidebar";
+export { AppSidebar as default };
