@@ -1,3 +1,7 @@
+// ABSOLUTE BASIC TEST
+console.log('MAIN.TSX FILE LOADING - THIS SHOULD SHOW IN CONSOLE');
+alert('MAIN.TSX LOADED - YOU SHOULD SEE THIS ALERT');
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
