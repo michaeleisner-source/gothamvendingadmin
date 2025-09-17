@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 type Prospect = {
   id: string;
@@ -20,6 +20,14 @@ const SAMPLE: Prospect[] = [
 export default function ProspectDashboard() {
   const [q, setQ] = useState('');
   const [type, setType] = useState<'All'|Prospect['type']>('All');
+
+  // Set custom breadcrumb text
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Smart Prospect Pipeline' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  }, []);
 
   const list = useMemo(() => {
     return SAMPLE.filter(p => (type==='All' || p.type===type) && p.name.toLowerCase().includes(q.toLowerCase()));
