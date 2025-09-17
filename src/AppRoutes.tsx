@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import ScaffoldPage from '@/pages/_ScaffoldPage';
 import SalesDetailPage from '@/pages/reports/SalesDetailPage';
+import HomeDashboard from '@/pages/HomeDashboard';
 
 let ProspectDashboard: React.ComponentType<any> | null = null;
 try { ProspectDashboard = require('@/pages/ProspectDashboard').default; } catch { ProspectDashboard = null; }
@@ -10,7 +11,7 @@ try { ProspectDashboard = require('@/pages/ProspectDashboard').default; } catch 
 const ROUTES: { path: string; title: string; el?: React.ReactNode }[] = [
   { path: '/leads',              title: 'Leads' },
   { path: '/installs',           title: 'Installs' },
-  { path: '/dashboard',          title: 'Dashboard' },
+  { path: '/dashboard',          title: 'Dashboard', el: <HomeDashboard /> },
   { path: '/locations',          title: 'Locations' },
   { path: '/machines',           title: 'Machines' },
   { path: '/products',           title: 'Products' },
@@ -49,7 +50,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<AppLayout />}>
-        <Route index element={<Navigate to="/leads" replace />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
         {ROUTES.map(r => <Route key={r.path} path={r.path} element={<Page title={r.title} el={r.el} />} />)}
       </Route>
       <Route path="*" element={<NotFound />} />
