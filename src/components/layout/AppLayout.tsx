@@ -2,12 +2,10 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from '@/components/AppSidebar';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { DevBanner } from '@/components/DevBanner';
 
 export default function AppLayout() {
   return (
     <div className="min-h-screen">
-      <DevBanner />
       <SidebarProvider>
         <div className="flex w-full h-screen">
           <AppSidebar />
