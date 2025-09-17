@@ -23,6 +23,23 @@ function normalizeHash(h: string): string {
   return q || '#/';
 }
 
+function getCurrentRoute(): string {
+  // Handle both hash routing and regular React Router
+  const hash = location.hash;
+  const pathname = location.pathname;
+  
+  if (hash && hash.startsWith('#/')) {
+    return normalizeHash(hash);
+  }
+  
+  // Convert pathname to hash format for matching
+  if (pathname && pathname !== '/') {
+    return '#' + pathname;
+  }
+  
+  return '#/';
+}
+
 function isEmptyForDemo(el: HTMLElement): boolean {
   // If our scaffold already exists, don't re-render
   if (el.querySelector('[data-scaffold-root]')) return false;
@@ -55,11 +72,11 @@ function table(inner: string, title: string, hint?: string) {
         <table class="min-w-full text-sm">
           <thead class="bg-gray-50">
             <tr class="text-left">
-              ${inner.split('\\n')[0]}
+              ${inner.split('\n')[0]}
             </tr>
           </thead>
           <tbody>
-            ${inner.split('\\n').slice(1).join('\\n')}
+            ${inner.split('\n').slice(1).join('\n')}
           </tbody>
         </table>
       </div>
@@ -131,21 +148,27 @@ function renderFor(hashNow: string) {
 }
 
 function scheduleApply() {
-  const h = location.hash || '#/';
+  const route = getCurrentRoute();
   // run a few times to catch SPA paints
-  setTimeout(() => renderFor(h), 0);
-  setTimeout(() => renderFor(h), 60);
-  setTimeout(() => renderFor(h), 250);
+  setTimeout(() => renderFor(route), 0);
+  setTimeout(() => renderFor(route), 60);
+  setTimeout(() => renderFor(route), 250);
 }
 
 export function installDemoScaffold() {
   scheduleApply();
+  // Listen for both hash changes and React Router navigation
   window.addEventListener('hashchange', scheduleApply);
+  window.addEventListener('popstate', scheduleApply);
   const mo = new MutationObserver(() => scheduleApply());
   mo.observe(document.documentElement, { childList: true, subtree: true });
   // expose debug helpers
   (window as any).__demoScaffoldApply = scheduleApply;
   (window as any).__demoScaffoldDebug = () => ({
-    hash: location.hash, mainFound: !!getMain(), empty: isEmptyForDemo(getMain())
+    hash: location.hash, 
+    pathname: location.pathname,
+    route: getCurrentRoute(),
+    mainFound: !!getMain(), 
+    empty: isEmptyForDemo(getMain())
   });
 }
