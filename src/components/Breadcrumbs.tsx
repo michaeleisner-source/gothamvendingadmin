@@ -16,9 +16,7 @@ export default function Breadcrumbs() {
   }, []);
   const parts = useMemo(() => makeParts(path, override), [path, override]);
   useEffect(() => {
-    const slot = document.getElementById('gv-breadcrumb-slot');
     const text = parts.map(p => p.label).join(' / ');
-    if (slot) slot.textContent = text;
     document.title = text ? `${text} — Gotham Vending` : 'Gotham Vending';
   }, [parts]);
   return (
@@ -33,7 +31,6 @@ export default function Breadcrumbs() {
           </span>
         ))}
       </nav>
-      <div id="gv-breadcrumb-slot" style={{position:'absolute', left:-9999, width:1, height:1}} aria-hidden />
     </div>
   );
 }
