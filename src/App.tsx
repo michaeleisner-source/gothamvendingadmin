@@ -105,6 +105,156 @@ function Bar({value, max}:{value:number; max:number}) {
 }
 
 /* =========================================================
+   STOCKOUT HELPERS
+========================================================= */
+type StockCandidate = {
+  key: string;              // "M-001 · Candy Bar" (you can change the format)
+  location: string;
+  machine: string;
+  product: string;
+  streak: number;           // trailing zero-days
+  currTx: number;           // transactions in current window
+  prevTx: number;           // transactions in previous window
+  dropPct: number;          // % drop vs prev (0..100)
+};
+
+function ymd(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function makeDayLabels(days: number) {
+  const labels: string[] = [];
+  const end = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(end);
+    d.setDate(d.getDate() - i);
+    labels.push(ymd(d));
+  }
+  return labels;
+}
+function trailingZeroStreak(arr: number[]) {
+  let s = 0;
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (arr[i] === 0) s++;
+    else break;
+  }
+  return s;
+}
+function stockoutCandidates(rows: SaleRow[], prevRows: SaleRow[], days: number): StockCandidate[] {
+  const labels = makeDayLabels(days);
+  const idx = new Map(labels.map((d, i) => [d, i]));
+
+  // group by machine+product (and keep location for reporting)
+  type Acc = { location: string; machine: string; product: string; series: number[] };
+  const byKey = new Map<string, Acc>();
+  const byKeyPrev = new Map<string, Acc>();
+
+  function add(map: Map<string, Acc>, r: SaleRow) {
+    const key = `${r.machine} · ${r.product}`;
+    let acc = map.get(key);
+    if (!acc) {
+      acc = { location: r.location, machine: r.machine, product: r.product, series: Array(labels.length).fill(0) };
+      map.set(key, acc);
+    }
+    const i = idx.get(r.date);
+    if (i != null) acc.series[i] += 1; // tx count
+  }
+
+  rows.forEach(r => add(byKey, r));
+  prevRows.forEach(r => add(byKeyPrev, r));
+
+  const keys = new Set<string>([...byKey.keys(), ...byKeyPrev.keys()]);
+  const out: StockCandidate[] = [];
+
+  for (const k of keys) {
+    const cur = byKey.get(k) || { location: '—', machine: k.split(' · ')[0], product: k.split(' · ')[1], series: Array(labels.length).fill(0) };
+    const prev = byKeyPrev.get(k) || { location: cur.location, machine: cur.machine, product: cur.product, series: Array(labels.length).fill(0) };
+    const currTx = cur.series.reduce((s, x) => s + x, 0);
+    const prevTx = prev.series.reduce((s, x) => s + x, 0);
+    const streak = trailingZeroStreak(cur.series);
+    const dropPct = prevTx <= 0 ? 0 : Math.max(0, Math.round(((prevTx - currTx) / prevTx) * 100));
+
+    // Heuristics for "likely stockout"
+    const likely =
+      streak >= 2 ||                           // no sales for last 2+ days
+      (prevTx >= 5 && currTx === 0) ||         // was selling, now nothing
+      dropPct >= 70;                            // big drop vs prev
+
+    if (likely) {
+      out.push({
+        key: k,
+        location: cur.location,
+        machine: cur.machine,
+        product: cur.product,
+        streak,
+        currTx,
+        prevTx,
+        dropPct,
+      });
+    }
+  }
+
+  // sort by strongest signals
+  out.sort((a, b) => (b.streak - a.streak) || (b.dropPct - a.dropPct) || (a.currTx - b.currTx));
+  return out;
+}
+
+function exportStockoutsCSV(cands: StockCandidate[], days: number) {
+  const header = 'location,machine,product,zero_day_streak,curr_tx,prev_tx,drop_pct,window_days';
+  const lines = cands.map(c =>
+    [c.location, c.machine, c.product, c.streak, c.currTx, c.prevTx, `${c.dropPct}%`, days]
+      .map(v => (typeof v === 'string' && v.includes(',') ? `"${v}"` : v))
+      .join(',')
+  );
+  const csv = [header, ...lines].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `gotham-top-stockouts-last-${days}-days.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ---------- tiny table for stockouts ---------- */
+function StockMiniTable({
+  title,
+  rows,
+  limit = 10,
+}: {
+  title: string;
+  rows: StockCandidate[];
+  limit?: number;
+}) {
+  const top = rows.slice(0, limit);
+  return (
+    <div className="card" style={cardStyle}>
+      <div style={{ fontWeight: 800, marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Trailing zero-days & drop vs prev</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr .6fr .6fr .6fr .6fr', gap: 6, fontSize: 13 }}>
+        <div style={{ fontWeight: 700, color: '#0f172a' }}>Machine · Product</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Streak</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Curr Tx</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Prev Tx</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Drop</div>
+        {top.length === 0 && <div style={{ gridColumn: '1 / -1', color: '#64748b' }}>No candidates</div>}
+        {top.map((r) => (
+          <React.Fragment key={`${r.machine}·${r.product}`}>
+            <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {r.machine} · {r.product}
+            </div>
+            <div style={{ textAlign: 'right', color: r.streak >= 2 ? '#dc2626' : '#0f172a' }}>{r.streak}</div>
+            <div style={{ textAlign: 'right' }}>{r.currTx}</div>
+            <div style={{ textAlign: 'right', color: '#64748b' }}>{r.prevTx}</div>
+            <div style={{ textAlign: 'right', color: r.dropPct >= 70 ? '#dc2626' : '#0f172a' }}>-{r.dropPct}%</div>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
    PAGES
 ========================================================= */
 function ScaffoldPage({ title }: { title:string }) {
@@ -112,6 +262,69 @@ function ScaffoldPage({ title }: { title:string }) {
     <div className="card" style={cardStyle}>
       <div style={{fontWeight:800}}>{title}</div>
       <div style={{color:'#64748b'}}>Scaffold placeholder — content coming next.</div>
+    </div>
+  );
+}
+
+/* ---------- Stockouts Page ---------- */
+function StockoutsePage() {
+  const [days, setDays] = React.useState<number>(14);
+  const rows = React.useMemo(() => getDemoSales(days), [days]);
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]);
+  
+  const candidates = React.useMemo(() => stockoutCandidates(rows, prevRows, days), [rows, prevRows, days]);
+  
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Stockouts' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  }, []);
+
+  const Input = (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <label htmlFor="stockoutDays" style={{ fontSize: 12, color: '#64748b' }}>Days</label>
+      <input
+        id="stockoutDays"
+        type="number"
+        min={7}
+        max={90}
+        value={days}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          if (Number.isFinite(v)) setDays(Math.min(90, Math.max(7, v)));
+        }}
+        style={{ width: 72, padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 8 }}
+      />
+      <button
+        onClick={() => exportStockoutsCSV(candidates, days)}
+        style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
+        title="Download Stockouts CSV"
+      >
+        Export CSV
+      </button>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {/* Header */}
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center' }}>
+        <div style={{ fontWeight: 800 }}>Stockout Analysis</div>
+        <div style={{ marginLeft: 'auto' }}>{Input}</div>
+      </div>
+
+      {/* Summary */}
+      <div className="card" style={cardStyle}>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div><strong>Total Candidates:</strong> {candidates.length}</div>
+          <div><strong>Critical (3+ zero days):</strong> {candidates.filter(c => c.streak >= 3).length}</div>
+          <div><strong>High Drop (70%+):</strong> {candidates.filter(c => c.dropPct >= 70).length}</div>
+        </div>
+      </div>
+
+      {/* Main table */}
+      <StockMiniTable title="Potential Stockouts" rows={candidates} limit={20} />
     </div>
   );
 }
@@ -882,7 +1095,7 @@ export default function App(){
           <Route path="/purchase-orders"    element={<ScaffoldPage title="Purchase Orders" />} />
           <Route path="/service"            element={<ScaffoldPage title="Service" />} />
           <Route path="/reports/trends"     element={<TrendsPage />} />
-          <Route path="/reports/stockouts"  element={<ScaffoldPage title="Inventory & Stock-outs" />} />
+          <Route path="/reports/stockouts"  element={<StockoutsePage />} />
           <Route path="/exports"            element={<ScaffoldPage title="Exports" />} />
           <Route path="/admin/users"        element={<ScaffoldPage title="Users & Roles" />} />
           <Route path="/admin/settings"     element={<ScaffoldPage title="Org Settings" />} />
