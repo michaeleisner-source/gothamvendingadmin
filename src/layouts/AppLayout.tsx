@@ -1,23 +1,23 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Breadcrumbs from '../components/Breadcrumbs';
+import ErrorBoundary from '@/components/util/ErrorBoundary';
 
 export default function AppLayout() {
   return (
-    <div className="gv-app" style={{display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'100vh', background:'#f8fafc'}}>
+    <div className="gv-app" style={{display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'100vh'}}>
       <Sidebar />
       <div style={{display:'grid', gridTemplateRows:'auto auto 1fr'}}>
         <header style={{display:'flex', alignItems:'center', justifyContent:'space-between',
-                        padding:'10px 16px', background:'#ffffff', borderBottom:'1px solid var(--border)'}}>
+                        padding:'10px 16px', background:'#ffffff', borderBottom:'1px solid #e5e7eb'}}>
           <div style={{fontWeight:800}}>Gotham Vending</div>
           <div />
         </header>
-
-        {/* MUST be present to update the slot + title */}
         <Breadcrumbs />
-
         <main className="gv-page" id="gv-page" style={{padding:16}}>
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
