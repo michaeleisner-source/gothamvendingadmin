@@ -413,6 +413,13 @@ html, body {
   animation: none !important; 
 }
 
+/* Hide dev banners and loading indicators */
+[data-dev-banner], #dev-banner, .dev-banner,
+#app-loading, .app-loading, [data-app-loading],
+#app-shell-banner, .app-shell-banner {
+  display: none !important;
+}
+
 * { 
   animation: none !important; 
   transition: none !important; 
