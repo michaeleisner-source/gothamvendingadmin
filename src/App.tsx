@@ -1415,9 +1415,23 @@ function AppLayout({children}:{children:React.ReactNode}) {
 
 export default function App(){
   console.log('App component mounting...');
+  
+  // Add a visible test div to see if this component is rendering
   return (
-    <HashRouter>
-      <AppLayout>
+    <div>
+      <div style={{
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        background: 'red', 
+        color: 'white', 
+        padding: '10px', 
+        zIndex: 9999
+      }}>
+        APP IS LOADING
+      </div>
+      <HashRouter>
+        <AppLayout>
         <Routes>
           {/* default → Sales so you immediately see data */}
           <Route index element={<Navigate to="/sales" replace />} />
@@ -1449,5 +1463,6 @@ export default function App(){
         </Routes>
       </AppLayout>
     </HashRouter>
+    </div>
   );
 }
