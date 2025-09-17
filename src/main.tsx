@@ -1,30 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
 
-function mount() {
-  console.log('Attempting to mount app...');
-  let el = document.getElementById('root');
-  if (!el) { 
-    console.log('Creating root element...');
-    el = document.createElement('div'); 
-    el.id = 'root'; 
-    document.body.appendChild(el); 
-  }
-  console.log('Root element found/created:', el);
-  const root = ReactDOM.createRoot(el);
-  console.log('React root created, rendering App...');
-  root.render(<App />);
-  console.log('App render initiated');
+// Simplified test without importing App
+function SimpleTest() {
+  console.log('SimpleTest rendering');
+  return (
+    <div style={{ 
+      padding: '20px', 
+      background: 'white', 
+      color: 'black',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      zIndex: 9999
+    }}>
+      <h1>SIMPLE TEST WORKING</h1>
+    </div>
+  );
 }
 
-try { mount(); } catch (e: any) {
-  document.body.innerHTML = `
-    <div style="padding:24px;font:14px system-ui">
-      <div style="padding:16px;border:1px solid #fca5a5;background:#fff5f5;border-radius:12px">
-        <b>Critical mount error</b>
-        <div style="margin-top:8">${e?.message || e}</div>
-      </div>
-    </div>`;
+console.log('Main.tsx loading...');
+
+try {
+  const root = document.getElementById('root');
+  if (root) {
+    console.log('Root found, rendering SimpleTest...');
+    const reactRoot = ReactDOM.createRoot(root);
+    reactRoot.render(<SimpleTest />);
+    console.log('SimpleTest rendered');
+  } else {
+    console.error('Root element not found');
+  }
+} catch (error) {
+  console.error('Error in main:', error);
 }
