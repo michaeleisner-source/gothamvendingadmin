@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import SimplifiedSidebar from '../components/SimplifiedSidebar';
+import Sidebar from '../components/Sidebar';
 import AppHeader from '../components/AppHeader';
 import Breadcrumbs from '../components/AppBreadcrumbs';
 import ErrorBoundary from '@/components/util/ErrorBoundary';
@@ -8,9 +8,9 @@ import '@/styles/theme.css';
 
 export default function AppLayout() {
   return (
-    <div className="gv-content">
-      <SimplifiedSidebar />
-      <div className="gv-main-col">
+    <div className="gv-content" style={{display:'flex', minHeight:'100vh'}}>
+      <Sidebar />
+      <div className="gv-main-col" style={{flex:1}}>
         <AppHeader />
         {/* Accessible crumbs; visible crumbs live in header slot */}
         <Breadcrumbs />
