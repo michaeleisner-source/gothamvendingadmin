@@ -172,6 +172,151 @@ function SalesDetailPage() {
   );
 }
 
+/* ---------- Trends (Revenue & Transactions over time) ---------- */
+function Sparkline({ values, height = 80 }: { values: number[]; height?: number }) {
+  const w = Math.max(120, (values.length - 1) * 14 + 6);
+  const maxY = Math.max(1, ...values);
+  const pad = 3;
+  const h = height;
+  const toY = (v: number) => (1 - v / maxY) * (h - pad * 2) + pad;
+  const toX = (i: number) => (i / Math.max(1, values.length - 1)) * (w - pad * 2) + pad;
+
+  const d = values.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`).join(' ');
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
+      <defs>
+        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <path d={d} fill="none" stroke="#6366f1" strokeWidth="2" />
+      {/* area fill */}
+      {values.length > 1 && (
+        <path
+          d={`${d} L ${toX(values.length - 1).toFixed(1)} ${toY(0).toFixed(1)} L ${toX(0).toFixed(1)} ${toY(0).toFixed(1)} Z`}
+          fill="url(#sparkFill)"
+        />
+      )}
+    </svg>
+  );
+}
+
+function makeDayKey(d: Date) { return d.toISOString().slice(0, 10); }
+
+function seriesByDay(rows: SaleRow[], days: number, measure: 'revenue' | 'tx') {
+  // build a map of yyyy-mm-dd -> value
+  const map = new Map<string, { tx: number; revenue: number }>();
+  for (const r of rows) {
+    const m = map.get(r.date) || { tx: 0, revenue: 0 };
+    m.tx += 1;
+    m.revenue += r.revenue;
+    map.set(r.date, m);
+  }
+  // ensure every day has a value (including zeros)
+  const today = new Date();
+  const out: number[] = [];
+  const labels: string[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    d.setUTCDate(d.getUTCDate() - i);
+    const key = makeDayKey(d);
+    const v = map.get(key);
+    out.push(+((v?.[measure] ?? 0).toFixed(2)));
+    labels.push(key);
+  }
+  return { labels, values: out };
+}
+
+function deltaPct(curr: number, prev: number) {
+  if (!prev) return curr ? '∞%' : '0%';
+  const p = ((curr - prev) / prev) * 100;
+  const sign = p > 0 ? '+' : '';
+  return `${sign}${p.toFixed(1)}%`;
+}
+
+function TrendsPage() {
+  const [days, setDays] = React.useState<7 | 30 | 90>(30);
+  const rows = React.useMemo(() => getDemoSales(days), [days]);
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]); // demo-only previous period mirror
+
+  const revSeries = React.useMemo(() => seriesByDay(rows, days, 'revenue'), [rows, days]);
+  const txSeries  = React.useMemo(() => seriesByDay(rows, days, 'tx'), [rows, days]);
+
+  const totalRev = +rows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
+  const totalTx  = rows.length;
+
+  const prevRev = +prevRows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
+  const prevTx  = prevRows.length;
+
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Trends' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  }, []);
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {/* Controls */}
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontWeight: 800 }}>Trends</div>
+        <div style={{ marginLeft: 12, display: 'inline-flex', gap: 8 }}>
+          {([7, 30, 90] as const).map((d) => (
+            <button
+              key={d}
+              onClick={() => setDays(d)}
+              style={{
+                padding: '6px 10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: 8,
+                background: days === d ? '#eef2ff' : '#fff',
+                fontWeight: days === d ? 700 : 500,
+              }}
+            >
+              Last {d}d
+            </button>
+          ))}
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 16 }}>
+          <div style={{ ...cardStyle, padding: '8px 12px' }}>
+            <div style={{ fontSize: 12, color: '#64748b' }}>Revenue</div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>${totalRev.toLocaleString()}</div>
+            <div style={{ fontSize: 12, color: '#16a34a' }}>{deltaPct(totalRev, prevRev)} vs prev</div>
+          </div>
+          <div style={{ ...cardStyle, padding: '8px 12px' }}>
+            <div style={{ fontSize: 12, color: '#64748b' }}>Transactions</div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>{totalTx.toLocaleString()}</div>
+            <div style={{ fontSize: 12, color: '#16a34a' }}>{deltaPct(totalTx, prevTx)} vs prev</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue trend */}
+      <div className="card" style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <div style={{ fontWeight: 800 }}>Revenue Trend</div>
+          <div style={{ fontSize: 12, color: '#64748b' }}>
+            {revSeries.labels[0]} → {revSeries.labels[revSeries.labels.length - 1]}
+          </div>
+        </div>
+        <Sparkline values={revSeries.values} height={120} />
+      </div>
+
+      {/* Transactions trend */}
+      <div className="card" style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <div style={{ fontWeight: 800 }}>Transactions Trend</div>
+          <div style={{ fontSize: 12, color: '#64748b' }}>
+            {txSeries.labels[0]} → {txSeries.labels[txSeries.labels.length - 1]}
+          </div>
+        </div>
+        <Sparkline values={txSeries.values} height={120} />
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Aggregations shared by performance pages ---------- */
 type AggRow = { key:string; tx:number; qty:number; revenue:number };
 function aggregateBy(rows: SaleRow[], key: keyof SaleRow): AggRow[] {
@@ -624,7 +769,7 @@ export default function App(){
           <Route path="/inventory"          element={<ScaffoldPage title="Inventory" />} />
           <Route path="/purchase-orders"    element={<ScaffoldPage title="Purchase Orders" />} />
           <Route path="/service"            element={<ScaffoldPage title="Service" />} />
-          <Route path="/reports/trends"     element={<ScaffoldPage title="Trends" />} />
+          <Route path="/reports/trends"     element={<TrendsPage />} />
           <Route path="/reports/stockouts"  element={<ScaffoldPage title="Inventory & Stock-outs" />} />
           <Route path="/exports"            element={<ScaffoldPage title="Exports" />} />
           <Route path="/admin/users"        element={<ScaffoldPage title="Users & Roles" />} />
