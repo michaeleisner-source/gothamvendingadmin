@@ -1306,6 +1306,7 @@ export type Database = {
           location_type: string
           name: string
           notes: string | null
+          org_id: string | null
           revenue_split: number | null
           state: string
           status: string | null
@@ -1323,6 +1324,7 @@ export type Database = {
           location_type: string
           name: string
           notes?: string | null
+          org_id?: string | null
           revenue_split?: number | null
           state: string
           status?: string | null
@@ -1340,13 +1342,22 @@ export type Database = {
           location_type?: string
           name?: string
           notes?: string | null
+          org_id?: string | null
           revenue_split?: number | null
           state?: string
           status?: string | null
           updated_at?: string | null
           zip_code?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "locations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       machine_finance: {
         Row: {
@@ -1762,8 +1773,10 @@ export type Database = {
           last_service_date: string | null
           location_id: string | null
           machine_model: string
+          name: string | null
           next_service_date: string | null
           notes: string | null
+          org_id: string | null
           serial_number: string
           status: string | null
           updated_at: string | null
@@ -1776,8 +1789,10 @@ export type Database = {
           last_service_date?: string | null
           location_id?: string | null
           machine_model: string
+          name?: string | null
           next_service_date?: string | null
           notes?: string | null
+          org_id?: string | null
           serial_number: string
           status?: string | null
           updated_at?: string | null
@@ -1790,8 +1805,10 @@ export type Database = {
           last_service_date?: string | null
           location_id?: string | null
           machine_model?: string
+          name?: string | null
           next_service_date?: string | null
           notes?: string | null
+          org_id?: string | null
           serial_number?: string
           status?: string | null
           updated_at?: string | null
@@ -1802,6 +1819,13 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machines_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -2781,36 +2805,51 @@ export type Database = {
           created_at: string | null
           id: string
           machine_id: string | null
+          occurred_at: string | null
+          org_id: string | null
           payment_method: string | null
+          product_id: string | null
           product_name: string
+          qty: number | null
           quantity_sold: number | null
           sale_date: string | null
           total_amount: number
           unit_price: number
+          unit_price_cents: number | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           machine_id?: string | null
+          occurred_at?: string | null
+          org_id?: string | null
           payment_method?: string | null
+          product_id?: string | null
           product_name: string
+          qty?: number | null
           quantity_sold?: number | null
           sale_date?: string | null
           total_amount: number
           unit_price: number
+          unit_price_cents?: number | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           machine_id?: string | null
+          occurred_at?: string | null
+          org_id?: string | null
           payment_method?: string | null
+          product_id?: string | null
           product_name?: string
+          qty?: number | null
           quantity_sold?: number | null
           sale_date?: string | null
           total_amount?: number
           unit_price?: number
+          unit_price_cents?: number | null
           updated_at?: string | null
         }
         Relationships: [

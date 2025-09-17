@@ -45,16 +45,58 @@ export function InsuranceAllocations() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("insurance_allocations")
-        .select(`
-          *,
-          insurance_policies(name),
-          locations(name),
-          machines(name)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data as InsuranceAllocation[];
+      
+      // Fetch related data separately to handle missing columns
+      const allocationsWithRelated = await Promise.all(
+        (data || []).map(async (allocation) => {
+          let policyName = "Unknown Policy";
+          let locationName = null;
+          let machineName = null;
+          
+          // Get policy name
+          if (allocation.policy_id) {
+            const { data: policy } = await supabase
+              .from("insurance_policies")
+              .select("name")
+              .eq("id", allocation.policy_id)
+              .maybeSingle();
+            policyName = policy?.name || "Unknown Policy";
+          }
+          
+          // Get location name if applicable
+          if (allocation.location_id) {
+            const { data: location } = await supabase
+              .from("locations")
+              .select("name")
+              .eq("id", allocation.location_id)
+              .maybeSingle();
+            locationName = location?.name || null;
+          }
+          
+          // Get machine name if applicable
+          if (allocation.machine_id) {
+            const { data: machine } = await supabase
+              .from("machines")
+              .select("name")
+              .eq("id", allocation.machine_id)
+              .maybeSingle();
+            machineName = machine?.name || `Machine ${allocation.machine_id}`;
+          }
+          
+          return {
+            ...allocation,
+            insurance_policies: { name: policyName },
+            locations: locationName ? { name: locationName } : null,
+            machines: machineName ? { name: machineName } : null,
+          } as InsuranceAllocation;
+        })
+      );
+      
+      return allocationsWithRelated;
     },
   });
 
@@ -92,7 +134,19 @@ export function InsuranceAllocations() {
         .select("id, name")
         .order("name");
       
-      if (error) throw error;
+      if (error) {
+        // Fallback to basic selection if name column doesn't exist
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("machines")
+          .select("id")
+          .order("id");
+        
+        if (fallbackError) throw fallbackError;
+        return (fallbackData || []).map(machine => ({
+          ...machine,
+          name: `Machine ${machine.id}`,
+        }));
+      }
       return data;
     },
   });

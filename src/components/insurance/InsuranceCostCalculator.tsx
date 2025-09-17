@@ -32,11 +32,34 @@ export function InsuranceCostCalculator() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("machines")
-        .select("id, name, location_id, location")
-        .order("name");
+        .select("id, location_id")
+        .order("id");
       
       if (error) throw error;
-      return data as Machine[];
+      
+      // Add fallback names and fetch location names
+      const machinesWithNames = await Promise.all(
+        (data || []).map(async (machine) => {
+          let locationName = null;
+          
+          if (machine.location_id) {
+            const { data: location } = await supabase
+              .from("locations")
+              .select("name")
+              .eq("id", machine.location_id)
+              .maybeSingle();
+            locationName = location?.name || null;
+          }
+          
+          return {
+            ...machine,
+            name: `Machine ${machine.id}`,
+            location: locationName,
+          } as Machine;
+        })
+      );
+      
+      return machinesWithNames;
     },
   });
 

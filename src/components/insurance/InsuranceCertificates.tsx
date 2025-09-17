@@ -41,15 +41,46 @@ export function InsuranceCertificates() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("insurance_certificates")
-        .select(`
-          *,
-          insurance_policies(name),
-          locations(name)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data as InsuranceCertificate[];
+      
+      // Fetch related data separately to handle missing columns
+      const certificatesWithRelated = await Promise.all(
+        (data || []).map(async (certificate) => {
+          let policyName = "Unknown Policy";
+          let locationName = "Unknown Location";
+          
+          // Get policy name
+          if (certificate.policy_id) {
+            const { data: policy } = await supabase
+              .from("insurance_policies")
+              .select("name")
+              .eq("id", certificate.policy_id)
+              .maybeSingle();
+            policyName = policy?.name || "Unknown Policy";
+          }
+          
+          // Get location name
+          if (certificate.location_id) {
+            const { data: location } = await supabase
+              .from("locations")
+              .select("name")
+              .eq("id", certificate.location_id)
+              .maybeSingle();
+            locationName = location?.name || "Unknown Location";
+          }
+          
+          return {
+            ...certificate,
+            insurance_policies: { name: policyName },
+            locations: { name: locationName },
+          } as InsuranceCertificate;
+        })
+      );
+      
+      return certificatesWithRelated;
     },
   });
 
