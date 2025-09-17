@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import ProspectDashboard from './pages/ProspectDashboard';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from '@/components/util/ErrorBoundary';
 
 function NotFound() {
   return (
