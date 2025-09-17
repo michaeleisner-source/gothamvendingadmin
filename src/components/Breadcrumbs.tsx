@@ -1,32 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const pretty = (s:string) => s.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
+/**
+ * Works with BOTH HashRouter and BrowserRouter.
+ * - Listens to hashchange + popstate so it never misses a route change.
+ * - Renders visible breadcrumbs.
+ * - Updates hidden #gv-breadcrumb-slot (for audits) and document.title.
+ */
 export default function Breadcrumbs() {
-  const { pathname } = useLocation();
-  const [override, setOverride] = useState<string | null>(null);
+  const [path, setPath] = useState<string>(() => getPath());
 
-  // Allow pages to set a friendly last crumb:
+  useEffect(() => {
+    const update = () => setPath(getPath());
+    // initial + subsequent changes
+    update();
+    window.addEventListener('hashchange', update);
+    window.addEventListener('popstate', update);
+    return () => {
+      window.removeEventListener('hashchange', update);
+      window.removeEventListener('popstate', update);
+    };
+  }, []);
+
+  // Optional dynamic override from pages:
   // window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Machine M-001' }))
+  const [override, setOverride] = useState<string | null>(null);
   useEffect(() => {
     const onSet = (e: Event) => setOverride((e as CustomEvent).detail || null);
     window.addEventListener('gv:breadcrumb:set', onSet as any);
     return () => window.removeEventListener('gv:breadcrumb:set', onSet as any);
   }, []);
 
-  const parts = useMemo(() => {
-    const segs = pathname.split('/').filter(Boolean);
-    const items: { href: string; label: string }[] = [{ href: '#/', label: 'Home' }];
-    let acc = '';
-    segs.forEach((p, i) => {
-      acc += '/' + p;
-      items.push({ href: '#'+acc, label: i === segs.length - 1 && override ? override : pretty(p) });
-    });
-    return items;
-  }, [pathname, override]);
+  const parts = useMemo(() => makeParts(path, override), [path, override]);
 
-  // 🔌 Update the hidden slot (for audits) + document.title
+  // Update the hidden slot + document.title on every render
   useEffect(() => {
     const slot = document.getElementById('gv-breadcrumb-slot');
     const text = parts.map(p => p.label).join(' / ');
@@ -46,8 +53,34 @@ export default function Breadcrumbs() {
           </span>
         ))}
       </nav>
-      {/* Hidden text slot that audits read */}
-      <div id="gv-breadcrumb-slot" style={{display:'none'}} aria-hidden />
+      {/* Hidden text slot (audits read this). Keep it in DOM even if visually hidden. */}
+      <div id="gv-breadcrumb-slot" style={{position:'absolute', left:-9999, top:'auto', width:1, height:1, overflow:'hidden'}} aria-hidden />
     </div>
   );
+}
+
+/* ---------- helpers ---------- */
+
+function getPath(): string {
+  const h = window.location.hash || '';
+  if (h.startsWith('#/')) return h.slice(1);          // HashRouter → "/route"
+  return window.location.pathname || '/';             // BrowserRouter → "/route"
+}
+
+function pretty(s: string) {
+  return s.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function makeParts(path: string, override: string | null) {
+  const segs = path.split('/').filter(Boolean);
+  const items: { href: string; label: string }[] = [{ href: '/', label: 'Home' }];
+  let acc = '';
+  segs.forEach((p, i) => {
+    acc += '/' + p;
+    items.push({
+      href: acc,                                    // Link "to" uses clean path, router will hash if needed
+      label: i === segs.length - 1 && override ? override : pretty(p),
+    });
+  });
+  return items;
 }
