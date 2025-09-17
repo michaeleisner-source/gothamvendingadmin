@@ -266,14 +266,25 @@ function ScaffoldPage({ title }: { title:string }) {
   );
 }
 
-/* ---------- Stockouts Page ---------- */
-function StockoutsePage() {
-  const [days, setDays] = React.useState<number>(14);
+/* ---------- Reports / Stockouts (Top Stockouts + CSV) ---------- */
+function StockoutsPage() {
+  const [days, setDays] = React.useState<7 | 14 | 30>(14);
+
+  // current & previous windows (demo uses same generator)
   const rows = React.useMemo(() => getDemoSales(days), [days]);
   const prevRows = React.useMemo(() => getDemoSales(days), [days]);
-  
+
   const candidates = React.useMemo(() => stockoutCandidates(rows, prevRows, days), [rows, prevRows, days]);
-  
+
+  // simple location aggregation
+  const byLocation = React.useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of candidates) m.set(c.location, (m.get(c.location) || 0) + 1);
+    return Array.from(m.entries())
+      .map(([location, count]) => ({ location, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [candidates]);
+
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Stockouts' }));
     return () => {
@@ -281,50 +292,63 @@ function StockoutsePage() {
     };
   }, []);
 
-  const Input = (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-      <label htmlFor="stockoutDays" style={{ fontSize: 12, color: '#64748b' }}>Days</label>
-      <input
-        id="stockoutDays"
-        type="number"
-        min={7}
-        max={90}
-        value={days}
-        onChange={(e) => {
-          const v = Number(e.target.value);
-          if (Number.isFinite(v)) setDays(Math.min(90, Math.max(7, v)));
-        }}
-        style={{ width: 72, padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 8 }}
-      />
-      <button
-        onClick={() => exportStockoutsCSV(candidates, days)}
-        style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
-        title="Download Stockouts CSV"
-      >
-        Export CSV
-      </button>
-    </div>
+  const chip = (label: string, active: boolean, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 10px',
+        border: '1px solid #e5e7eb',
+        borderRadius: 8,
+        background: active ? '#eef2ff' : '#fff',
+        fontWeight: active ? 700 : 500,
+      }}
+    >
+      {label}
+    </button>
   );
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>
       {/* Header */}
-      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center' }}>
-        <div style={{ fontWeight: 800 }}>Stockout Analysis</div>
-        <div style={{ marginLeft: 'auto' }}>{Input}</div>
-      </div>
-
-      {/* Summary */}
-      <div className="card" style={cardStyle}>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <div><strong>Total Candidates:</strong> {candidates.length}</div>
-          <div><strong>Critical (3+ zero days):</strong> {candidates.filter(c => c.streak >= 3).length}</div>
-          <div><strong>High Drop (70%+):</strong> {candidates.filter(c => c.dropPct >= 70).length}</div>
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontWeight: 800 }}>Top Stockouts</div>
+        <div style={{ marginLeft: 12, display: 'inline-flex', gap: 8 }}>
+          {chip('7d', days === 7, () => setDays(7))}
+          {chip('14d', days === 14, () => setDays(14))}
+          {chip('30d', days === 30, () => setDays(30))}
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 12 }}>
+          <div><strong>Candidates:</strong> {candidates.length}</div>
+          <div><strong>Locations affected:</strong> {byLocation.length}</div>
+          <button
+            onClick={() => exportStockoutsCSV(candidates, days)}
+            style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
+          >
+            Export CSV
+          </button>
         </div>
       </div>
 
-      {/* Main table */}
-      <StockMiniTable title="Potential Stockouts" rows={candidates} limit={20} />
+      {/* Layout: left candidates, right locations */}
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '2fr 1fr' }}>
+        <StockMiniTable title="Likely Stockouts (Machine · Product)" rows={candidates} />
+
+        <div className="card" style={cardStyle}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Locations Most Impacted</div>
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Count of stockout candidates</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 6, fontSize: 13 }}>
+            <div style={{ fontWeight: 700, color: '#0f172a' }}>Location</div>
+            <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Count</div>
+            {byLocation.length === 0 && <div style={{ gridColumn: '1 / -1', color: '#64748b' }}>No data</div>}
+            {byLocation.map((r) => (
+              <React.Fragment key={r.location}>
+                <div>{r.location}</div>
+                <div style={{ textAlign: 'right' }}>{r.count}</div>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1095,7 +1119,7 @@ export default function App(){
           <Route path="/purchase-orders"    element={<ScaffoldPage title="Purchase Orders" />} />
           <Route path="/service"            element={<ScaffoldPage title="Service" />} />
           <Route path="/reports/trends"     element={<TrendsPage />} />
-          <Route path="/reports/stockouts"  element={<StockoutsePage />} />
+          <Route path="/reports/stockouts"  element={<StockoutsPage />} />
           <Route path="/exports"            element={<ScaffoldPage title="Exports" />} />
           <Route path="/admin/users"        element={<ScaffoldPage title="Users & Roles" />} />
           <Route path="/admin/settings"     element={<ScaffoldPage title="Org Settings" />} />
