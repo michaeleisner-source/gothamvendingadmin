@@ -7,7 +7,7 @@ type Lead = Database['public']['Tables']['leads']['Row'];
 type Machine = Database['public']['Tables']['machines']['Row'];
 type Location = Database['public']['Tables']['locations']['Row'];
 type Sale = Database['public']['Tables']['sales']['Row'];
-type Inventory = Database['public']['Tables']['inventory_levels']['Row'];
+type Inventory = Database['public']['Tables']['inventory']['Row'];
 
 // LEADS DATA HOOKS
 export const useLeads = () => {
@@ -56,7 +56,7 @@ export const useUpdateLead = () => {
     mutationFn: async ({ id, updates }: { id: string; updates: Database['public']['Tables']['leads']['Update'] }) => {
       const { data, error } = await supabase
         .from('leads')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
@@ -85,9 +85,10 @@ export const useMachines = () => {
           *,
           locations (
             name,
-            address_line1,
+            address,
             city,
-            state
+            state,
+            location_type
           )
         `)
         .order('created_at', { ascending: false });
@@ -173,7 +174,8 @@ export const useSales = () => {
           *,
           machines (
             id,
-            name,
+            serial_number,
+            machine_model,
             locations (
               name,
               city,
@@ -181,7 +183,7 @@ export const useSales = () => {
             )
           )
         `)
-        .order('occurred_at', { ascending: false });
+        .order('sale_date', { ascending: false });
       
       if (error) throw error;
       return data;
@@ -219,12 +221,13 @@ export const useInventory = () => {
     queryKey: ['inventory'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('inventory_levels')
+        .from('inventory')
         .select(`
           *,
           machines (
             id,
-            name,
+            serial_number,
+            machine_model,
             locations (
               name,
               city,
@@ -244,10 +247,10 @@ export const useUpdateInventory = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Database['public']['Tables']['inventory_levels']['Update'] }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Database['public']['Tables']['inventory']['Update'] }) => {
       const { data, error } = await supabase
-        .from('inventory_levels')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .from('inventory')
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
@@ -274,8 +277,8 @@ export const useDashboardStats = () => {
       const [leadsResult, machinesResult, locationsResult, salesResult] = await Promise.all([
         supabase.from('leads').select('id, status'),
         supabase.from('machines').select('id, status'),
-        supabase.from('locations').select('id'),
-        supabase.from('sales').select('qty, unit_price_cents, occurred_at')
+        supabase.from('locations').select('id, status'),
+        supabase.from('sales').select('total_amount, sale_date')
       ]);
 
       if (leadsResult.error) throw leadsResult.error;
@@ -289,19 +292,19 @@ export const useDashboardStats = () => {
       const sales = salesResult.data;
 
       // Calculate analytics
-      const totalRevenue = sales.reduce((sum, sale) => sum + ((sale.qty || 0) * (sale.unit_price_cents || 0)) / 100, 0);
-      const activeMachines = machines.filter(m => m.status === 'online').length;
+      const totalRevenue = sales.reduce((sum, sale) => sum + (sale.total_amount || 0), 0);
+      const activeMachines = machines.filter(m => m.status === 'active').length;
       const newLeads = leads.filter(l => l.status === 'new').length;
-      const activeLocations = locations.length;
+      const activeLocations = locations.filter(l => l.status === 'active').length;
 
       // Calculate monthly revenue
       const now = new Date();
       const thisMonth = sales.filter(sale => {
-        const saleDate = new Date(sale.occurred_at);
+        const saleDate = new Date(sale.sale_date);
         return saleDate.getMonth() === now.getMonth() && 
                saleDate.getFullYear() === now.getFullYear();
       });
-      const monthlyRevenue = thisMonth.reduce((sum, sale) => sum + ((sale.qty || 0) * (sale.unit_price_cents || 0)) / 100, 0);
+      const monthlyRevenue = thisMonth.reduce((sum, sale) => sum + (sale.total_amount || 0), 0);
 
       return {
         totalRevenue,

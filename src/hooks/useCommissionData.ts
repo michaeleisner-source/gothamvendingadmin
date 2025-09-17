@@ -1,68 +1,52 @@
 import { useOptimizedQuery } from "./useOptimizedQuery";
 import { supabase } from "@/integrations/supabase/client";
 
-interface CommissionDataResult {
-  sales: Array<{
+export interface CommissionDataResult {
+  sales: {
     machine_id: string;
-    qty: number;
-    unit_price_cents: number;
-    occurred_at: string;
-  }>;
-  machines: Array<{
+    quantity_sold: number;
+    unit_price: number;
+    total_amount: number;
+    sale_date: string;
+  }[];
+  machines: {
     id: string;
-    name: string;
+    machine_model: string;
+    serial_number: string;
     location_id: string;
-  }>;
-  locations: Array<{
+  }[];
+  locations: {
     id: string;
     name: string;
-    commission_model: string;
-    commission_pct_bps: number;
-    commission_flat_cents: number;
-    commission_min_cents: number;
-  }>;
+    revenue_split: number;
+  }[];
 }
 
 export function useCommissionData(startDate: string, endDate: string) {
   return useOptimizedQuery<CommissionDataResult>({
     queryKey: ["commission-data", startDate, endDate],
     queryFn: async () => {
-      // Fetch all data in parallel for better performance
-      const [salesResult, machinesResult, locationsResult] = await Promise.all([
-        supabase
-          .from("sales")
-          .select("machine_id, qty, unit_price_cents, occurred_at")
-          .gte("occurred_at", startDate)
-          .lte("occurred_at", endDate)
-          .limit(50000), // Reasonable limit with potential for pagination
-        
-        supabase
-          .from("machines")
-          .select("id, name, location_id")
-          .limit(10000),
-        
-        supabase
-          .from("locations")
-          .select(`
-            id, 
-            name, 
-            commission_model, 
-            commission_pct_bps, 
-            commission_flat_cents, 
-            commission_min_cents
-          `)
-          .limit(5000)
-      ]);
+      // Fetch sales data (within date range)
+      const { data: sales } = await supabase
+        .from('sales')
+        .select('machine_id, quantity_sold, unit_price, total_amount, sale_date')
+        .gte('sale_date', startDate)
+        .lte('sale_date', endDate);
 
-      // Check for errors
-      if (salesResult.error) throw salesResult.error;
-      if (machinesResult.error) throw machinesResult.error;
-      if (locationsResult.error) throw locationsResult.error;
+      // Fetch machines data
+      const { data: machines } = await supabase
+        .from('machines')
+        .select('id, machine_model, serial_number, location_id');
+
+      // Fetch locations data
+      const { data: locations } = await supabase
+        .from('locations')
+        .select('id, name, revenue_split');
 
       return {
-        sales: salesResult.data || [],
-        machines: machinesResult.data || [],
-        locations: locationsResult.data || []
+        sales: sales || [],
+        machines: machines || [],
+        locations: locations || []
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutes for financial data
