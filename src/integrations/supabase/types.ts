@@ -156,15 +156,7 @@ export type Database = {
           org_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "commission_settings_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: true
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       commission_statements: {
         Row: {
@@ -230,15 +222,7 @@ export type Database = {
           tiers_json?: Json | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "commission_statements_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       contracts: {
         Row: {
@@ -320,27 +304,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "prospects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_contracts_location"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_contracts_machine"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_contracts_machine"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
           },
         ]
       }
@@ -940,27 +903,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "insurance_allocations_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "insurance_allocations_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "insurance_allocations_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "insurance_allocations_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
@@ -1007,13 +949,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "insurance_certificates_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "insurance_certificates_policy_id_fkey"
             columns: ["policy_id"]
@@ -1068,6 +1003,56 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory: {
+        Row: {
+          cost_per_unit: number
+          created_at: string | null
+          current_stock: number | null
+          id: string
+          last_restocked: string | null
+          machine_id: string | null
+          max_capacity: number
+          product_name: string
+          reorder_level: number | null
+          sell_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          cost_per_unit: number
+          created_at?: string | null
+          current_stock?: number | null
+          id?: string
+          last_restocked?: string | null
+          machine_id?: string | null
+          max_capacity: number
+          product_name: string
+          reorder_level?: number | null
+          sell_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          cost_per_unit?: number
+          created_at?: string | null
+          current_stock?: number | null
+          id?: string
+          last_restocked?: string | null
+          machine_id?: string | null
+          max_capacity?: number
+          product_name?: string
+          reorder_level?: number | null
+          sell_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_levels: {
         Row: {
           created_at: string
@@ -1115,20 +1100,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "inventory_levels_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_levels_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
           {
             foreignKeyName: "inventory_levels_product_id_fkey"
             columns: ["product_id"]
@@ -1190,27 +1161,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inventory_transactions_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_transactions_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_transactions_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "inventory_transactions_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -1225,41 +1175,39 @@ export type Database = {
           city: string
           company: string | null
           contact_method: string
-          created_at: string
+          created_at: string | null
           email: string | null
-          estimated_foot_traffic: number
+          estimated_foot_traffic: number | null
           follow_up_date: string | null
           id: string
           location_type: string
           name: string
           notes: string | null
-          org_id: string
           phone: string | null
           revenue_split: number | null
           state: string
-          status: string
-          updated_at: string
+          status: string | null
+          updated_at: string | null
           zip_code: string
         }
         Insert: {
           address: string
           city: string
           company?: string | null
-          contact_method: string
-          created_at?: string
+          contact_method?: string
+          created_at?: string | null
           email?: string | null
-          estimated_foot_traffic: number
+          estimated_foot_traffic?: number | null
           follow_up_date?: string | null
           id?: string
           location_type: string
           name: string
           notes?: string | null
-          org_id: string
           phone?: string | null
           revenue_split?: number | null
           state: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
           zip_code: string
         }
         Update: {
@@ -1267,20 +1215,19 @@ export type Database = {
           city?: string
           company?: string | null
           contact_method?: string
-          created_at?: string
+          created_at?: string | null
           email?: string | null
-          estimated_foot_traffic?: number
+          estimated_foot_traffic?: number | null
           follow_up_date?: string | null
           id?: string
           location_type?: string
           name?: string
           notes?: string | null
-          org_id?: string
           phone?: string | null
           revenue_split?: number | null
           state?: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
           zip_code?: string
         }
         Relationships: []
@@ -1349,122 +1296,57 @@ export type Database = {
       }
       locations: {
         Row: {
-          address_line1: string | null
-          address_line2: string | null
-          city: string | null
-          commission_flat_cents: number | null
-          commission_min_cents: number | null
-          commission_model: string | null
-          commission_notes: string | null
-          commission_pct_bps: number | null
+          address: string
+          city: string
           contact_email: string | null
-          contact_name: string | null
+          contact_name: string
           contact_phone: string | null
-          contract_id: string | null
-          contract_signed_at: string | null
-          contract_url: string | null
-          contract_version: string | null
           created_at: string | null
-          from_prospect_id: string | null
           id: string
-          location_type_id: string | null
+          location_type: string
           name: string
-          org_id: string | null
-          postal_code: string | null
-          revenue_share_pct: number | null
-          search_tsv: unknown | null
-          state: string | null
-          traffic_daily_est: number | null
-          traffic_monthly_est: number | null
+          notes: string | null
+          revenue_split: number | null
+          state: string
+          status: string | null
+          updated_at: string | null
+          zip_code: string
         }
         Insert: {
-          address_line1?: string | null
-          address_line2?: string | null
-          city?: string | null
-          commission_flat_cents?: number | null
-          commission_min_cents?: number | null
-          commission_model?: string | null
-          commission_notes?: string | null
-          commission_pct_bps?: number | null
+          address: string
+          city: string
           contact_email?: string | null
-          contact_name?: string | null
+          contact_name: string
           contact_phone?: string | null
-          contract_id?: string | null
-          contract_signed_at?: string | null
-          contract_url?: string | null
-          contract_version?: string | null
           created_at?: string | null
-          from_prospect_id?: string | null
           id?: string
-          location_type_id?: string | null
+          location_type: string
           name: string
-          org_id?: string | null
-          postal_code?: string | null
-          revenue_share_pct?: number | null
-          search_tsv?: unknown | null
-          state?: string | null
-          traffic_daily_est?: number | null
-          traffic_monthly_est?: number | null
+          notes?: string | null
+          revenue_split?: number | null
+          state: string
+          status?: string | null
+          updated_at?: string | null
+          zip_code: string
         }
         Update: {
-          address_line1?: string | null
-          address_line2?: string | null
-          city?: string | null
-          commission_flat_cents?: number | null
-          commission_min_cents?: number | null
-          commission_model?: string | null
-          commission_notes?: string | null
-          commission_pct_bps?: number | null
+          address?: string
+          city?: string
           contact_email?: string | null
-          contact_name?: string | null
+          contact_name?: string
           contact_phone?: string | null
-          contract_id?: string | null
-          contract_signed_at?: string | null
-          contract_url?: string | null
-          contract_version?: string | null
           created_at?: string | null
-          from_prospect_id?: string | null
           id?: string
-          location_type_id?: string | null
+          location_type?: string
           name?: string
-          org_id?: string | null
-          postal_code?: string | null
-          revenue_share_pct?: number | null
-          search_tsv?: unknown | null
-          state?: string | null
-          traffic_daily_est?: number | null
-          traffic_monthly_est?: number | null
+          notes?: string | null
+          revenue_split?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string | null
+          zip_code?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "locations_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "locations_from_prospect_id_fkey"
-            columns: ["from_prospect_id"]
-            isOneToOne: false
-            referencedRelation: "prospects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "locations_location_type_id_fkey"
-            columns: ["location_type_id"]
-            isOneToOne: false
-            referencedRelation: "location_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "locations_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       machine_finance: {
         Row: {
@@ -1560,22 +1442,7 @@ export type Database = {
           term_months?: number | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "machine_finance_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: true
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machine_finance_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: true
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-        ]
+        Relationships: []
       }
       machine_health_alerts: {
         Row: {
@@ -1715,20 +1582,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "machine_processor_mappings_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: true
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machine_processor_mappings_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: true
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "machine_processor_mappings_processor_id_fkey"
             columns: ["processor_id"]
             isOneToOne: false
@@ -1806,20 +1659,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "machine_slot_pars_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machine_slot_pars_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "machine_slot_pars_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -1857,20 +1696,6 @@ export type Database = {
           row?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "machine_slots_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machine_slots_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
           {
             foreignKeyName: "machine_slots_org_id_fkey"
             columns: ["org_id"]
@@ -1926,62 +1751,50 @@ export type Database = {
           recorded_at?: string
           temperature?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "machine_telemetry_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machine_telemetry_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-        ]
+        Relationships: []
       }
       machines: {
         Row: {
           created_at: string | null
+          current_cash: number | null
           id: string
-          location: string | null
+          install_date: string
+          last_service_date: string | null
           location_id: string | null
-          manufacturer: string | null
-          name: string
-          org_id: string | null
-          search_tsv: unknown | null
-          serial_number: string | null
+          machine_model: string
+          next_service_date: string | null
+          notes: string | null
+          serial_number: string
           status: string | null
-          wifi_type: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          current_cash?: number | null
           id?: string
-          location?: string | null
+          install_date: string
+          last_service_date?: string | null
           location_id?: string | null
-          manufacturer?: string | null
-          name: string
-          org_id?: string | null
-          search_tsv?: unknown | null
-          serial_number?: string | null
+          machine_model: string
+          next_service_date?: string | null
+          notes?: string | null
+          serial_number: string
           status?: string | null
-          wifi_type?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          current_cash?: number | null
           id?: string
-          location?: string | null
+          install_date?: string
+          last_service_date?: string | null
           location_id?: string | null
-          manufacturer?: string | null
-          name?: string
-          org_id?: string | null
-          search_tsv?: unknown | null
-          serial_number?: string | null
+          machine_model?: string
+          next_service_date?: string | null
+          notes?: string | null
+          serial_number?: string
           status?: string | null
-          wifi_type?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -1989,13 +1802,6 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "machines_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -2882,20 +2688,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "restock_sessions_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "restock_sessions_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "restock_sessions_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -2976,20 +2768,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "route_stops_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "route_stops_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "route_stops_route_id_fkey"
             columns: ["route_id"]
             isOneToOne: false
@@ -3000,40 +2778,40 @@ export type Database = {
       }
       sales: {
         Row: {
+          created_at: string | null
           id: string
-          machine_id: string
-          occurred_at: string
-          org_id: string
+          machine_id: string | null
           payment_method: string | null
-          product_id: string
-          qty: number
-          source: string | null
-          unit_cost_cents: number | null
-          unit_price_cents: number
+          product_name: string
+          quantity_sold: number | null
+          sale_date: string | null
+          total_amount: number
+          unit_price: number
+          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           id?: string
-          machine_id: string
-          occurred_at?: string
-          org_id: string
+          machine_id?: string | null
           payment_method?: string | null
-          product_id: string
-          qty: number
-          source?: string | null
-          unit_cost_cents?: number | null
-          unit_price_cents: number
+          product_name: string
+          quantity_sold?: number | null
+          sale_date?: string | null
+          total_amount: number
+          unit_price: number
+          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           id?: string
-          machine_id?: string
-          occurred_at?: string
-          org_id?: string
+          machine_id?: string | null
           payment_method?: string | null
-          product_id?: string
-          qty?: number
-          source?: string | null
-          unit_cost_cents?: number | null
-          unit_price_cents?: number
+          product_name?: string
+          quantity_sold?: number | null
+          sale_date?: string | null
+          total_amount?: number
+          unit_price?: number
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -3041,27 +2819,6 @@ export type Database = {
             columns: ["machine_id"]
             isOneToOne: false
             referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sales_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
-            foreignKeyName: "sales_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sales_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -3393,27 +3150,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tickets_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tickets_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "machines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tickets_machine_id_fkey"
-            columns: ["machine_id"]
-            isOneToOne: false
-            referencedRelation: "v_machine_health"
-            referencedColumns: ["machine_id"]
-          },
-          {
             foreignKeyName: "tickets_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -3460,25 +3196,6 @@ export type Database = {
           q: string | null
         }
         Relationships: []
-      }
-      v_machine_health: {
-        Row: {
-          last_sale_at: string | null
-          location_id: string | null
-          machine_id: string | null
-          machine_name: string | null
-          silent_flag: boolean | null
-          since_last_sale: unknown | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "machines_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Functions: {
