@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import ScaffoldPage from '@/pages/_ScaffoldPage';
+import SalesDetailPage from '@/pages/reports/SalesDetailPage';
 
 let ProspectDashboard: React.ComponentType<any> | null = null;
 try { ProspectDashboard = require('@/pages/ProspectDashboard').default; } catch { ProspectDashboard = null; }
@@ -16,7 +17,7 @@ const ROUTES: { path: string; title: string; el?: React.ReactNode }[] = [
   { path: '/inventory',          title: 'Inventory' },
   { path: '/purchase-orders',    title: 'Purchase Orders' },
   { path: '/service',            title: 'Service' },
-  { path: '/sales',              title: 'Sales Detail' },
+  { path: '/sales',              title: 'Sales Detail', el: <SalesDetailPage /> },
   { path: '/reports/machines',   title: 'Machine Performance' },
   { path: '/reports/products',   title: 'Product Performance' },
   { path: '/reports/locations',  title: 'Location Performance' },

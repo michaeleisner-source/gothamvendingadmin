@@ -1,7 +1,7 @@
 import React from 'react';
-import SimpleTable, { Col } from '../components/ui/SimpleTable';
-import { getDemoSales, SaleRow } from '../lib/demo-data';
-import { toCSV, downloadCSV } from '../lib/csv-utils';
+import SimpleTable, { Col } from '../../components/ui/SimpleTable';
+import { getDemoSales, SaleRow } from '../../lib/demo-data';
+import { toCSV, downloadCSV } from '../../lib/csv-utils';
 
 export default function SalesDetailPage() {
   const [days, setDays] = React.useState(30);
