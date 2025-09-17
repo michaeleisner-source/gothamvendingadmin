@@ -1,15 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
-import AppRoutes from './AppRoutes';
+import App from './App';
 import RootErrorBoundary from './components/util/RootErrorBoundary';
 
 function Root() {
   return (
     <RootErrorBoundary>
-      <HashRouter>
-        <AppRoutes />
-      </HashRouter>
+      <App />
     </RootErrorBoundary>
   );
 }
