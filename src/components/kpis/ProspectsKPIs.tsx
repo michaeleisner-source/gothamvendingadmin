@@ -15,7 +15,7 @@ export default function ProspectsKPIs() {
     (async () => {
       setLoading(true); setErr(null);
       try {
-        const r = await supabase.from("prospects").select("*").limit(5000);
+        const r = await supabase.from("leads").select("*").limit(5000);
         if (r.error) throw r.error;
         setRows(r.data || []);
       } catch (e: any) {
@@ -40,12 +40,12 @@ export default function ProspectsKPIs() {
     };
 
     for (const r of rows) {
-      const stage = (get(r, "stage", "status") || "").toString().toLowerCase();
-      const createdAt = (get(r, "created_at", "createdAt") || null) ? new Date(get(r,"created_at","createdAt")) : null;
-      const wonAt = (get(r, "converted_at", "won_at", "installed_at") || null) ? new Date(get(r,"converted_at","won_at","installed_at")) : null;
+      const stage = (get(r, "status") || "").toString().toLowerCase();
+      const createdAt = (get(r, "created_at") || null) ? new Date(get(r,"created_at")) : null;
+      const wonAt = (get(r, "follow_up_date") || null) ? new Date(get(r,"follow_up_date")) : null;
 
-      if (/won/.test(stage)) won++;
-      else if (/lost|closed\-lost|no deal/.test(stage)) lost++;
+      if (/closed/.test(stage)) won++;
+      else if (/rejected/.test(stage)) lost++;
       else if (createdAt) openAges.push(daysBetween(createdAt, now));
 
       if (wonAt && createdAt) wonCycle.push(daysBetween(createdAt, wonAt));
@@ -58,12 +58,12 @@ export default function ProspectsKPIs() {
     return { total, won, lost, winRate, avgOpenDays, avgDaysToWin };
   }, [rows]);
 
-  if (loading) return <KPIBar><KPI label="Loading prospects…" value="—" /></KPIBar>;
-  if (err) return <KPIBar><KPI label="Prospects Error" value="!" hint={err} intent="bad"/></KPIBar>;
+  if (loading) return <KPIBar><KPI label="Loading leads…" value="—" /></KPIBar>;
+  if (err) return <KPIBar><KPI label="Leads Error" value="!" hint={err} intent="bad"/></KPIBar>;
 
   return (
     <KPIBar>
-      <KPI label="Prospects" value={stats.total} />
+      <KPI label="Leads" value={stats.total} />
       <KPI label="Won" value={stats.won} intent="good" hint={`${(stats.winRate||0).toFixed(1)}% win rate`} />
       <KPI label="Lost" value={stats.lost} intent={stats.lost>0?"warn":"neutral"} />
       <KPI label="Avg Days Open (Active)" value={Number.isFinite(stats.avgOpenDays)?stats.avgOpenDays.toFixed(1):"—"} hint="Lower is better" />

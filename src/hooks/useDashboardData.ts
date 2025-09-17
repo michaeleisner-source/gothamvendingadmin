@@ -12,10 +12,10 @@ export interface DashboardData {
     total: number;
     active: number;
   };
-  prospects: {
+  leads: {
     total: number;
     active: number;
-    won_this_month: number;
+    closed_this_month: number;
   };
   recentActivity: {
     type: string;
@@ -39,9 +39,9 @@ export function useDashboardData() {
     { column: "created_at", ascending: false }
   );
 
-  const { data: prospects = [], isLoading: prospectsLoading } = useSupabaseQuery<any>(
-    "prospects",
-    "id, business_name, stage, status, created_at, updated_at",
+  const { data: leads = [], isLoading: leadsLoading } = useSupabaseQuery<any>(
+    "leads",
+    "id, name, company, status, created_at, updated_at",
     [],
     { column: "updated_at", ascending: false }
   );
@@ -62,15 +62,15 @@ export function useDashboardData() {
         total: locations.length,
         active: locations.length, // All locations are considered active for now
       },
-      prospects: {
-        total: prospects.length,
-        active: prospects.filter(p => !['won', 'lost', 'closed_won', 'closed_lost'].includes((p.stage || p.status || '').toLowerCase())).length,
-        won_this_month: prospects.filter(p => {
-          const stage = (p.stage || p.status || '').toLowerCase();
-          const isWon = ['won', 'closed_won'].includes(stage);
-          if (!isWon) return false;
+      leads: {
+        total: leads.length,
+        active: leads.filter(l => !['closed', 'rejected'].includes((l.status || '').toLowerCase())).length,
+        closed_this_month: leads.filter(l => {
+          const status = (l.status || '').toLowerCase();
+          const isClosed = status === 'closed';
+          if (!isClosed) return false;
           
-          const updatedDate = new Date(p.updated_at);
+          const updatedDate = new Date(l.updated_at);
           return updatedDate.getMonth() === currentMonth && updatedDate.getFullYear() === currentYear;
         }).length,
       },
@@ -85,17 +85,17 @@ export function useDashboardData() {
           message: `Location "${l.name}" was added`,
           timestamp: l.created_at,
         })),
-        ...prospects.slice(0, 2).map(p => ({
-          type: 'prospect',
-          message: `Prospect "${p.business_name}" was updated`,
-          timestamp: p.updated_at,
+        ...leads.slice(0, 2).map(l => ({
+          type: 'lead',
+          message: `Lead "${l.name}" was updated`,
+          timestamp: l.updated_at,
         })),
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5),
     };
-  }, [machines, locations, prospects]);
+  }, [machines, locations, leads]);
 
   return {
     data: dashboardData,
-    isLoading: machinesLoading || locationsLoading || prospectsLoading,
+    isLoading: machinesLoading || locationsLoading || leadsLoading,
   };
 }
