@@ -5,7 +5,7 @@ import ScaffoldPage from '@/pages/_ScaffoldPage';
 
 // If you already have a real page for prospects, try to import it:
 let ProspectDashboard: React.ComponentType<any> | null = null;
-try { ProspectDashboard = require('@/pages/prospects/ProspectDashboard').default; } catch { ProspectDashboard = null; }
+try { ProspectDashboard = require('@/pages/ProspectDashboard').default; } catch { ProspectDashboard = null; }
 
 const ROUTES: { path: string; title: string; el?: React.ReactNode }[] = [
   { path: '/prospectsdashboard', title: 'Prospects', el: ProspectDashboard ? <ProspectDashboard /> : undefined },
