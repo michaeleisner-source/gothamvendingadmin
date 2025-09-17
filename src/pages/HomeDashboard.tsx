@@ -40,8 +40,8 @@ const HomeDashboard = () => {
       className: "text-blue-600"
     },
     {
-      title: "Active Prospects",
-      value: dashboardData.prospects.active,
+      title: "Active Leads",
+      value: dashboardData.leads.active,
       icon: Users,
       className: "text-purple-600"
     }

@@ -15,7 +15,7 @@ export default function ProspectsKPIs() {
     (async () => {
       setLoading(true); setErr(null);
       try {
-        const r = await supabase.from("leads").select("*").limit(5000);
+        const r = await (supabase as any).from("leads").select("*").limit(5000);
         if (r.error) throw r.error;
         setRows(r.data || []);
       } catch (e: any) {

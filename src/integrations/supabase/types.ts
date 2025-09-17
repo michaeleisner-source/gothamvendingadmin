@@ -1219,6 +1219,72 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          address: string
+          city: string
+          company: string | null
+          contact_method: string
+          created_at: string
+          email: string | null
+          estimated_foot_traffic: number
+          follow_up_date: string | null
+          id: string
+          location_type: string
+          name: string
+          notes: string | null
+          org_id: string
+          phone: string | null
+          revenue_split: number | null
+          state: string
+          status: string
+          updated_at: string
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          city: string
+          company?: string | null
+          contact_method: string
+          created_at?: string
+          email?: string | null
+          estimated_foot_traffic: number
+          follow_up_date?: string | null
+          id?: string
+          location_type: string
+          name: string
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          revenue_split?: number | null
+          state: string
+          status?: string
+          updated_at?: string
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          company?: string | null
+          contact_method?: string
+          created_at?: string
+          email?: string | null
+          estimated_foot_traffic?: number
+          follow_up_date?: string | null
+          id?: string
+          location_type?: string
+          name?: string
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          revenue_split?: number | null
+          state?: string
+          status?: string
+          updated_at?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
       location_commissions: {
         Row: {
           created_at: string
