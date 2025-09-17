@@ -65,13 +65,13 @@ export default function DailyOps() {
         silentList.sort((a,b)=> b.days - a.days);
         setSilent(silentList.slice(0,5));
 
-        // Prospects (stuck > 14d and not Won/Lost)
-        const p = await supabase.from("prospects").select("*").limit(5000);
+        // Leads (stuck > 14d and not Won/Lost)
+        const p = await supabase.from("leads").select("*").limit(5000);
         if (!p.error) {
           const now = new Date();
           const stuck = (p.data||[]).filter((r:any)=>{
-            const stage = String(r.stage??r.status??"").toLowerCase();
-            if (/won|lost|closed/.test(stage)) return false;
+            const stage = String(r.status??"").toLowerCase();
+            if (/closed|rejected/.test(stage)) return false;
             const created = r.created_at ? new Date(r.created_at) : null;
             if (!created) return false;
             const days = Math.max(0, (now.getTime()-created.getTime())/86_400_000);

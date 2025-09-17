@@ -73,28 +73,28 @@ const NewLocation = () => {
     if (!fromProspectId) return;
     
     try {
-      const { data: prospect, error } = await supabase
-        .from("prospects")
+      const { data: lead, error } = await supabase
+        .from("leads")
         .select("*")
         .eq("id", fromProspectId)
         .single();
 
       if (error) throw error;
 
-      if (prospect) {
+      if (lead) {
         setFormData({
-          name: prospect.business_name || "",
-          address_line1: prospect.address_line1 || "",
-          address_line2: prospect.address_line2 || "",
-          city: prospect.city || "",
-          state: prospect.state || "",
-          postal_code: prospect.postal_code || "",
-          contact_name: prospect.contact_name || "",
-          contact_email: prospect.contact_email || "",
-          contact_phone: prospect.contact_phone || "",
-          traffic_daily_est: prospect.traffic_daily_est?.toString() || "",
-          traffic_monthly_est: prospect.traffic_monthly_est?.toString() || "",
-          location_type_id: prospect.location_type_id || ""
+          name: lead.name || "",
+          address_line1: lead.address || "",
+          address_line2: "",
+          city: lead.city || "",
+          state: lead.state || "",
+          postal_code: lead.zip_code || "",
+          contact_name: lead.name || "",
+          contact_email: lead.email || "",
+          contact_phone: lead.phone || "",
+          traffic_daily_est: lead.estimated_foot_traffic?.toString() || "",
+          traffic_monthly_est: "",
+          location_type_id: ""
         });
       }
     } catch (error: any) {
@@ -153,13 +153,12 @@ const NewLocation = () => {
 
       if (error) throw error;
 
-      // If this came from a prospect, update the prospect status
+      // If this came from a lead, update the lead status
       if (fromProspectId) {
         await supabase
-          .from("prospects")
+          .from("leads")
           .update({ 
-            status: "CONVERTED",
-            converted_location_id: location.id 
+            status: "closed"
           })
           .eq("id", fromProspectId);
       }
