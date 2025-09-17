@@ -1,28 +1,32 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import AppHeader from '../components/AppHeader';
-import Breadcrumbs from '../components/AppBreadcrumbs';
+import Breadcrumbs from '../components/Breadcrumbs';
 import ErrorBoundary from '@/components/util/ErrorBoundary';
-import QAOverlay from '../pages/qa/QAOverlay';
-import '@/styles/theme.css';
+// (optional) import RedactionBadge from '@/components/system/RedactionBadge';
 
 export default function AppLayout() {
   return (
-    <div className="gv-content" style={{display:'flex', minHeight:'100vh'}}>
+    <div className="gv-app" style={{display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'100vh', background:'#f8fafc'}}>
       <Sidebar />
-      <div className="gv-main-col" style={{flex:1}}>
-        <AppHeader />
-        {/* Accessible crumbs; visible crumbs live in header slot */}
+      <div style={{display:'grid', gridTemplateRows:'auto auto 1fr'}}>
+        {/* Header */}
+        <header style={{display:'flex', alignItems:'center', justifyContent:'space-between',
+                        padding:'10px 16px', background:'#ffffff', borderBottom:'1px solid var(--border)'}}>
+          <div style={{fontWeight:800}}>Gotham Vending</div>
+          <div style={{display:'flex', alignItems:'center', gap:12}}>
+            {/* <RedactionBadge /> */}
+          </div>
+        </header>
+
         <Breadcrumbs />
-        <main className="gv-page" id="gv-page" style={{padding:'16px'}}>
+
+        {/* Main content */}
+        <main className="gv-page" id="gv-page" style={{padding:16}}>
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>
         </main>
       </div>
-      
-      {/* QA overlay available everywhere */}
-      <QAOverlay />
     </div>
   );
 }
