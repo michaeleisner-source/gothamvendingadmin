@@ -105,6 +105,139 @@ function Bar({value, max}:{value:number; max:number}) {
 }
 
 /* =========================================================
+   MACHINE SUMMARY HELPERS
+========================================================= */
+type MachineSummary = {
+  machine: string;
+  location: string;
+  tx: number;
+  revenue: number;
+  prevRevenue: number;
+  delta: number;   // revenue delta (curr - prev)
+  pct: string;     // % change vs prev
+  lastSale: string | '—';
+  status: 'online' | 'idle' | 'offline';
+};
+
+function lastSaleDateMap(rows: SaleRow[]) {
+  const m = new Map<string, string>();
+  for (const r of rows) {
+    const key = r.machine;
+    const prev = m.get(key);
+    if (!prev || r.date > prev) m.set(key, r.date);
+  }
+  return m;
+}
+
+function daysBetween(isoYMD: string) {
+  const now = new Date();
+  const d = new Date(isoYMD + 'T00:00:00');
+  return Math.floor((+now - +d) / 86400000);
+}
+
+function summarizeMachines(rows: SaleRow[], prevRows: SaleRow[]): MachineSummary[] {
+  const curAgg = new Map<string, { location: string; tx: number; revenue: number }>();
+  const prevAgg = new Map<string, { revenue: number }>();
+  const lastMap = lastSaleDateMap(rows);
+
+  for (const r of rows) {
+    const k = r.machine;
+    const cur = curAgg.get(k) || { location: r.location, tx: 0, revenue: 0 };
+    cur.tx += 1;
+    cur.revenue += r.revenue;
+    cur.location = r.location; // latest seen
+    curAgg.set(k, cur);
+  }
+  for (const r of prevRows) {
+    const k = r.machine;
+    const prev = prevAgg.get(k) || { revenue: 0 };
+    prev.revenue += r.revenue;
+    prevAgg.set(k, prev);
+  }
+
+  const keys = new Set<string>([...curAgg.keys(), ...prevAgg.keys()]);
+  const out: MachineSummary[] = [];
+  for (const k of keys) {
+    const c = curAgg.get(k) || { location: '—', tx: 0, revenue: 0 };
+    const p = prevAgg.get(k) || { revenue: 0 };
+    const delta = +(c.revenue - p.revenue).toFixed(2);
+    const pct = p.revenue === 0 ? (c.revenue ? '∞%' : '0%') : `${(((c.revenue - p.revenue) / p.revenue) * 100).toFixed(1)}%`;
+    const last = lastMap.get(k) ?? '—';
+
+    let status: MachineSummary['status'] = 'offline';
+    if (last !== '—') {
+      const d = daysBetween(last);
+      status = d <= 2 ? 'online' : d <= 7 ? 'idle' : 'offline';
+    }
+
+    out.push({
+      machine: k,
+      location: c.location,
+      tx: c.tx,
+      revenue: +c.revenue.toFixed(2),
+      prevRevenue: +p.revenue.toFixed(2),
+      delta,
+      pct,
+      lastSale: last,
+      status,
+    });
+  }
+  // sort by current revenue desc
+  out.sort((a, b) => b.revenue - a.revenue);
+  return out;
+}
+
+function exportMachinesCSV(rows: MachineSummary[], days: number) {
+  const header = 'machine,location,status,last_sale,tx,revenue,prev_revenue,delta,pct,window_days';
+  const lines = rows.map(r =>
+    [r.machine, r.location, r.status, r.lastSale, r.tx, r.revenue.toFixed(2), r.prevRevenue.toFixed(2), r.delta.toFixed(2), r.pct, days]
+      .map(v => (typeof v === 'string' && v.includes(',') ? `"${v}"` : v))
+      .join(',')
+  );
+  const csv = [header, ...lines].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `gotham-machine-summary-last-${days}-days.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ---------- generic movers (for machines) ---------- */
+function moversForKey(
+  rows: SaleRow[],
+  prevRows: SaleRow[],
+  keyFn: (r: SaleRow) => string,
+  limit = 5
+) {
+  const cur = new Map<string, { tx: number; revenue: number }>();
+  const prev = new Map<string, { tx: number; revenue: number }>();
+
+  for (const r of rows) {
+    const k = keyFn(r);
+    const c = cur.get(k) || { tx: 0, revenue: 0 };
+    c.tx += 1; c.revenue += r.revenue; cur.set(k, c);
+  }
+  for (const r of prevRows) {
+    const k = keyFn(r);
+    const p = prev.get(k) || { tx: 0, revenue: 0 };
+    p.tx += 1; p.revenue += r.revenue; prev.set(k, p);
+  }
+
+  const keys = new Set<string>([...cur.keys(), ...prev.keys()]);
+  const all = Array.from(keys).map(k => {
+    const c = cur.get(k) || { tx: 0, revenue: 0 };
+    const p = prev.get(k) || { tx: 0, revenue: 0 };
+    const delta = +(c.revenue - p.revenue).toFixed(2);
+    const pct = p.revenue === 0 ? (c.revenue ? '∞%' : '0%') : `${(((c.revenue - p.revenue) / p.revenue) * 100).toFixed(1)}%`;
+    return { key: k, curr: +c.revenue.toFixed(2), prev: +p.revenue.toFixed(2), delta, pct, txCurr: c.tx, txPrev: p.tx };
+  });
+
+  const gainers = all.filter(x => x.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, limit);
+  const decliners = all.filter(x => x.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, limit);
+  return { gainers, decliners };
+}
+
+/* =========================================================
    STOCKOUT HELPERS
 ========================================================= */
 type StockCandidate = {
@@ -771,91 +904,147 @@ function ProductPerformancePage() {
 
 /* ---------- Machine Performance ---------- */
 function MachinePerformancePage() {
-  const [days, setDays] = React.useState(30);
-  const rows = React.useMemo(()=>getDemoSales(days),[days]);
-  const byMachine = React.useMemo(()=>aggregateBy(rows,'machine'),[rows]);
-  const totalRev = +rows.reduce((s,r)=>s+r.revenue,0).toFixed(2);
-  const maxRev = byMachine[0]?.revenue || 0;
+  const [days, setDays] = React.useState<7 | 14 | 30>(30);
+  const rows = React.useMemo(() => getDemoSales(days), [days]);
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]);
+  
+  const machines = React.useMemo(() => summarizeMachines(rows, prevRows), [rows, prevRows]);
+  const machineMovers = React.useMemo(() => moversForKey(rows, prevRows, r => r.machine), [rows, prevRows]);
 
-  React.useEffect(()=>{
+  const totalRev = +rows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
+  const onlineCount = machines.filter(m => m.status === 'online').length;
+  const idleCount = machines.filter(m => m.status === 'idle').length;
+  const offlineCount = machines.filter(m => m.status === 'offline').length;
+
+  React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Machine Performance' }));
     return () => {
       window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
     };
-  },[]);
+  }, []);
 
-  const machineToLocs = new Map<string, Set<string>>();
-  for (const r of rows) {
-    if (!machineToLocs.has(r.machine)) machineToLocs.set(r.machine, new Set());
-    machineToLocs.get(r.machine)!.add(r.location);
-  }
+  const chip = (label: string, active: boolean, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 10px',
+        border: '1px solid #e5e7eb',
+        borderRadius: 8,
+        background: active ? '#eef2ff' : '#fff',
+        fontWeight: active ? 700 : 500,
+      }}
+    >
+      {label}
+    </button>
+  );
 
-  const view = byMachine.map(r => ({
-    machine: r.key,
-    tx: r.tx,
-    qty: r.qty,
-    revenueFmt: `$${r.revenue.toFixed(2)}`,
-    locations: machineToLocs.get(r.key)?.size || 1,
-    share: pct(r.revenue, totalRev),
-    _rev: r.revenue
-  }));
-
-  const cols = [
-    { key:'machine',   label:'Machine', width:100 },
-    { key:'locations', label:'#Locations', align:'right', width:110 },
-    { key:'tx',        label:'Tx', align:'right', width:80 },
-    { key:'qty',       label:'Qty', align:'right', width:80 },
-    { key:'revenueFmt',label:'Revenue', align:'right', width:110 },
-    { key:'share',     label:'Share', align:'right', width:90 },
-  ] as Col<any>[];
-
-  function exportCSV(){
-    const csv = toCSV(byMachine);
-    downloadCSV(`gotham-machines-last-${days}-days`, csv);
-  }
+  const StatusBadge = ({ status }: { status: MachineSummary['status'] }) => {
+    const colors = {
+      online: '#16a34a',
+      idle: '#eab308',
+      offline: '#dc2626'
+    };
+    return (
+      <span
+        style={{
+          padding: '2px 6px',
+          borderRadius: 4,
+          fontSize: 11,
+          color: '#fff',
+          background: colors[status],
+          fontWeight: 600,
+          textTransform: 'uppercase'
+        }}
+      >
+        {status}
+      </span>
+    );
+  };
 
   return (
-    <div style={{display:'grid', gap:12}}>
-      <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12}}>
-        <KPI label="Days" value={`${days}`} />
-        <KPI label="Machines" value={`${byMachine.length}`} />
-        <KPI label="Total Tx" value={String(rows.length)} />
-        <KPI label="Total Revenue" value={`$${totalRev.toLocaleString()}`} />
-      </div>
-
-      <div className="card" style={{...cardStyle, display:'flex', alignItems:'center', gap:12}}>
-        <div style={{fontWeight:800}}>Machine Performance</div>
-        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
-          Days
-          <input type="number" min={1} max={365} value={days}
-                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
-                 style={{width:80, padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:8}}/>
-        </label>
-        <button onClick={exportCSV} className="btn"
-                style={{marginLeft:'auto', padding:'8px 12px', border:'1px solid #e5e7eb', borderRadius:8, background:'#fff'}}>
-          Export CSV
-        </button>
-      </div>
-
-      <div className="card" style={cardStyle}>
-        <div style={{display:'grid', gap:10}}>
-          {byMachine.slice(0,5).map((r)=>(
-            <div key={r.key}>
-              <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#475569', marginBottom:6}}>
-                <div>{r.key}</div>
-                <div><b>${r.revenue.toFixed(2)}</b> • {pct(r.revenue,totalRev)}</div>
-              </div>
-              <Bar value={r.revenue} max={maxRev} />
-            </div>
-          ))}
+    <div style={{ display: 'grid', gap: 12 }}>
+      {/* Header */}
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontWeight: 800 }}>Machine Performance</div>
+        <div style={{ marginLeft: 12, display: 'inline-flex', gap: 8 }}>
+          {chip('7d', days === 7, () => setDays(7))}
+          {chip('14d', days === 14, () => setDays(14))}
+          {chip('30d', days === 30, () => setDays(30))}
         </div>
-        <div style={{height:12}} />
-        <SimpleTable columns={cols as any} rows={view as any} />
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 12 }}>
+          <div><strong>Total Revenue:</strong> ${totalRev.toLocaleString()}</div>
+          <div><strong>Online:</strong> {onlineCount}</div>
+          <div><strong>Idle:</strong> {idleCount}</div>
+          <div><strong>Offline:</strong> {offlineCount}</div>
+          <button
+            onClick={() => exportMachinesCSV(machines, days)}
+            style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Main + sidebar */}
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '2fr 1fr' }}>
+        {/* Machine table */}
+        <div className="card" style={{ ...cardStyle, overflow: 'auto' }}>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>Machine Summary</div>
+          <table className="gv-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Machine</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Location</th>
+                <th style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Last Sale</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Tx</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Revenue</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Δ vs Prev</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {machines.map((m, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{m.machine}</td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{m.location}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                    <StatusBadge status={m.status} />
+                  </td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{m.lastSale}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{m.tx}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>${m.revenue.toFixed(2)}</td>
+                  <td style={{ 
+                    padding: '8px 6px', 
+                    textAlign: 'right', 
+                    borderBottom: '1px solid #f1f5f9',
+                    color: m.delta >= 0 ? '#16a34a' : '#dc2626'
+                  }}>
+                    {m.delta >= 0 ? '+' : ''}{m.delta.toFixed(2)}
+                  </td>
+                  <td style={{ 
+                    padding: '8px 6px', 
+                    textAlign: 'right', 
+                    borderBottom: '1px solid #f1f5f9',
+                    color: m.delta >= 0 ? '#16a34a' : '#dc2626'
+                  }}>
+                    {m.pct}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Sidebar: Top Movers */}
+        <div style={{ display: 'grid', gap: 12 }}>
+          <MiniTable title="Top Machine Gainers (vs prev)" rows={machineMovers.gainers} />
+          <MiniTable title="Top Machine Decliners (vs prev)" rows={machineMovers.decliners} />
+        </div>
       </div>
     </div>
   );
 }
-
 /* ---------- Location Performance ---------- */
 function LocationPerformancePage() {
   const [days, setDays] = React.useState(30);
