@@ -12,6 +12,8 @@ function NotFound() {
 }
 
 export default function AppRoutes() {
+  console.log('AppRoutes loading, current path:', location.pathname, location.hash);
+  
   return (
     <Routes>
       {/* Make sure dashboard works even if layout has an issue */}
