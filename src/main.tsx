@@ -1,43 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppRoutes from './AppRoutes';
 import RootErrorBoundary from './components/util/RootErrorBoundary';
-import './index.css';
-import { supabase } from '@/integrations/supabase/client';
-
-// Make Supabase client globally available for QA tools
-declare global {
-  interface Window {
-    supabase: typeof supabase;
-  }
-}
-window.supabase = supabase;
-
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000, // 1 minute
-      retry: 1,
-    },
-  },
-});
 
 function Root() {
   return (
     <RootErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
-      </QueryClientProvider>
+      <HashRouter>
+        <AppRoutes />
+      </HashRouter>
     </RootErrorBoundary>
   );
 }
 
-// Mount (and never fail silently)
 function mount() {
   let el = document.getElementById('root');
   if (!el) { el = document.createElement('div'); el.id = 'root'; document.body.appendChild(el); }
