@@ -1,22 +1,26 @@
 import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import AppRoutes from './AppRoutes';
+
+const queryClient = new QueryClient();
 
 function App() {
+  console.log('App loading at:', new Date().toISOString());
+  
   return (
-    <div style={{
-      padding: '50px',
-      background: 'red',
-      color: 'white',
-      fontSize: '32px',
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column'
-    }}>
-      <h1>REACT IS WORKING!</h1>
-      <p>Current URL: {window.location.pathname}</p>
-      <p>Time: {new Date().toLocaleTimeString()}</p>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Router>
+          <AppRoutes />
+        </Router>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
