@@ -27,6 +27,8 @@ export default function AppRoutes() {
       {/* Your normal app under the layout */}
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Navigate to="/prospectsdashboard" replace />} />
+        {/* Prospects dashboard also available within layout */}
+        <Route path="/prospectsdashboard" element={<ProspectDashboard />} />
         {/* keep your other routes here */}
       </Route>
 
