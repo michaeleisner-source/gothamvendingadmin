@@ -28,8 +28,7 @@ import ProductsEnhanced from "./pages/ProductsEnhanced";
 import MachinesEnhanced from "./pages/MachinesEnhanced";
 import MachineDetail from "./pages/MachineDetail";
 import Prospects from "./pages/Prospects";
-// Temporarily remove ProspectDashboard import to test if it's causing compilation issues
-// import ProspectDashboard from "./pages/ProspectDashboard";
+import ProspectDashboard from "./pages/ProspectDashboard";
 import NewProspect from "./pages/NewProspect";
 import ProspectDetail from "./pages/ProspectDetail";
 import ProspectFunnel from "./pages/reports/ProspectFunnel";
@@ -115,21 +114,7 @@ const App = () => (
       <Sonner />
       <Router>
         <Routes>
-          {/* Simple test route */}
-          <Route path="/prospectsdashboard" element={
-            <div style={{
-              padding: '50px', 
-              fontSize: '32px', 
-              color: 'white', 
-              background: 'red',
-              minHeight: '100vh',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              SIMPLE TEST - IF YOU SEE THIS, ROUTING WORKS!
-            </div>
-          } />
+          <Route path="/prospectsdashboard" element={<ProspectDashboard />} />
           
           {/* All routes are public in demo mode */}
           <Route element={<AppLayout />}>
