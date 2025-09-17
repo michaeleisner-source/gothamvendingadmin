@@ -114,6 +114,9 @@ const App = () => (
       <Sonner />
       <Router>
         <Routes>
+          {/* Test route outside AppLayout */}
+          <Route path="/prospectsdashboard" element={<div style={{padding: '20px', fontSize: '24px', color: 'red', background: 'yellow'}}>TEST: Direct Route Working!</div>} />
+          
           {/* All routes are public in demo mode */}
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
@@ -133,7 +136,6 @@ const App = () => (
             } />
             <Route path="/prospects" element={<Prospects />} />
             <Route path="/prospects/dashboard" element={<ProspectDashboard />} />
-            <Route path="/prospectsdashboard" element={<div style={{padding: '20px', fontSize: '24px', color: 'red'}}>TEST: ProspectDashboard Route Working!</div>} />
             <Route path="/prospects/new" element={<NewProspect />} />
             <Route path="/prospects/convert" element={<ConvertProspect />} />
             <Route path="/prospects/:id" element={<ProspectDetail />} />
