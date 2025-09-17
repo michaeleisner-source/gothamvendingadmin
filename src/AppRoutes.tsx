@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import ProspectDashboard from './pages/ProspectDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function NotFound() {
   return (
@@ -17,7 +18,11 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Make sure dashboard works even if layout has an issue */}
-      <Route path="/prospectsdashboard" element={<ProspectDashboard />} />
+      <Route path="/prospectsdashboard" element={
+        <ErrorBoundary>
+          <ProspectDashboard />
+        </ErrorBoundary>
+      } />
 
       {/* Your normal app under the layout */}
       <Route path="/" element={<AppLayout />}>
