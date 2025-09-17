@@ -10,10 +10,10 @@ export default function AppLayout() {
         <header style={{display:'flex', alignItems:'center', justifyContent:'space-between',
                         padding:'10px 16px', background:'#ffffff', borderBottom:'1px solid var(--border)'}}>
           <div style={{fontWeight:800}}>Gotham Vending</div>
-          <div/>
+          <div />
         </header>
 
-        {/* 🔽 Breadcrumbs must be mounted so the slot updates */}
+        {/* MUST be present to update the slot + title */}
         <Breadcrumbs />
 
         <main className="gv-page" id="gv-page" style={{padding:16}}>
