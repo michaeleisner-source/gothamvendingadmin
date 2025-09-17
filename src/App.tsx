@@ -1,5 +1,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, NavLink, Link, useLocation } from 'react-router-dom';
+import { aggBy, moversFor, deltaPct, type SaleRow, type MoverRow } from '@/lib/analytics-utils';
+import MiniTable from '@/components/MiniTable';
 
 /* =========================================================
    SAFE SHELL STYLES
@@ -26,6 +28,7 @@ function downloadCSV(name: string, csv: string) {
   URL.revokeObjectURL(a.href);
 }
 type Col<T> = { key: keyof T & string; label: string; align?: 'left'|'right'|'center'; width?: number|string };
+
 function SimpleTable<T extends Record<string, any>>({ columns, rows }: { columns: Col<T>[]; rows: T[] }) {
   return (
     <div className="gv-table" style={{overflow:'auto', border:'1px solid #e5e7eb', borderRadius:12}}>
@@ -55,7 +58,6 @@ function SimpleTable<T extends Record<string, any>>({ columns, rows }: { columns
     </div>
   );
 }
-type SaleRow = { date:string; location:string; machine:string; product:string; qty:number; price:number; revenue:number; };
 const LOCS = ['Manhattan Tech Hub', 'Brooklyn Hospital', 'Queens University', 'Jersey Logistics'];
 const MACH = ['M-001', 'M-002', 'M-003', 'M-004', 'M-005'];
 const PRODS = [
@@ -228,46 +230,6 @@ function seriesByDay(rows: SaleRow[], days: number, measure: 'revenue' | 'tx') {
   return { labels, values: out };
 }
 
-function deltaPct(curr: number, prev: number) {
-  if (!prev) return curr ? '∞%' : '0%';
-  const p = ((curr - prev) / prev) * 100;
-  const sign = p > 0 ? '+' : '';
-  return `${sign}${p.toFixed(1)}%`;
-}
-
-/* ---------- helpers for Top Movers + CSV ---------- */
-function aggBy(rows: SaleRow[], field: 'product' | 'location') {
-  const map = new Map<string, { tx: number; revenue: number }>();
-  for (const r of rows) {
-    const key = r[field];
-    const cur = map.get(key) || { tx: 0, revenue: 0 };
-    cur.tx += 1;
-    cur.revenue += r.revenue;
-    map.set(key, cur);
-  }
-  return map;
-}
-function moversFor(
-  rows: SaleRow[],
-  prevRows: SaleRow[],
-  field: 'product' | 'location',
-  limit = 5
-) {
-  const cur = aggBy(rows, field);
-  const prev = aggBy(prevRows, field);
-  const keys = new Set<string>([...cur.keys(), ...prev.keys()]);
-  const all = Array.from(keys).map((k) => {
-    const c = cur.get(k) || { tx: 0, revenue: 0 };
-    const p = prev.get(k) || { tx: 0, revenue: 0 };
-    const delta = +(c.revenue - p.revenue).toFixed(2);
-    const pct =
-      p.revenue === 0 ? (c.revenue ? '∞%' : '0%') : `${(((c.revenue - p.revenue) / p.revenue) * 100).toFixed(1)}%`;
-    return { key: k, curr: +c.revenue.toFixed(2), prev: +p.revenue.toFixed(2), delta, pct, txCurr: c.tx, txPrev: p.tx };
-  });
-  const gainers = all.filter((x) => x.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, limit);
-  const decliners = all.filter((x) => x.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, limit);
-  return { gainers, decliners };
-}
 function exportTrendsCSV(labels: string[], revValues: number[], txValues: number[]) {
   const header = 'date,revenue,transactions';
   const rows = labels.map((d, i) => `${d},${revValues[i].toFixed(2)},${txValues[i]}`);
@@ -328,39 +290,6 @@ function TrendsPage() {
       <div style={{ fontSize: 12, color: '#64748b' }}>{label}</div>
       <div style={{ fontWeight: 800, fontSize: 18 }}>{value}</div>
       <div style={{ fontSize: 12, color: '#16a34a' }}>{sub}</div>
-    </div>
-  );
-
-  const MiniTable = ({
-    title,
-    rows,
-  }: {
-    title: string;
-    rows: { key: string; curr: number; prev: number; delta: number; pct: string; txCurr: number }[];
-  }) => (
-    <div className="card" style={cardStyle}>
-      <div style={{ fontWeight: 800, marginBottom: 6 }}>{title}</div>
-      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Revenue (curr vs prev)</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 6, fontSize: 13 }}>
-        <div style={{ fontWeight: 700, color: '#0f172a' }}>Name</div>
-        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Curr</div>
-        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Prev</div>
-        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Δ</div>
-        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>%</div>
-        {rows.length === 0 && <div style={{ gridColumn: '1 / -1', color: '#64748b' }}>No data</div>}
-        {rows.map((r) => (
-          <React.Fragment key={r.key}>
-            <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.key}</div>
-            <div style={{ textAlign: 'right' }}>${r.curr.toFixed(2)}</div>
-            <div style={{ textAlign: 'right', color: '#64748b' }}>${r.prev.toFixed(2)}</div>
-            <div style={{ textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626' }}>
-              {r.delta >= 0 ? '+' : ''}
-              {r.delta.toFixed(2)}
-            </div>
-            <div style={{ textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626' }}>{r.pct}</div>
-          </React.Fragment>
-        ))}
-      </div>
     </div>
   );
 
