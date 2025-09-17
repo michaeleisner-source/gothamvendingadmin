@@ -235,19 +235,71 @@ function deltaPct(curr: number, prev: number) {
   return `${sign}${p.toFixed(1)}%`;
 }
 
+/* ---------- helpers for Top Movers + CSV ---------- */
+function aggBy(rows: SaleRow[], field: 'product' | 'location') {
+  const map = new Map<string, { tx: number; revenue: number }>();
+  for (const r of rows) {
+    const key = r[field];
+    const cur = map.get(key) || { tx: 0, revenue: 0 };
+    cur.tx += 1;
+    cur.revenue += r.revenue;
+    map.set(key, cur);
+  }
+  return map;
+}
+function moversFor(
+  rows: SaleRow[],
+  prevRows: SaleRow[],
+  field: 'product' | 'location',
+  limit = 5
+) {
+  const cur = aggBy(rows, field);
+  const prev = aggBy(prevRows, field);
+  const keys = new Set<string>([...cur.keys(), ...prev.keys()]);
+  const all = Array.from(keys).map((k) => {
+    const c = cur.get(k) || { tx: 0, revenue: 0 };
+    const p = prev.get(k) || { tx: 0, revenue: 0 };
+    const delta = +(c.revenue - p.revenue).toFixed(2);
+    const pct =
+      p.revenue === 0 ? (c.revenue ? '∞%' : '0%') : `${(((c.revenue - p.revenue) / p.revenue) * 100).toFixed(1)}%`;
+    return { key: k, curr: +c.revenue.toFixed(2), prev: +p.revenue.toFixed(2), delta, pct, txCurr: c.tx, txPrev: p.tx };
+  });
+  const gainers = all.filter((x) => x.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, limit);
+  const decliners = all.filter((x) => x.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, limit);
+  return { gainers, decliners };
+}
+function exportTrendsCSV(labels: string[], revValues: number[], txValues: number[]) {
+  const header = 'date,revenue,transactions';
+  const rows = labels.map((d, i) => `${d},${revValues[i].toFixed(2)},${txValues[i]}`);
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `gotham-trends-${labels[0]}_to_${labels[labels.length - 1]}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function TrendsPage() {
   const [days, setDays] = React.useState<7 | 30 | 90>(30);
+
+  // current period
   const rows = React.useMemo(() => getDemoSales(days), [days]);
-  const prevRows = React.useMemo(() => getDemoSales(days), [days]); // demo-only previous period mirror
+
+  // DEMO NOTE: mirrors current-period generator for "previous period"
+  // In prod, fetch previous window (offset = days).
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]);
 
   const revSeries = React.useMemo(() => seriesByDay(rows, days, 'revenue'), [rows, days]);
-  const txSeries  = React.useMemo(() => seriesByDay(rows, days, 'tx'), [rows, days]);
+  const txSeries = React.useMemo(() => seriesByDay(rows, days, 'tx'), [rows, days]);
 
   const totalRev = +rows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
-  const totalTx  = rows.length;
-
+  const totalTx = rows.length;
   const prevRev = +prevRows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
-  const prevTx  = prevRows.length;
+  const prevTx = prevRows.length;
+
+  const productMovers = React.useMemo(() => moversFor(rows, prevRows, 'product'), [rows, prevRows]);
+  const locationMovers = React.useMemo(() => moversFor(rows, prevRows, 'location'), [rows, prevRows]);
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Trends' }));
@@ -256,39 +308,88 @@ function TrendsPage() {
     };
   }, []);
 
+  const chip = (label: string, active: boolean, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 10px',
+        border: '1px solid #e5e7eb',
+        borderRadius: 8,
+        background: active ? '#eef2ff' : '#fff',
+        fontWeight: active ? 700 : 500,
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  const Stat = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
+    <div style={{ ...cardStyle, padding: '8px 12px' }}>
+      <div style={{ fontSize: 12, color: '#64748b' }}>{label}</div>
+      <div style={{ fontWeight: 800, fontSize: 18 }}>{value}</div>
+      <div style={{ fontSize: 12, color: '#16a34a' }}>{sub}</div>
+    </div>
+  );
+
+  const MiniTable = ({
+    title,
+    rows,
+  }: {
+    title: string;
+    rows: { key: string; curr: number; prev: number; delta: number; pct: string; txCurr: number }[];
+  }) => (
+    <div className="card" style={cardStyle}>
+      <div style={{ fontWeight: 800, marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Revenue (curr vs prev)</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 6, fontSize: 13 }}>
+        <div style={{ fontWeight: 700, color: '#0f172a' }}>Name</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Curr</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Prev</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>Δ</div>
+        <div style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>%</div>
+        {rows.length === 0 && <div style={{ gridColumn: '1 / -1', color: '#64748b' }}>No data</div>}
+        {rows.map((r) => (
+          <React.Fragment key={r.key}>
+            <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.key}</div>
+            <div style={{ textAlign: 'right' }}>${r.curr.toFixed(2)}</div>
+            <div style={{ textAlign: 'right', color: '#64748b' }}>${r.prev.toFixed(2)}</div>
+            <div style={{ textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626' }}>
+              {r.delta >= 0 ? '+' : ''}
+              {r.delta.toFixed(2)}
+            </div>
+            <div style={{ textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626' }}>{r.pct}</div>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ display: 'grid', gap: 12 }}>
-      {/* Controls */}
+      {/* Header & controls */}
       <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ fontWeight: 800 }}>Trends</div>
         <div style={{ marginLeft: 12, display: 'inline-flex', gap: 8 }}>
-          {([7, 30, 90] as const).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDays(d)}
-              style={{
-                padding: '6px 10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                background: days === d ? '#eef2ff' : '#fff',
-                fontWeight: days === d ? 700 : 500,
-              }}
-            >
-              Last {d}d
-            </button>
-          ))}
+          {chip('Last 7d', days === 7, () => setDays(7))}
+          {chip('Last 30d', days === 30, () => setDays(30))}
+          {chip('Last 90d', days === 90, () => setDays(90))}
         </div>
-        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 16 }}>
-          <div style={{ ...cardStyle, padding: '8px 12px' }}>
-            <div style={{ fontSize: 12, color: '#64748b' }}>Revenue</div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>${totalRev.toLocaleString()}</div>
-            <div style={{ fontSize: 12, color: '#16a34a' }}>{deltaPct(totalRev, prevRev)} vs prev</div>
-          </div>
-          <div style={{ ...cardStyle, padding: '8px 12px' }}>
-            <div style={{ fontSize: 12, color: '#64748b' }}>Transactions</div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>{totalTx.toLocaleString()}</div>
-            <div style={{ fontSize: 12, color: '#16a34a' }}>{deltaPct(totalTx, prevTx)} vs prev</div>
-          </div>
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 12 }}>
+          <Stat label="Revenue" value={`$${totalRev.toLocaleString()}`} sub={`${deltaPct(totalRev, prevRev)} vs prev`} />
+          <Stat label="Transactions" value={totalTx.toLocaleString()} sub={`${deltaPct(totalTx, prevTx)} vs prev`} />
+          <button
+            onClick={() => exportTrendsCSV(revSeries.labels, revSeries.values, txSeries.values)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              background: '#fff',
+              fontWeight: 600,
+            }}
+            title="Download date/revenue/transactions CSV"
+          >
+            Export Trends CSV
+          </button>
         </div>
       </div>
 
@@ -312,6 +413,16 @@ function TrendsPage() {
           </div>
         </div>
         <Sparkline values={txSeries.values} height={120} />
+      </div>
+
+      {/* Top movers (Products & Locations) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <MiniTable title="Top Product Gainers (WoW)" rows={productMovers.gainers} />
+        <MiniTable title="Top Product Decliners (WoW)" rows={productMovers.decliners} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <MiniTable title="Top Location Gainers (WoW)" rows={locationMovers.gainers} />
+        <MiniTable title="Top Location Decliners (WoW)" rows={locationMovers.decliners} />
       </div>
     </div>
   );
