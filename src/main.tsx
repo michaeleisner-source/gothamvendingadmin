@@ -4,9 +4,19 @@ import App from './App';
 import './index.css';
 
 function mount() {
+  console.log('Attempting to mount app...');
   let el = document.getElementById('root');
-  if (!el) { el = document.createElement('div'); el.id = 'root'; document.body.appendChild(el); }
-  ReactDOM.createRoot(el).render(<App />);
+  if (!el) { 
+    console.log('Creating root element...');
+    el = document.createElement('div'); 
+    el.id = 'root'; 
+    document.body.appendChild(el); 
+  }
+  console.log('Root element found/created:', el);
+  const root = ReactDOM.createRoot(el);
+  console.log('React root created, rendering App...');
+  root.render(<App />);
+  console.log('App render initiated');
 }
 
 try { mount(); } catch (e: any) {
