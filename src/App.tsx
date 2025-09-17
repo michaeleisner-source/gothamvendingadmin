@@ -902,6 +902,134 @@ function ProductPerformancePage() {
   );
 }
 
+/* ---------- Reports / Machines (Summary + Top Movers + CSV) ---------- */
+function MachinesReportPage() {
+  const [days, setDays] = React.useState<7 | 14 | 30>(14);
+
+  // demo windows (in prod, fetch true prior window)
+  const rows = React.useMemo(() => getDemoSales(days), [days]);
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]);
+
+  const summaries = React.useMemo(() => summarizeMachines(rows, prevRows), [rows, prevRows]);
+  const totalRevenue = summaries.reduce((s, r) => s + r.revenue, 0);
+  const online = summaries.filter(s => s.status === 'online').length;
+  const idle = summaries.filter(s => s.status === 'idle').length;
+  const offline = summaries.filter(s => s.status === 'offline').length;
+
+  const movers = React.useMemo(() => moversForKey(rows, prevRows, (r) => r.machine), [rows, prevRows]);
+
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Machine Reports' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
+    };
+  }, []);
+
+  const chip = (label: string, active: boolean, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 10px',
+        border: '1px solid #e5e7eb',
+        borderRadius: 8,
+        background: active ? '#eef2ff' : '#fff',
+        fontWeight: active ? 700 : 500,
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {/* Header */}
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontWeight: 800 }}>Machines Overview</div>
+        <div style={{ marginLeft: 12, display: 'inline-flex', gap: 8 }}>
+          {chip('7d', days === 7, () => setDays(7))}
+          {chip('14d', days === 14, () => setDays(14))}
+          {chip('30d', days === 30, () => setDays(30))}
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 16, alignItems: 'center' }}>
+          <div><strong>Machines:</strong> {summaries.length}</div>
+          <div><strong>Online:</strong> {online}</div>
+          <div><strong>Idle:</strong> {idle}</div>
+          <div><strong>Offline:</strong> {offline}</div>
+          <div><strong>Revenue:</strong> ${totalRevenue.toFixed(2)}</div>
+          <button
+            onClick={() => exportMachinesCSV(summaries, days)}
+            style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Layout: main table + sidebar movers */}
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '2fr 1fr' }}>
+        {/* Main: Machine summary table */}
+        <div className="card" style={{ ...cardStyle, overflow: 'auto' }}>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>Machine Summary (last {days} days)</div>
+          <table className="gv-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Machine</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Location</th>
+                <th style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Last Sale</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Tx</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Revenue</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Prev Rev</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Δ</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaries.map((r) => (
+                <tr key={r.machine}>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.machine}</td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.location}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: r.status === 'online' ? '#ecfdf5' : r.status === 'idle' ? '#fffbeb' : '#fef2f2',
+                        color: r.status === 'online' ? '#065f46' : r.status === 'idle' ? '#92400e' : '#991b1b',
+                        border: '1px solid #e5e7eb',
+                      }}
+                    >
+                      {r.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.lastSale}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{r.tx}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>${r.revenue.toFixed(2)}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>${r.prevRevenue.toFixed(2)}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626', borderBottom: '1px solid #f1f5f9' }}>
+                    {r.delta >= 0 ? '+' : ''}{r.delta.toFixed(2)}
+                  </td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', color: r.delta >= 0 ? '#16a34a' : '#dc2626', borderBottom: '1px solid #f1f5f9' }}>
+                    {r.pct}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Sidebar: Top Movers */}
+        <div style={{ display: 'grid', gap: 12 }}>
+          <MiniTable title="Top Machine Gainers (vs prev)" rows={movers.gainers} />
+          <MiniTable title="Top Machine Decliners (vs prev)" rows={movers.decliners} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Machine Performance ---------- */
 function MachinePerformancePage() {
   const [days, setDays] = React.useState<7 | 14 | 30>(30);
@@ -1295,7 +1423,7 @@ export default function App(){
           {/* real pages with data */}
           <Route path="/sales"               element={<SalesPage />} />
           <Route path="/reports/products"    element={<ProductPerformancePage />} />
-          <Route path="/reports/machines"    element={<MachinePerformancePage />} />
+          <Route path="/reports/machines"    element={<MachinesReportPage />} />
           <Route path="/reports/locations"   element={<LocationPerformancePage />} />
           {/* the rest are scaffolds so nav works */}
           <Route path="/leads"              element={<ScaffoldPage title="Leads" />} />
