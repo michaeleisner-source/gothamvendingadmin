@@ -1,0 +1,20 @@
+/* Hard overrides so the app is visible even if theme/providers break */
+html, body { margin:0; height:100%; background:#ffffff !important; color:#111 !important; }
+#root, .gv-app { min-height:100vh; background:#ffffff !important; }
+.gv-page { background:#ffffff !important; color:#111 !important; min-height:calc(100vh - 112px); }
+
+/* Cards / borders */
+.card { background:#fff !important; border:1px solid #e5e7eb !important; border-radius:12px !important; padding:16px !important; }
+
+/* Sidebar basics */
+.gv-sidebar { background:#fff !important; border-right:1px solid #e5e7eb !important; }
+.gv-nav-item { color:#374151 !important; }
+.gv-nav-item.is-active { background:#eef2ff !important; color:#111 !important; }
+
+/* Kill full-screen overlays/spinners if any got stuck */
+[class*="overlay"], [id*="overlay"], [class*="spinner"], [class*="loading"] {
+  animation:none !important; display:none !important;
+}
+
+/* Disable animations that can hide content while failing */
+* { animation:none !important; transition:none !important; }
