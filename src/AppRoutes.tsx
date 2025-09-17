@@ -2,37 +2,22 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import ProspectDashboard from './pages/ProspectDashboard';
-import ErrorBoundary from '@/components/util/ErrorBoundary';
 
 function NotFound() {
-  return (
-    <div style={{padding:16}}>
-      <div className="card"><b>Not Found</b><div>Path: <code>{location.pathname}{location.hash}</code></div></div>
-    </div>
-  );
+  return <div className="card" style={{padding:16}}><b>Not Found</b></div>;
 }
 
 export default function AppRoutes() {
-  console.log('AppRoutes loading, current path:', location.pathname, location.hash);
-  
   return (
     <Routes>
-      {/* Make sure dashboard works even if layout has an issue */}
-      <Route path="/prospectsdashboard" element={
-        <ErrorBoundary>
-          <ProspectDashboard />
-        </ErrorBoundary>
-      } />
-
-      {/* Your normal app under the layout */}
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Navigate to="/prospectsdashboard" replace />} />
-        {/* Prospects dashboard also available within layout */}
         <Route path="/prospectsdashboard" element={<ProspectDashboard />} />
-        {/* keep your other routes here */}
+        {/* add your other routes here (dashboard, reports, etc.) */}
       </Route>
 
-      <Route path="*" element={<NotFound/>} />
+      {/* fallback */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
