@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/safe-boot.css">
     
     <script>
+      // If HashRouter is used, convert /path → /#/path so deep links don't hang
       (function () {
         try {
           if (!location.hash && location.pathname !== '/') {
