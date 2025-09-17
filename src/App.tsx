@@ -116,59 +116,131 @@ function ScaffoldPage({ title }: { title:string }) {
   );
 }
 
-function SalesDetailPage() {
-  const [days, setDays] = React.useState(30);
+/* ---------- Sales (detail table + Top Movers) ---------- */
+function SalesPage() {
+  const [days, setDays] = React.useState<number>(30);
   const rows = React.useMemo(() => getDemoSales(days), [days]);
-  const totals = React.useMemo(() => {
-    const qty = rows.reduce((s, r) => s + r.qty, 0);
-    const rev = rows.reduce((s, r) => s + r.revenue, 0);
-    return { qty, rev:+rev.toFixed(2) };
-  }, [rows]);
 
-  type ViewRow = SaleRow & { priceFmt:string; revFmt:string };
-  const columns: Col<ViewRow>[] = [
-    { key:'date',     label:'Date', width:110 },
-    { key:'location', label:'Location' },
-    { key:'machine',  label:'Machine', width:90 },
-    { key:'product',  label:'Product' },
-    { key:'qty',      label:'Qty', align:'right', width:60 },
-    { key:'priceFmt', label:'Price', align:'right', width:80 },
-    { key:'revFmt',   label:'Revenue', align:'right', width:100 },
-  ];
-  const view: ViewRow[] = rows.map(r => ({ ...r, priceFmt:`$${r.price.toFixed(2)}`, revFmt:`$${r.revenue.toFixed(2)}` }));
+  // DEMO previous period: mirror generator. In prod, fetch offset window.
+  const prevRows = React.useMemo(() => getDemoSales(days), [days]);
+
+  const totalRows = rows.length;
+  const totalQty = rows.reduce((s, r) => s + r.qty, 0);
+  const totalRevenue = +rows.reduce((s, r) => s + r.revenue, 0).toFixed(2);
+
+  const productMovers = React.useMemo(() => moversFor(rows, prevRows, 'product'), [rows, prevRows]);
+  const locationMovers = React.useMemo(() => moversFor(rows, prevRows, 'location'), [rows, prevRows]);
 
   React.useEffect(() => {
-    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Sales Detail' }));
+    window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: 'Sales' }));
     return () => {
       window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: null }));
     };
   }, []);
 
-  function exportCSV(){ downloadCSV(`gotham-sales-last-${days}-days`, toCSV(rows)); }
+  const onExport = () => {
+    // prefer your global CSV exporter if present
+    // @ts-ignore
+    if (window.exportSalesCSV) { /* @ts-ignore */ window.exportSalesCSV(days); return; }
+    // local fallback
+    const header = 'date,location,machine,product,qty,price,revenue';
+    const lines = rows.map(r =>
+      [r.date, r.location, r.machine, r.product, r.qty, r.price.toFixed(2), r.revenue.toFixed(2)]
+        .map(v => (typeof v === 'string' && v.includes(',') ? `"${v}"` : v))
+        .join(',')
+    );
+    const csv = [header, ...lines].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const now = new Date();
+    const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
+    a.download = `gotham-sales-last-${days}-days-${ts}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const Input = (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <label htmlFor="salesDays" style={{ fontSize: 12, color: '#64748b' }}>Days</label>
+      <input
+        id="salesDays"
+        type="number"
+        min={1}
+        max={365}
+        value={days}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          if (Number.isFinite(v)) setDays(Math.min(365, Math.max(1, v)));
+        }}
+        style={{ width: 72, padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 8 }}
+      />
+      <button
+        onClick={onExport}
+        style={{ padding: '6px 10px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontWeight: 600 }}
+        title="Download CSV"
+      >
+        Export CSV
+      </button>
+    </div>
+  );
 
   return (
-    <div style={{display:'grid', gap:12}}>
-      <div className="card" style={{...cardStyle, display:'flex', alignItems:'center', gap:12}}>
-        <div style={{fontWeight:800}}>Sales Detail</div>
-        <label style={{display:'inline-flex', alignItems:'center', gap:6}}>
-          Days
-          <input type="number" min={1} max={365} value={days}
-                 onChange={e=>setDays(Math.max(1, Math.min(365, Number(e.target.value)||30)))}
-                 style={{width:80, padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:8}}/>
-        </label>
-        <button onClick={exportCSV} className="btn"
-                style={{marginLeft:'auto', padding:'8px 12px', border:'1px solid #e5e7eb', borderRadius:8, background:'#fff'}}>
-          Export CSV
-        </button>
+    <div style={{ display: 'grid', gap: 12 }}>
+      {/* Header */}
+      <div className="card" style={{ ...cardStyle, display: 'flex', alignItems: 'center' }}>
+        <div style={{ fontWeight: 800 }}>Sales Detail</div>
+        <div style={{ marginLeft: 'auto' }}>{Input}</div>
       </div>
 
+      {/* Totals */}
       <div className="card" style={cardStyle}>
-        <div style={{display:'flex', gap:16, marginBottom:10, alignItems:'baseline'}}>
-          <div><b>Total Rows:</b> {view.length.toLocaleString()}</div>
-          <div><b>Total Qty:</b> {totals.qty.toLocaleString()}</div>
-          <div><b>Total Revenue:</b> ${totals.rev.toLocaleString()}</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div><strong>Total Rows:</strong> {totalRows.toLocaleString()}</div>
+          <div><strong>Total Qty:</strong> {totalQty.toLocaleString()}</div>
+          <div><strong>Total Revenue:</strong> ${totalRevenue.toLocaleString()}</div>
         </div>
-        <SimpleTable columns={columns as any} rows={view as any} />
+      </div>
+
+      {/* Main + sidebar */}
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '2fr 1fr' }}>
+        {/* Table */}
+        <div className="card" style={{ ...cardStyle, overflow: 'auto' }}>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>Transactions</div>
+          <table className="gv-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Date</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Location</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Machine</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Product</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Qty</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Price</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.date}</td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.location}</td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.machine}</td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9' }}>{r.product}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{r.qty}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>${r.price.toFixed(2)}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>${r.revenue.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Sidebar: Top Movers */}
+        <div style={{ display: 'grid', gap: 12 }}>
+          <MiniTable title="Top Product Gainers (vs prev)" rows={productMovers.gainers} />
+          <MiniTable title="Top Product Decliners (vs prev)" rows={productMovers.decliners} />
+          <MiniTable title="Top Location Gainers (vs prev)" rows={locationMovers.gainers} />
+          <MiniTable title="Top Location Decliners (vs prev)" rows={locationMovers.decliners} />
+        </div>
       </div>
     </div>
   );
@@ -795,7 +867,7 @@ export default function App(){
           {/* default → Sales so you immediately see data */}
           <Route index element={<Navigate to="/sales" replace />} />
           {/* real pages with data */}
-          <Route path="/sales"               element={<SalesDetailPage />} />
+          <Route path="/sales"               element={<SalesPage />} />
           <Route path="/reports/products"    element={<ProductPerformancePage />} />
           <Route path="/reports/machines"    element={<MachinePerformancePage />} />
           <Route path="/reports/locations"   element={<LocationPerformancePage />} />
