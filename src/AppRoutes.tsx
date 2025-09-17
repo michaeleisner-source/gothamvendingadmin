@@ -3,21 +3,19 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import ScaffoldPage from '@/pages/_ScaffoldPage';
 
-// If you already have a real page for prospects, try to import it:
 let ProspectDashboard: React.ComponentType<any> | null = null;
 try { ProspectDashboard = require('@/pages/ProspectDashboard').default; } catch { ProspectDashboard = null; }
 
 const ROUTES: { path: string; title: string; el?: React.ReactNode }[] = [
-  { path: '/prospectsdashboard', title: 'Prospects', el: ProspectDashboard ? <ProspectDashboard /> : undefined },
   { path: '/leads',              title: 'Leads' },
   { path: '/installs',           title: 'Installs' },
+  { path: '/dashboard',          title: 'Dashboard' },
   { path: '/locations',          title: 'Locations' },
   { path: '/machines',           title: 'Machines' },
   { path: '/products',           title: 'Products' },
   { path: '/inventory',          title: 'Inventory' },
   { path: '/purchase-orders',    title: 'Purchase Orders' },
   { path: '/service',            title: 'Service' },
-  { path: '/dashboard',          title: 'Dashboard' },
   { path: '/sales',              title: 'Sales Detail' },
   { path: '/reports/machines',   title: 'Machine Performance' },
   { path: '/reports/products',   title: 'Product Performance' },
@@ -31,12 +29,10 @@ const ROUTES: { path: string; title: string; el?: React.ReactNode }[] = [
   { path: '/help',               title: 'Help Center' },
   { path: '/help/glossary',      title: 'Glossary' },
   { path: '/changelog',          title: 'Changelog' },
-  { path: '/qa/overview',        title: 'QA Overview' },
-  { path: '/qa/smoke',           title: 'QA Smoke' },
+  { path: '/prospectsdashboard', title: 'Prospects', el: ProspectDashboard ? <ProspectDashboard/> : undefined },
 ];
 
 function Page({ title, el }: { title: string; el?: React.ReactNode }) {
-  // Update breadcrumb last segment to a nice title
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('gv:breadcrumb:set', { detail: title }));
     return () => {
@@ -46,18 +42,14 @@ function Page({ title, el }: { title: string; el?: React.ReactNode }) {
   return el ?? <ScaffoldPage title={title} />;
 }
 
-function NotFound() {
-  return <div className="card" style={{padding:16}}><b>Not Found</b></div>;
-}
+function NotFound() { return <div className="card" style={{padding:16}}><b>Not Found</b></div>; }
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Navigate to="/leads" replace />} />
-        {ROUTES.map(r => (
-          <Route key={r.path} path={r.path} element={<Page title={r.title} el={r.el} />} />
-        ))}
+        {ROUTES.map(r => <Route key={r.path} path={r.path} element={<Page title={r.title} el={r.el} />} />)}
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
