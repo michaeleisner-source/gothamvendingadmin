@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Building, MapPin, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/components/useToast";
 
 interface Prospect {
   id: string;
@@ -46,7 +46,7 @@ export default function Prospects() {
     status: "NEW",
     notes: ""
   });
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     loadProspects();
@@ -79,11 +79,7 @@ export default function Prospects() {
       }));
       setProspects(mappedData);
     } catch (error: any) {
-      toast({
-        title: "Error loading prospects",
-        description: error.message,
-        variant: "destructive",
-      });
+      toastError(`Error loading prospects: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -131,10 +127,7 @@ export default function Prospects() {
         
         if (error) throw error;
         
-        toast({
-          title: "Prospect updated",
-          description: "Prospect has been updated successfully.",
-        });
+        toastSuccess("Prospect has been updated successfully.");
       } else {
         // Map to leads table structure for insert
         const leadsData = {
@@ -159,21 +152,14 @@ export default function Prospects() {
         
         if (error) throw error;
         
-        toast({
-          title: "Prospect added",
-          description: "New prospect has been added successfully.",
-        });
+        toastSuccess("New prospect has been added successfully.");
       }
 
       setDialogOpen(false);
       resetForm();
       loadProspects();
     } catch (error: any) {
-      toast({
-        title: "Error saving prospect",
-        description: error.message,
-        variant: "destructive",
-      });
+      toastError(`Error saving prospect: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -208,18 +194,11 @@ export default function Prospects() {
 
       if (error) throw error;
 
-      toast({
-        title: "Prospect deleted",
-        description: "Prospect has been deleted successfully.",
-      });
+      toastSuccess("Prospect has been deleted successfully.");
 
       loadProspects();
     } catch (error: any) {
-      toast({
-        title: "Error deleting prospect",
-        description: error.message,
-        variant: "destructive",
-      });
+      toastError(`Error deleting prospect: ${error.message}`);
     }
   };
 
@@ -233,18 +212,11 @@ export default function Prospects() {
 
       if (error) throw error;
 
-      toast({
-        title: "Prospect converted!",
-        description: `${prospect.business_name} has been converted to a location.`,
-      });
+      toastSuccess(`${prospect.business_name} has been converted to a location.`);
 
       loadProspects();
     } catch (error: any) {
-      toast({
-        title: "Error converting prospect",
-        description: error.message,
-        variant: "destructive",
-      });
+      toastError(`Error converting prospect: ${error.message}`);
     }
   };
 
