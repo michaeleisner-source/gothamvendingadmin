@@ -386,37 +386,37 @@ const Index = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Revenue</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-green-600">
                 {kpiLoading ? '—' : `$${(kpis?.revenue||0).toFixed(2)}`}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">COGS</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-red-600">
                 {kpiLoading ? '—' : `$${(kpis?.cogs||0).toFixed(2)}`}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Profit</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-emerald-600">
                 {kpiLoading ? '—' : `$${(kpis?.profit||0).toFixed(2)}`}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Profit %</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-emerald-600">
                 {kpiLoading ? '—' : `${((kpis?.margin||0)*100).toFixed(1)}%`}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Orders</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-blue-600">
                 {kpiLoading ? '—' : String(kpis?.orders||0)}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Units</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-blue-600">
                 {kpiLoading ? '—' : String(kpis?.units||0)}
               </p>
             </div>
@@ -428,13 +428,13 @@ const Index = () => {
 
       {/* Revenue & Performance Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.revenue.today)}</div>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.revenue.today)}</div>
             <div className="flex items-center space-x-2 text-xs">
               <Badge variant={stats.revenue.growth >= 0 ? "default" : "destructive"} className="text-xs">
                 {stats.revenue.growth >= 0 ? '↗' : '↘'} {Math.abs(stats.revenue.growth).toFixed(1)}%
@@ -444,13 +444,13 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Machines</CardTitle>
-            <Cog className="h-4 w-4 text-muted-foreground" />
+            <Cog className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.machines.online}/{stats.machines.total}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.machines.online}/{stats.machines.total}</div>
             <div className="flex items-center space-x-2 text-xs">
               <Progress value={(stats.machines.online / Math.max(stats.machines.total, 1)) * 100} className="h-1 flex-1" />
               <span className="text-muted-foreground">{Math.round((stats.machines.online / Math.max(stats.machines.total, 1)) * 100)}%</span>
@@ -458,26 +458,26 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-amber-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Inventory Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.inventory.lowStockAlerts}</div>
+            <div className="text-2xl font-bold text-amber-600">{stats.inventory.lowStockAlerts}</div>
             <p className="text-xs text-muted-foreground">
               {stats.inventory.outOfStockSlots} out of stock
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pipeline Health</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.prospects.conversionRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-purple-600">{stats.prospects.conversionRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               {stats.prospects.inNegotiation} active deals
             </p>
@@ -490,10 +490,10 @@ const Index = () => {
         {/* Left Column - Performance Cards */}
         <div className="lg:col-span-2 space-y-6">
           {/* Weekly Revenue */}
-          <Card>
+          <Card className="card-hover">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5" />
+                <TrendingUp className="h-5 w-5 text-green-600" />
                 <span>Revenue Overview</span>
               </CardTitle>
             </CardHeader>
@@ -501,15 +501,15 @@ const Index = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Today</p>
-                  <p className="text-xl font-bold">{formatCurrency(stats.revenue.today)}</p>
+                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.today)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">This Week</p>
-                  <p className="text-xl font-bold">{formatCurrency(stats.revenue.week)}</p>
+                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.week)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">This Month</p>
-                  <p className="text-xl font-bold">{formatCurrency(stats.revenue.month)}</p>
+                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.month)}</p>
                 </div>
               </div>
             </CardContent>
@@ -522,27 +522,27 @@ const Index = () => {
                 <CardTitle className="text-base">Machine Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Online</span>
-                  </span>
-                  <span className="font-medium">{stats.machines.online}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-sm">Offline</span>
-                  </span>
-                  <span className="font-medium">{stats.machines.offline}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    <span className="text-sm">Maintenance</span>
-                  </span>
-                  <span className="font-medium">{stats.machines.needsMaintenance}</span>
-                </div>
+                 <div className="flex items-center justify-between">
+                   <span className="flex items-center space-x-2">
+                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                     <span className="text-sm">Online</span>
+                   </span>
+                   <span className="font-medium text-green-600">{stats.machines.online}</span>
+                 </div>
+                 <div className="flex items-center justify-between">
+                   <span className="flex items-center space-x-2">
+                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                     <span className="text-sm">Offline</span>
+                   </span>
+                   <span className="font-medium text-red-600">{stats.machines.offline}</span>
+                 </div>
+                 <div className="flex items-center justify-between">
+                   <span className="flex items-center space-x-2">
+                     <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                     <span className="text-sm">Maintenance</span>
+                   </span>
+                   <span className="font-medium text-amber-600">{stats.machines.needsMaintenance}</span>
+                 </div>
               </CardContent>
             </Card>
 

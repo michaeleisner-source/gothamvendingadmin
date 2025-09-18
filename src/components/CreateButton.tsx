@@ -22,22 +22,26 @@ export function CreateButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="default" size="sm">
+        <Button 
+          variant="default" 
+          size="sm"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-56 bg-background border shadow-md z-50"
+        className="w-56 bg-popover border shadow-lg z-50 p-1"
       >
         {createItems.map((item) => (
-          <DropdownMenuItem key={item.title} asChild>
+          <DropdownMenuItem key={item.title} asChild className="rounded-sm">
             <Link 
               to={item.url}
-              className="flex items-center w-full px-3 py-2"
+              className="flex items-center w-full px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
             >
-              <item.icon className="h-4 w-4 mr-3" />
+              <item.icon className="h-4 w-4 mr-3 text-muted-foreground" />
               {item.title}
             </Link>
           </DropdownMenuItem>

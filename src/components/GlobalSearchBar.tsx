@@ -145,34 +145,37 @@ export function GlobalSearchBar() {
         <Button 
           variant="outline" 
           size="sm"
-          className="w-64 justify-start text-muted-foreground"
+          className="w-64 justify-start text-muted-foreground hover:text-foreground hover:bg-accent border-input"
         >
           <Search className="h-4 w-4 mr-2" />
           Search pages...
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 bg-background border shadow-lg z-50" 
+        className="w-80 p-0 bg-popover border shadow-lg z-50" 
         align="start"
       >
-        <Command>
+        <Command className="bg-popover">
           <CommandInput 
             placeholder="Search pages..." 
             value={search}
             onValueChange={setSearch}
+            className="border-0 bg-transparent"
           />
-          <CommandList>
+          <CommandList className="bg-popover">
             {search && filteredPages.length === 0 && (
-              <CommandEmpty>No pages found.</CommandEmpty>
+              <CommandEmpty className="text-muted-foreground py-6 text-center text-sm">
+                No pages found.
+              </CommandEmpty>
             )}
             {Object.entries(groupedResults).map(([category, pages]) => (
-              <CommandGroup key={category} heading={category}>
+              <CommandGroup key={category} heading={category} className="text-muted-foreground">
                 {pages.map((page) => (
                   <CommandItem
                     key={page.url}
                     value={page.title}
                     onSelect={() => handleSelect(page.url)}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
                     {page.title}
                   </CommandItem>

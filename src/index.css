@@ -2,95 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Modern Vending Management System Design System
+   All colors are HSL format for consistency and theming
 */
 
 @layer base {
   :root {
+    /* Base Colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 240 10% 3.9%;
+    
+    /* Surface Colors */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 10% 3.9%;
+    
+    /* Interactive Elements */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
+    --popover-foreground: 240 10% 3.9%;
+    
+    /* Primary Brand Colors */
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
+    
+    /* Secondary Colors */
+    --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
+    
+    /* Muted Colors */
+    --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
+    
+    /* Accent Colors */
+    --accent: 210 40% 96%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
+    
+    /* Status Colors */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-
+    
+    /* Semantic Colors for Business Data */
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 240 10% 3.9%;
+    --info: 199 89% 48%;
+    --info-foreground: 210 40% 98%;
+    
+    /* Revenue & Financial Colors */
+    --revenue: 142 76% 36%;
+    --revenue-foreground: 210 40% 98%;
+    --profit: 142 71% 45%;
+    --profit-foreground: 210 40% 98%;
+    --expense: 0 84% 60%;
+    --expense-foreground: 210 40% 98%;
+    --loss: 0 72% 51%;
+    --loss-foreground: 210 40% 98%;
+    
+    /* Form Elements */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
+    --ring: 221 83% 53%;
+    
+    /* Radius */
+    --radius: 0.75rem;
+    
+    /* Sidebar */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
+    --sidebar-accent: 210 40% 96%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    /* Base Colors */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    
+    /* Surface Colors */
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    
+    /* Interactive Elements */
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    
+    /* Primary Brand Colors */
+    --primary: 221 83% 63%;
+    --primary-foreground: 240 10% 3.9%;
+    
+    /* Secondary Colors */
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    
+    /* Muted Colors */
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    
+    /* Accent Colors */
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    
+    /* Status Colors */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Semantic Colors for Business Data */
+    --success: 142 76% 46%;
+    --success-foreground: 240 10% 3.9%;
+    --warning: 43 96% 66%;
+    --warning-foreground: 240 10% 3.9%;
+    --info: 199 89% 58%;
+    --info-foreground: 240 10% 3.9%;
+    
+    /* Revenue & Financial Colors */
+    --revenue: 142 76% 46%;
+    --revenue-foreground: 240 10% 3.9%;
+    --profit: 142 71% 55%;
+    --profit-foreground: 240 10% 3.9%;
+    --expense: 0 84% 70%;
+    --expense-foreground: 240 10% 3.9%;
+    --loss: 0 72% 61%;
+    --loss-foreground: 240 10% 3.9%;
+    
+    /* Form Elements */
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 221 83% 63%;
+    
+    /* Sidebar */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 221 83% 63%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 221 83% 63%;
   }
 }
 
@@ -98,329 +149,75 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
   body {
-    background: var(--bg);
-    color: var(--text);
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Gotham Vending Theme */
-:root {
-  --bg: #0b1220;
-  --bg-elev: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #22c55e;
-  --primary-600: #16a34a;
-  --accent: #0ea5a4;
+/* Business Component Utilities */
+@layer components {
+  .revenue-positive {
+    @apply text-green-600 dark:text-green-400;
+  }
+  
+  .revenue-negative {
+    @apply text-red-600 dark:text-red-400;
+  }
+  
+  .profit-indicator {
+    @apply text-emerald-600 dark:text-emerald-400;
+  }
+  
+  .expense-indicator {
+    @apply text-rose-600 dark:text-rose-400;
+  }
+  
+  .status-online {
+    @apply text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950;
+  }
+  
+  .status-offline {
+    @apply text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950;
+  }
+  
+  .status-warning {
+    @apply text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950;
+  }
+  
+  .status-info {
+    @apply text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950;
+  }
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-}
-
-/* Gotham Vending Sidebar */
-.gv-sidebar {
-  width: 260px;
-  background: var(--bg-elev);
-  border-right: 1px solid var(--border);
-  min-height: 100dvh;
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.gv-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.gv-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #062310;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  font-size: 12px;
-}
-
-.gv-title {
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.gv-nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 0;
-}
-
-.gv-section {
-  margin-top: 8px;
-}
-
-.gv-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.gv-section-header:hover {
-  background-color: rgba(148, 163, 184, 0.05);
-}
-
-.gv-section-title {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-}
-
-.gv-section-toggle {
-  font-size: 12px;
-  color: var(--muted);
-  transition: transform 0.2s ease;
-}
-
-.gv-section.collapsed .gv-nav-item {
-  display: none;
-}
-
-.gv-nav-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 16px;
-  text-decoration: none;
-  color: var(--text);
-  border-left: 3px solid transparent;
-  transition: all 0.2s ease;
-  margin: 1px 0;
-}
-
-.gv-nav-item:hover {
-  background: rgba(148, 163, 184, 0.08);
-}
-
-.gv-nav-item.active {
-  background: rgba(34, 197, 94, 0.10);
-  border-left-color: var(--primary);
-  font-weight: 600;
-}
-
-/* Gotham Vending Layout */
-.gv-content {
-  display: flex;
-  min-height: 100dvh;
-}
-
-.gv-main-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.gv-header {
-  height: 56px;
-  background: var(--bg-elev);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.gv-breadcrumb-slot {
-  flex: 1;
-}
-
-.gv-header-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.gv-input {
-  background: #0b1320;
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 7px 10px;
-  height: 34px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-.gv-input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-.gv-input::placeholder {
-  color: var(--muted);
-}
-
-.gv-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--primary));
-  border: 1px solid var(--border);
-  cursor: pointer;
-}
-
-.gv-page {
-  padding: 16px 22px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Gotham Vending Breadcrumbs */
-.gv-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.gv-breadcrumb a {
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.gv-breadcrumb .sep {
-  opacity: 0.6;
-}
-
-.gv-breadcrumb .current {
-  color: var(--text);
-}
-
-/* Gotham Vending Table Styles */
-.gv-table { 
-  width: 100%; 
-  border-collapse: separate; 
-  border-spacing: 0; 
-}
-
-.gv-table th, .gv-table td { 
-  text-align: left; 
-  padding: 10px 12px; 
-  border-bottom: 1px solid var(--border); 
-}
-
-.gv-table thead th { 
-  font-size: 12px; 
-  text-transform: uppercase; 
-  letter-spacing: .06em; 
-  color: var(--muted-foreground); 
-}
-
-.gv-table tbody tr:hover { 
-  background: hsl(var(--muted) / 0.5); 
-}
-
-.sr-only {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-/* Gotham Vending Card */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.gv-icon {
-  width: 18px;
-  text-align: center;
-  opacity: 0.9;
-  font-size: 14px;
-}
-
-/* Force White Theme Overrides */
-html, body { 
-  margin: 0; 
-  height: 100%; 
-  background: #ffffff !important; 
-  color: #111 !important; 
-}
-
-#root, .gv-app { 
-  min-height: 100vh; 
-  background: #ffffff !important; 
-}
-
-.gv-page { 
-  background: #ffffff !important; 
-  color: #111 !important; 
-  min-height: calc(100vh - 112px); 
-}
-
-.card { 
-  background: #fff !important; 
-  border: 1px solid #e5e7eb !important; 
-  border-radius: 12px !important; 
-  padding: 16px !important; 
-}
-
-.gv-sidebar { 
-  background: #fff !important; 
-  border-right: 1px solid #e5e7eb !important; 
-}
-
-.gv-nav-item { 
-  color: #374151 !important; 
-}
-
-.gv-nav-item.is-active { 
-  background: #eef2ff !important; 
-  color: #111 !important; 
-}
-
-[class*="overlay"], 
-[id*="overlay"], 
-[class*="spinner"], 
-[class*="loading"] { 
-  display: none !important; 
-  animation: none !important; 
-}
-
-/* Hide dev banners and loading indicators */
-[data-dev-banner], #dev-banner, .dev-banner,
-#app-loading, .app-loading, [data-app-loading],
-#app-shell-banner, .app-shell-banner {
-  display: none !important;
-}
-
-* { 
-  animation: none !important; 
-  transition: none !important; 
+/* Enhanced Interactive Elements */
+@layer utilities {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/20;
+  }
+  
+  .gradient-revenue {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600;
+  }
+  
+  .gradient-expense {
+    @apply bg-gradient-to-r from-red-500 to-rose-600;
+  }
+  
+  .gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700;
+  }
 }
