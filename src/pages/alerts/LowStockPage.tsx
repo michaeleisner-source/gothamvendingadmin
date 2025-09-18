@@ -16,7 +16,7 @@ type Row = {
   restock_threshold: number;
 };
 
-export default function LowStock() {
+export default function LowStockPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
 

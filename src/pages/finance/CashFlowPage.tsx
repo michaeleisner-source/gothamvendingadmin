@@ -26,7 +26,7 @@ function isoEnd(dateStr: string) {
   return new Date(dateStr + "T23:59:59.999").toISOString(); 
 }
 
-export default function CashFlow() {
+export default function CashFlowPage() {
   const today = new Date();
   const defaultEnd = today.toISOString().slice(0, 10);
   const defaultStart = new Date(today.getTime() - 29 * 86400000).toISOString().slice(0, 10);

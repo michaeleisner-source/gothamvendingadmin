@@ -1,22 +1,22 @@
 import { Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
-import LowStock from "@/pages/LowStock";
-import CashFlow from "@/pages/CashFlow";
 import CashCollection from "@/pages/CashCollection";
-import InventoryReports from "@/pages/InventoryReports";
-import StaffPerformance from "@/pages/StaffPerformance";
+import LowStockPage from "@/pages/alerts/LowStockPage";
+import CashFlowPage from "@/pages/finance/CashFlowPage";
+import InventoryReportsPage from "@/pages/reports/InventoryReportsPage";
+import StaffPerformancePage from "@/pages/analytics/StaffPerformancePage";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/leads" element={<Leads />} />
-      <Route path="/low-stock" element={<LowStock />} />
-      <Route path="/cash-flow" element={<CashFlow />} />
       <Route path="/cash-collection" element={<CashCollection />} />
-      <Route path="/inventory-reports" element={<InventoryReports />} />
-      <Route path="/staff-performance" element={<StaffPerformance />} />
+      <Route path="/alerts/low-stock" element={<LowStockPage />} />
+      <Route path="/finance/cash-flow" element={<CashFlowPage />} />
+      <Route path="/reports/inventory" element={<InventoryReportsPage />} />
+      <Route path="/analytics/staff" element={<StaffPerformancePage />} />
       <Route path="*" element={<Index />} />
     </Routes>
   );
