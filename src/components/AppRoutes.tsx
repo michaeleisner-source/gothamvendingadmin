@@ -12,6 +12,7 @@ import Machines from "@/pages/Machines";
 import SalesEntry from "@/pages/SalesEntry";
 import SalesDashboard from "@/pages/SalesDashboard";
 import MachineInventoryPage from "@/pages/machines/MachineInventoryPage";
+import LowStockPage from "@/pages/alerts/LowStockPage";
 import Products from "@/pages/Products";
 import Suppliers from "@/pages/Suppliers";
 import PurchaseOrders from "@/pages/PurchaseOrders";
@@ -156,6 +157,7 @@ const AppRoutes = () => {
               <Route path="/machine/:id" element={<MachineDetail />} />
               <Route path="/machine-setup" element={<MachineSetup />} />
               <Route path="/machines/:machineId/inventory" element={<MachineInventoryPage />} />
+              <Route path="/alerts/low-stock" element={<LowStockPage />} />
               <Route path="/routes" element={<RouteManagement />} />
               <Route path="/delivery-routes" element={<DeliveryRoutes />} />
               <Route path="/driver" element={<DriverDashboard />} />
