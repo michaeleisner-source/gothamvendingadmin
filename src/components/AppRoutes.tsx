@@ -78,7 +78,6 @@ import RestockEntry from "@/pages/RestockEntry";
 // Contracts & Insurance
 import ContractManagement from "@/pages/ContractManagement";
 import ContractView from "@/pages/ContractView";
-import NewContract from "@/pages/NewContract";
 import Insurance from "@/pages/Insurance";
 
 // Tools & Utilities
@@ -201,7 +200,6 @@ const AppRoutes = () => {
               
               {/* Contracts & Insurance */}
               <Route path="/contracts" element={<ContractManagement />} />
-              <Route path="/contracts/new" element={<NewContract />} />
               <Route path="/contract/:id" element={<ContractView />} />
               <Route path="/insurance" element={<Insurance />} />
               
