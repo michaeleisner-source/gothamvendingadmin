@@ -2,8 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 /** Check if the app is running in demo mode (no auth required) */
 export function isDemoMode(): boolean {
-  // In demo mode, we don't require authentication
-  return true;
+  // Disable demo mode to enable proper authentication
+  return false;
 }
 
 /** Get authentication headers for API calls */
