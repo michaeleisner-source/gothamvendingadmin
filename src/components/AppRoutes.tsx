@@ -6,7 +6,7 @@ import { CreateButton } from "@/components/CreateButton";
 import { GlobalSearchBar } from "@/components/GlobalSearchBar";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
-import Prospects from "@/pages/Prospects";
+import ProspectsMinimal from "@/pages/ProspectsMinimal";
 import Locations from "@/pages/Locations";
 import Machines from "@/pages/Machines";
 import SalesEntry from "@/pages/SalesEntry";
@@ -139,7 +139,7 @@ const AppRoutes = () => {
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
               
               {/* Sales */}
-              <Route path="/prospects" element={<Prospects />} />
+              <Route path="/prospects" element={<ProspectsMinimal />} />
               <Route path="/prospects/new" element={<NewProspect />} />
               <Route path="/prospect-dashboard" element={<ProspectDashboard />} />
               <Route path="/prospect/:id" element={<ProspectDetail />} />
