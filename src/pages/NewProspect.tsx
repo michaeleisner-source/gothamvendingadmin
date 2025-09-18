@@ -74,8 +74,22 @@ export default function NewProspect() {
       };
 
       const { data, error } = await supabase
-        .from("prospects")
-        .insert(prospectData)
+        .from("leads")
+        .insert({
+          name: prospectData.business_name,
+          company: formData.company || null,
+          email: prospectData.contact_email,
+          phone: prospectData.contact_phone,
+          location_type: 'Office', // Required field
+          address: prospectData.address_line1 || '',
+          city: prospectData.city || '',
+          state: prospectData.state || '',
+          zip_code: prospectData.postal_code || '',
+          contact_method: 'email', // Required field
+          notes: prospectData.notes,
+          estimated_foot_traffic: 0,
+          status: prospectData.status,
+        })
         .select()
         .single();
 
