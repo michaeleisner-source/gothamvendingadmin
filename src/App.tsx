@@ -2,8 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { Layout } from "@/components/Layout";
 import AppRoutes from "@/components/AppRoutes";
 
 const queryClient = new QueryClient({
@@ -21,7 +20,9 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <AppRoutes />
+          <Layout>
+            <AppRoutes />
+          </Layout>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
