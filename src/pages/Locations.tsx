@@ -1,198 +1,173 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MapPin, Plus, Phone, Mail, Edit, Trash2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Plus, MapPin, TrendingUp, DollarSign, Search, Eye } from "lucide-react";
 import { useLocations } from "@/hooks/useSupabaseData";
+import { EnhancedDataTable, DataTableColumn, DataTableAction } from "@/components/enhanced/EnhancedDataTable";
+import { StatCard } from "@/components/enhanced/StatCard";
 
 export default function Locations() {
-  const [searchTerm, setSearchTerm] = useState("");
   const { data: locations = [], isLoading, error } = useLocations();
-
-  const filteredLocations = locations.filter(location =>
-    location.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    location.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    location.address_line1?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const activeLocations = locations.filter(loc => loc.status === 'active');
-  const pendingLocations = locations.filter(loc => loc.status === 'pending');
 
   if (error) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Locations</h1>
-        <p className="text-destructive">Error loading locations: {error.message}</p>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-red-800">Error loading locations: {error.message}</p>
+        </div>
       </div>
     );
   }
+
+  // Define table columns
+  const columns: DataTableColumn<any>[] = [
+    {
+      key: "name",
+      label: "Location Name",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="font-medium">{value}</span>
+        </div>
+      ),
+    },
+    {
+      key: "location_type",
+      label: "Type",
+      sortable: true,
+    },
+    {
+      key: "address",
+      label: "Address",
+      render: (value, row) => (
+        <div className="text-sm">
+          <div>{row.address_line1}</div>
+          <div className="text-muted-foreground">
+            {row.city}, {row.state} {row.postal_code}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "contact_name",
+      label: "Contact",
+      render: (value, row) => (
+        <div className="text-sm">
+          {value && <div className="font-medium">{value}</div>}
+          {row.contact_phone && (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Phone className="h-3 w-3" />
+              {row.contact_phone}
+            </div>
+          )}
+          {row.contact_email && (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Mail className="h-3 w-3" />
+              {row.contact_email}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      render: (value) => (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+          value === "active" 
+            ? "bg-green-100 text-green-800" 
+            : "bg-yellow-100 text-yellow-800"
+        }`}>
+          {value || "pending"}
+        </span>
+      ),
+    },
+  ];
+
+  // Define table actions
+  const actions: DataTableAction<any>[] = [
+    {
+      label: "View Details",
+      onClick: (row) => window.location.href = `/locations/${row.id}`,
+      icon: Eye,
+    },
+    {
+      label: "Edit",
+      onClick: (row) => console.log("Edit", row),
+      icon: Edit,
+    },
+    {
+      label: "Delete",
+      onClick: (row) => console.log("Delete", row),
+      icon: Trash2,
+      variant: "destructive",
+    },
+  ];
+
+  // Calculate stats
+  const activeLocations = locations.filter(loc => loc.status === 'active');
+  const pendingLocations = locations.filter(loc => loc.status === 'pending');
+  
+  const stats = {
+    total: locations.length,
+    active: activeLocations.length,
+    pending: pendingLocations.length,
+  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Location Management</h1>
-          <p className="text-muted-foreground">Manage your vending machine locations</p>
+          <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
+          <p className="text-muted-foreground">
+            Manage your vending machine locations
+          </p>
         </div>
-        <Button asChild className="flex items-center gap-2">
-          <Link to="/locations/new">
-            <Plus className="h-4 w-4" />
+        <Link to="/locations/new">
+          <Button className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
             Add Location
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Locations</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{locations.length}</div>
-            <p className="text-xs text-muted-foreground">All locations</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <TrendingUp className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeLocations.length}</div>
-            <p className="text-xs text-muted-foreground">Operating locations</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <MapPin className="h-4 w-4 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingLocations.length}</div>
-            <p className="text-xs text-muted-foreground">Awaiting setup</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$1,250</div>
-            <p className="text-xs text-muted-foreground">Per location/month</p>
-          </CardContent>
-        </Card>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard
+          title="Total Locations"
+          value={stats.total}
+          icon={MapPin}
+        />
+        <StatCard
+          title="Active Locations"
+          value={stats.active}
+          description={`${Math.round((stats.active / Math.max(stats.total, 1)) * 100)}% of total`}
+        />
+        <StatCard
+          title="Pending Setup"
+          value={stats.pending}
+          description="Awaiting installation"
+        />
+        <StatCard
+          title="Avg Revenue"
+          value="$1,250"
+          description="Per location/month"
+        />
       </div>
 
-      {/* Locations List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Location Directory</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search locations..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-              <Button variant="outline">Map View</Button>
-            </div>
-            
-            {isLoading ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Loading locations...</p>
-              </div>
-            ) : filteredLocations.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  {searchTerm ? "No locations match your search." : "No locations found. Add your first location to get started."}
-                </p>
-                {!searchTerm && (
-                  <Button asChild className="mt-4">
-                    <Link to="/locations/new">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add First Location
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">Location</th>
-                      <th className="text-left py-2">Address</th>
-                      <th className="text-left py-2">Contact</th>
-                      <th className="text-left py-2">Status</th>
-                      <th className="text-left py-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLocations.map((location) => (
-                      <tr key={location.id} className="border-b">
-                        <td className="py-2 font-medium">{location.name}</td>
-                        <td className="py-2">
-                          {location.address_line1 && (
-                            <div>
-                              {location.address_line1}
-                              {location.city && location.state && (
-                                <div className="text-xs text-muted-foreground">
-                                  {location.city}, {location.state} {location.postal_code}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-2">
-                          <div>
-                            <div className="font-medium">{location.contact_name || 'N/A'}</div>
-                            {location.contact_email && (
-                              <div className="text-xs text-muted-foreground">{location.contact_email}</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            location.status === 'active' 
-                              ? 'bg-success/10 text-success' 
-                              : location.status === 'pending'
-                              ? 'bg-warning/10 text-warning'
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {location.status || 'Unknown'}
-                          </span>
-                        </td>
-                        <td className="py-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to={`/locations/${location.id}`}>
-                              <Eye className="h-3 w-3 mr-1" />
-                              View
-                            </Link>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Enhanced Data Table */}
+      <EnhancedDataTable
+        data={locations}
+        columns={columns}
+        actions={actions}
+        searchPlaceholder="Search locations..."
+        searchFields={["name", "city", "state", "contact_name"]}
+        isLoading={isLoading}
+        emptyMessage="No locations found. Add your first location to get started."
+      />
     </div>
   );
 }
