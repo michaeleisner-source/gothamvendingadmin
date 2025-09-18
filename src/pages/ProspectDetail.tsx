@@ -68,7 +68,8 @@ function QuickNote({ prospectId, onSaved }: { prospectId: string; onSaved?: () =
   async function save() {
     if (!val.trim()) return;
     setLoading(true);
-    await supabase.from("prospect_activities").insert({ prospect_id: prospectId, body: val.trim(), type });
+    // For now, just simulate saving since prospect_activities table doesn't exist yet
+    console.log('Would save note:', { prospect_id: prospectId, body: val.trim(), type });
     setLoading(false);
     setVal("");
     onSaved?.();
@@ -110,11 +111,11 @@ export default function ProspectDetail() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: dp } = await supabase.from("prospects").select("*").eq("id", id).single();
+      const { data: dp } = await supabase.from("leads").select("*").eq("id", id).maybeSingle();
       setP((dp || null) as Prospect | null);
 
-      const { data: dn } = await supabase.from("prospect_activities").select("*").eq("prospect_id", id).order("created_at", { ascending: false });
-      setNotes((dn || []) as Note[]);
+      // For now, create empty notes array since prospect_activities table doesn't exist yet
+      setNotes([]);
       setLoading(false);
     })();
   }, [id]);
