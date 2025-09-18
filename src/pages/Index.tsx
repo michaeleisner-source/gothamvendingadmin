@@ -21,6 +21,7 @@ import { MetricsCards, getRevenueMetrics, getMachineMetrics, getProspectMetrics 
 import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/components/dashboard/ActivityFeed";
 import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
 import { StatCard } from "@/components/enhanced/StatCard";
+import { InventoryDashboardWidget } from "@/components/inventory/InventoryDashboardWidget";
 
 interface DashboardData {
   kpis: {
@@ -386,7 +387,7 @@ const Index = () => {
 
       <Separator />
 
-      {/* Activity Feed */}
+      {/* Activity Feed & Inventory */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ActivityFeed
@@ -397,49 +398,54 @@ const Index = () => {
           />
         </div>
         
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-start" asChild>
-              <Link to="/sales">
-                <Plus className="h-4 w-4 mr-2" />
-                Record Sale
-              </Link>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link to="/prospects/new">
-                <Users className="h-4 w-4 mr-2" />
-                Add Prospect
-              </Link>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link to="/machines/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Machine
-              </Link>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link to="/products/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Link>
-            </Button>
-            <Separator />
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link to="/reports">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                View Reports
-                <HelpTooltip content="Access detailed analytics and business intelligence reports" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Inventory Widget */}
+          <InventoryDashboardWidget />
+          
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" asChild>
+                <Link to="/sales">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Record Sale
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/inventory">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Manage Inventory
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/prospects/new">
+                  <Users className="h-4 w-4 mr-2" />
+                  Add Prospect
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to="/machines/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Machine
+                </Link>
+              </Button>
+              <Separator />
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link to="/reports">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  View Reports
+                  <HelpTooltip content="Access detailed analytics and business intelligence reports" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
