@@ -15,6 +15,10 @@ import PurchaseOrders from "@/pages/PurchaseOrders";
 import Reports from "@/pages/Reports";
 import Account from "@/pages/Account";
 import Auth from "@/pages/Auth";
+import RouteManagement from "@/pages/RouteManagement";
+import DriverDashboard from "@/pages/DriverDashboard";
+import SupplierManagement from "@/pages/SupplierManagement";
+import MaintenanceScheduler from "@/pages/MaintenanceScheduler";
 import NotFound from "@/pages/NotFound";
 
 const AppRoutes = () => {
@@ -56,12 +60,16 @@ const AppRoutes = () => {
               <Route path="/machines" element={<Machines />} />
               <Route path="/machines/new" element={<Machines />} />
               <Route path="/machines/:machineId/inventory" element={<MachineInventory />} />
+              <Route path="/routes" element={<RouteManagement />} />
+              <Route path="/driver" element={<DriverDashboard />} />
+              <Route path="/maintenance" element={<MaintenanceScheduler />} />
               
               {/* Catalog */}
               <Route path="/products" element={<Products />} />
               <Route path="/products/new" element={<Products />} />
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/suppliers/new" element={<Suppliers />} />
+              <Route path="/supplier-management" element={<SupplierManagement />} />
               
               {/* Purchasing */}
               <Route path="/purchase-orders" element={<PurchaseOrders />} />

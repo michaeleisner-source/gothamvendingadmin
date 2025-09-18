@@ -10,7 +10,10 @@ import {
   LogOut,
   Plus,
   FileText,
-  Receipt
+  Receipt,
+  Route,
+  Truck,
+  Wrench
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -57,6 +60,21 @@ const operationsItems = [
     icon: Cog,
   },
   {
+    title: "Route Planning",
+    url: "/routes",
+    icon: Route,
+  },
+  {
+    title: "Driver Dashboard", 
+    url: "/driver",
+    icon: Truck,
+  },
+  {
+    title: "Maintenance",
+    url: "/maintenance",
+    icon: Wrench,
+  },
+  {
     title: "Sales Entry",
     url: "/sales",
     icon: Receipt,
@@ -78,6 +96,11 @@ const catalogItems = [
     title: "Suppliers", 
     url: "/suppliers",
     icon: Users,
+  },
+  {
+    title: "Supplier Management",
+    url: "/supplier-management", 
+    icon: Truck,
   },
 ];
 
