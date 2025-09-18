@@ -108,7 +108,7 @@ const AppRoutes = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
 
-  // During development - bypass authentication
+  // Auth page with simple layout
   if (isAuthPage) {
     return (
       <Routes>
@@ -117,7 +117,7 @@ const AppRoutes = () => {
     );
   }
 
-  // Main app layout without authentication requirement
+  // Main app layout for all other routes
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -137,6 +137,7 @@ const AppRoutes = () => {
           <main className="flex-1 p-4 bg-background">
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
