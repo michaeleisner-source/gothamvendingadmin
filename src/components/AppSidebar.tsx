@@ -62,7 +62,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const dashboardItems = [
   { title: "Home", url: "/", icon: Home },
-  { title: "Main Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Enhanced Dashboard", url: "/enhanced-dashboard", icon: TrendingUp },
   { title: "Home Dashboard", url: "/home-dashboard", icon: Building },
 ];

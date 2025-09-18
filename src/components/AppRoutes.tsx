@@ -29,7 +29,6 @@ import Staff from "@/pages/Staff";
 import StaffEnhanced from "@/pages/StaffEnhanced";
 
 // Enhanced Dashboards
-import Dashboard from "@/pages/Dashboard";
 import EnhancedDashboard from "@/pages/EnhancedDashboard";
 import HomeDashboard from "@/pages/HomeDashboard";
 import EnhancedReports from "@/pages/EnhancedReports";
@@ -126,7 +125,6 @@ const AppRoutes = () => {
               <Route path="/" element={<Index />} />
               
               {/* Dashboards */}
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
               <Route path="/home-dashboard" element={<HomeDashboard />} />
               

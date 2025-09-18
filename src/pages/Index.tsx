@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useGlobalDays } from '@/hooks/useGlobalDays';
+import { invokeReport } from '@/lib/reportsApi';
 
 interface DashboardStats {
   revenue: {
@@ -54,6 +56,8 @@ interface DashboardStats {
   };
 }
 
+type KPIs = { revenue:number; cogs:number; profit:number; orders:number; units:number; margin:number };
+
 interface RecentActivity {
   id: string;
   type: 'sale' | 'prospect' | 'machine' | 'inventory';
@@ -70,6 +74,11 @@ interface TopPerformer {
 }
 
 const Index = () => {
+  const days = useGlobalDays();
+  const [kpis, setKpis] = useState<KPIs | null>(null);
+  const [kpiLoading, setKpiLoading] = useState(false);
+  const [kpiErr, setKpiErr] = useState<string | null>(null);
+  
   const [stats, setStats] = useState<DashboardStats>({
     revenue: { today: 0, week: 0, month: 0, growth: 0 },
     machines: { total: 0, online: 0, offline: 0, needsMaintenance: 0 },
@@ -85,7 +94,36 @@ const Index = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+    fetchKPIData();
+  }, [days]);
+
+  const fetchKPIData = async () => {
+    let cancel = false;
+    setKpiLoading(true); 
+    setKpiErr(null);
+    try {
+      const { data, error } = await invokeReport('reports-sales-summary', { days });
+      if (error) throw new Error(error.message || 'Failed to load KPIs');
+      if (!cancel) {
+        const revenue = Number(data.revenue||0), cogs = Number(data.cogs||0);
+        const profit = revenue - cogs; 
+        const margin = revenue ? profit/revenue : 0;
+        setKpis({ 
+          revenue, 
+          cogs, 
+          profit, 
+          orders: Number(data.orders||0), 
+          units: Number(data.units||0), 
+          margin 
+        });
+      }
+    } catch(e:any){ 
+      if(!cancel) setKpiErr(e?.message||'Failed to load KPIs'); 
+    } finally { 
+      if(!cancel) setKpiLoading(false); 
+    }
+    return () => { cancel = true; };
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -330,6 +368,63 @@ const Index = () => {
           </Button>
         </div>
       </div>
+
+      {/* Financial KPIs Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Financial Overview</span>
+            <span className="text-sm font-normal text-muted-foreground">Last {days} days</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {kpiErr && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive">Error: {kpiErr}</p>
+            </div>
+          )}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Revenue</p>
+              <p className="text-2xl font-bold">
+                {kpiLoading ? '—' : `$${(kpis?.revenue||0).toFixed(2)}`}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">COGS</p>
+              <p className="text-2xl font-bold">
+                {kpiLoading ? '—' : `$${(kpis?.cogs||0).toFixed(2)}`}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Profit</p>
+              <p className="text-2xl font-bold text-green-600">
+                {kpiLoading ? '—' : `$${(kpis?.profit||0).toFixed(2)}`}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Profit %</p>
+              <p className="text-2xl font-bold">
+                {kpiLoading ? '—' : `${((kpis?.margin||0)*100).toFixed(1)}%`}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Orders</p>
+              <p className="text-2xl font-bold">
+                {kpiLoading ? '—' : String(kpis?.orders||0)}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Units</p>
+              <p className="text-2xl font-bold">
+                {kpiLoading ? '—' : String(kpis?.units||0)}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator className="my-6" />
 
       {/* Revenue & Performance Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
