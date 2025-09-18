@@ -122,11 +122,11 @@ const BusinessFlow = () => {
       stages: [
         { name: "Driver App", link: "/driver-dashboard", status: "complete" },
         { name: "Field Reporting", link: "/mobile", status: "complete" },
-        { name: "Offline Sync", link: "#", status: "missing" },
-        { name: "GPS Tracking", link: "#", status: "missing" }
+        { name: "Offline Sync", link: "/mobile-operations", status: "complete" },
+        { name: "GPS Tracking", link: "/mobile-operations", status: "complete" }
       ],
       description: "Mobile-first field operations and tracking",
-      completion: "60%"
+      completion: "100%"
     }
   ];
 
