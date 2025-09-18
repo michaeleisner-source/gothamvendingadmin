@@ -5,6 +5,7 @@ import LowStock from "@/pages/LowStock";
 import CashFlow from "@/pages/CashFlow";
 import CashCollection from "@/pages/CashCollection";
 import InventoryReports from "@/pages/InventoryReports";
+import StaffPerformance from "@/pages/StaffPerformance";
 
 const AppRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const AppRoutes = () => {
       <Route path="/cash-flow" element={<CashFlow />} />
       <Route path="/cash-collection" element={<CashCollection />} />
       <Route path="/inventory-reports" element={<InventoryReports />} />
+      <Route path="/staff-performance" element={<StaffPerformance />} />
       <Route path="*" element={<Index />} />
     </Routes>
   );

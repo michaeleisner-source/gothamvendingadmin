@@ -356,6 +356,12 @@ const Index = () => {
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" asChild>
+            <Link to="/staff-performance">
+              <Users className="mr-2 h-4 w-4" />
+              Staff Performance
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link to="/cash-flow">
               <TrendingUp className="mr-2 h-4 w-4" />
               Cash Flow
