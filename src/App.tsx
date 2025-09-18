@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "@/components/AppRoutes";
+import HelpBot from "@/components/HelpBot";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,7 @@ function App() {
         <Toaster />
         <BrowserRouter>
           <AppRoutes />
+          <HelpBot />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

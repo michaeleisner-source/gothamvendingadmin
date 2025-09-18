@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 
 // ---- tiny utils ----
 function cents(n?: number | null) {
@@ -306,17 +307,20 @@ const Reports = () => {
   const refresh = () => loadAll();
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-        <DateRange 
-          start={start} 
-          end={end} 
-          setStart={setStart} 
-          setEnd={setEnd} 
-          onRefresh={refresh} 
-        />
-      </div>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Reports & Analytics</h1>
+            <HelpTooltip content="View comprehensive business reports including financial KPIs, revenue analysis by machine and product, profit margins, sales trends, and purchase order tracking. Use date filters to analyze specific time periods." />
+          </div>
+          <DateRange 
+            start={start} 
+            end={end} 
+            setStart={setStart} 
+            setEnd={setEnd} 
+            onRefresh={refresh} 
+          />
+        </div>
 
       {loading && (
         <div className="flex items-center justify-center py-8">
@@ -327,15 +331,42 @@ const Reports = () => {
       {!loading && (
         <Tabs defaultValue="kpis" className="space-y-6">
           <TabsList className="grid grid-cols-3 md:grid-cols-9 w-full">
-            <TabsTrigger value="kpis">KPIs</TabsTrigger>
-            <TabsTrigger value="rev_machine">Revenue/Machine</TabsTrigger>
-            <TabsTrigger value="rev_product">Revenue/Product</TabsTrigger>
-            <TabsTrigger value="profit_machine">Profit/Machine</TabsTrigger>
-            <TabsTrigger value="orders_day">Orders/Day</TabsTrigger>
-            <TabsTrigger value="qty_day">Sold/Day</TabsTrigger>
-            <TabsTrigger value="qty_month">Sold/Month</TabsTrigger>
-            <TabsTrigger value="open_pos">Open POs</TabsTrigger>
-            <TabsTrigger value="po_history">PO History</TabsTrigger>
+            <TabsTrigger value="kpis" className="flex items-center gap-1">
+              KPIs
+              <HelpTooltip content="Key Performance Indicators - Revenue, costs, profit margins, and overall financial health" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="rev_machine" className="flex items-center gap-1">
+              Revenue/Machine
+              <HelpTooltip content="Revenue, costs, and profit analysis broken down by individual machines" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="rev_product" className="flex items-center gap-1">
+              Revenue/Product
+              <HelpTooltip content="Revenue performance analysis by product showing sales volume and earnings" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="profit_machine" className="flex items-center gap-1">
+              Profit/Machine
+              <HelpTooltip content="Detailed profit analysis showing which machines are most profitable" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="orders_day" className="flex items-center gap-1">
+              Orders/Day
+              <HelpTooltip content="Daily transaction trends showing sales patterns over time" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="qty_day" className="flex items-center gap-1">
+              Sold/Day
+              <HelpTooltip content="Daily product quantity trends showing volume patterns" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="qty_month" className="flex items-center gap-1">
+              Sold/Month
+              <HelpTooltip content="Monthly product quantity trends showing long-term volume patterns" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="open_pos" className="flex items-center gap-1">
+              Open POs
+              <HelpTooltip content="Current pending purchase orders that need attention or processing" size="sm" />
+            </TabsTrigger>
+            <TabsTrigger value="po_history" className="flex items-center gap-1">
+              PO History
+              <HelpTooltip content="Historical purchase order data showing procurement patterns and supplier performance" size="sm" />
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="kpis" className="space-y-4">

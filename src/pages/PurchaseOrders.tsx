@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, ClipboardList, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function PurchaseOrders() {
   return (
@@ -11,9 +12,11 @@ export default function PurchaseOrders() {
           <h1 className="text-3xl font-bold">Purchase Orders</h1>
           <p className="text-muted-foreground">Create and track purchase orders</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Purchase Order
+        <Button asChild className="flex items-center gap-2">
+          <Link to="/purchase-orders/new">
+            <Plus className="h-4 w-4" />
+            New Purchase Order
+          </Link>
         </Button>
       </div>
 
