@@ -78,7 +78,7 @@ export default function HomeDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{data.totalLeads}</div>
             <p className="text-xs text-muted-foreground">
-              {data.leadsThisMonth} new this month
+              All leads in system
             </p>
           </CardContent>
         </Card>
@@ -121,7 +121,7 @@ export default function HomeDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.conversionRate}%</div>
+            <div className="text-2xl font-bold">{data.totalLeads > 0 ? ((data.closedLeads / data.totalLeads) * 100).toFixed(1) : '0'}%</div>
             <p className="text-xs text-muted-foreground">
               {data.closedLeads} closed deals
             </p>
@@ -140,10 +140,10 @@ export default function HomeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              ${data.potentialRevenue?.toLocaleString() || '0'}
+              Coming Soon
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              From {data.interestedLeads + data.closedLeads} qualified leads
+              Revenue tracking coming soon
             </p>
           </CardContent>
         </Card>
