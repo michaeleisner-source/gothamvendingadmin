@@ -14,23 +14,13 @@ const queryClient = new QueryClient({
 });
 
 export default function AppShell() {
-  console.log("AppShell component rendering!");
-  
-  try {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div style={{padding: '20px', border: '2px solid red'}}>
-            <h2>APPSHELL TEST</h2>
-            <Toaster />
-            <AppRoutes />
-            <HelpBot />
-          </div>
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  } catch (error) {
-    console.error("Error in AppShell:", error);
-    return <div>APPSHELL ERROR: {String(error)}</div>;
-  }
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <AppRoutes />
+        <HelpBot />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
