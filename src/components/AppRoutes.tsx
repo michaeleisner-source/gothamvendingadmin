@@ -6,6 +6,8 @@ import Leads from "@/pages/Leads";
 import Prospects from "@/pages/Prospects";
 import Locations from "@/pages/Locations";
 import Machines from "@/pages/Machines";
+import SalesEntry from "@/pages/SalesEntry";
+import SalesDashboard from "@/pages/SalesDashboard";
 import MachineInventory from "@/pages/MachineInventory";
 import Products from "@/pages/Products";
 import Suppliers from "@/pages/Suppliers";
@@ -47,6 +49,8 @@ const AppRoutes = () => {
               <Route path="/prospects/new" element={<Prospects />} />
               <Route path="/locations" element={<Locations />} />
               <Route path="/locations/new" element={<Locations />} />
+              <Route path="/sales" element={<SalesEntry />} />
+              <Route path="/sales/dashboard" element={<SalesDashboard />} />
               
               {/* Operations */}
               <Route path="/machines" element={<Machines />} />

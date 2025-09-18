@@ -9,7 +9,8 @@ import {
   UserCircle, 
   LogOut,
   Plus,
-  FileText
+  FileText,
+  Receipt
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -54,6 +55,16 @@ const operationsItems = [
     title: "Machines",
     url: "/machines",
     icon: Cog,
+  },
+  {
+    title: "Sales Entry",
+    url: "/sales",
+    icon: Receipt,
+  },
+  {
+    title: "Sales Dashboard",
+    url: "/sales/dashboard",
+    icon: BarChart3,
   },
 ];
 
