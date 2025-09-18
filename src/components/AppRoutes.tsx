@@ -97,6 +97,8 @@ import Picklists from "@/pages/Picklists";
 // Form Pages
 import NewLocation from "@/pages/NewLocation";
 import NewProspect from "@/pages/NewProspect";
+import NewMachine from "@/pages/NewMachine";
+import NewProduct from "@/pages/NewProduct";
 import NewPurchaseOrder from "@/pages/NewPurchaseOrder";
 
 // Subdirectory Pages
@@ -214,7 +216,7 @@ const MainAppLayout = () => {
               
               {/* Operations */}
               <Route path="/machines" element={<Machines />} />
-              <Route path="/machines/new" element={<Machines />} />
+              <Route path="/machines/new" element={<NewMachine />} />
               <Route path="/machines-enhanced" element={<MachinesEnhanced />} />
               <Route path="/machine/:id" element={<MachineDetail />} />
               <Route path="/machine-setup" element={<MachineSetup />} />
@@ -233,7 +235,7 @@ const MainAppLayout = () => {
               
               {/* Catalog */}
               <Route path="/products" element={<Products />} />
-              <Route path="/products/new" element={<Products />} />
+              <Route path="/products/new" element={<NewProduct />} />
               <Route path="/products-enhanced" element={<ProductsEnhanced />} />
               <Route path="/catalog" element={<ProductCatalog />} />
               <Route path="/suppliers" element={<Suppliers />} />
