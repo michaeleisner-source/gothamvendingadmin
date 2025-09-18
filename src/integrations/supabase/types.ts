@@ -1706,28 +1706,34 @@ export type Database = {
         Row: {
           capacity: number | null
           col: number
+          current_qty: number
           id: string
           label: string
           machine_id: string
           org_id: string
+          restock_threshold: number
           row: number
         }
         Insert: {
           capacity?: number | null
           col: number
+          current_qty?: number
           id?: string
           label: string
           machine_id: string
           org_id: string
+          restock_threshold?: number
           row: number
         }
         Update: {
           capacity?: number | null
           col?: number
+          current_qty?: number
           id?: string
           label?: string
           machine_id?: string
           org_id?: string
+          restock_threshold?: number
           row?: number
         }
         Relationships: [
