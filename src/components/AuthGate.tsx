@@ -8,6 +8,9 @@ const PUBLIC_PATHS = new Set<string>([
 ]);
 
 export default function AuthGate({ children }: { children: ReactNode }) {
+  // In demo mode, always allow access immediately
+  return <>{children}</>;
+  
   const nav = useNavigate();
   const loc = useLocation();
   const [loading, setLoading] = useState(true);
