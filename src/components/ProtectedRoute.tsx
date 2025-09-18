@@ -1,41 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useDemo } from "@/lib/demo";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isDemo } = useDemo();
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);
-  const loc = useLocation();
+  const location = useLocation();
 
   useEffect(() => {
-    let unsub: any;
-    (async () => {
-      if (isDemo) {
-        // In demo, just allow — DemoProvider already auto-signs in behind the scenes
-        setAuthed(true);
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase.auth.getSession();
-      setAuthed(!!data.session);
-      setLoading(false);
-      unsub = supabase.auth.onAuthStateChange((_e, sess) => {
-        setAuthed(!!sess);
-      });
-    })();
-
-    return () => {
-      if (unsub && unsub.data && unsub.data.subscription) {
-        unsub.data.subscription.unsubscribe();
+    let mounted = true;
+    
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          setAuthed(!!session);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        if (mounted) {
+          setAuthed(false);
+          setLoading(false);
+        }
       }
     };
-  }, [isDemo]);
 
-  if (loading) return null;
-  if (!authed && !isDemo) {
-    return <Navigate to="/auth" state={{ from: loc.pathname }} replace />;
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setAuthed(!!session);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
+
+  // Redirect to auth if not authenticated
+  if (!authed) {
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+  }
+
   return <>{children}</>;
 }
