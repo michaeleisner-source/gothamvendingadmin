@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export default function Auth() {
@@ -15,7 +15,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  console.log("Auth component loaded");
   
   const from = (location.state as any)?.from || "/";
 
@@ -41,18 +41,11 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast({
-        title: "Signed in successfully",
-        description: "Welcome back!",
-      });
+      toast.success("Signed in successfully!");
       
       navigate(from, { replace: true });
     } catch (error: any) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Sign in failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -73,28 +66,17 @@ export default function Auth() {
 
       if (error) {
         if (error.message.includes("Password should be at least")) {
-          toast({
-            title: "Password too weak",
-            description: "Password must be at least 12 characters and include uppercase, lowercase, numbers, and special characters (!@#$%^&*)",
-            variant: "destructive",
-          });
+          toast.error("Password must be at least 12 characters with uppercase, lowercase, numbers, and special characters");
         } else {
           throw error;
         }
       } else {
-        toast({
-          title: "Account created!",
-          description: "Check your email to confirm your account, then return here to sign in.",
-        });
+        toast.success("Account created! Check your email to confirm your account.");
         setEmail("");
         setPassword("");
       }
     } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Sign up failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -103,11 +85,7 @@ export default function Auth() {
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
+      toast.error("Please enter your email address");
       return;
     }
 
@@ -122,16 +100,9 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast({
-        title: "Magic link sent!",
-        description: "Check your email for the login link.",
-      });
+      toast.success("Magic link sent! Check your email for the login link.");
     } catch (error: any) {
-      toast({
-        title: "Failed to send magic link",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`Failed to send magic link: ${error.message}`);
     } finally {
       setLoading(false);
     }
