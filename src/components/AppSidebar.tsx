@@ -25,6 +25,7 @@ const items = [
 ];
 
 export function AppSidebar() {
+  console.log("AppSidebar rendering...");
   return (
     <Sidebar>
       <SidebarContent>
