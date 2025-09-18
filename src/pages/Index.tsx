@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -356,39 +357,45 @@ const Index = () => {
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" asChild>
-            <Link to="/analytics/staff">
-              <Users className="mr-2 h-4 w-4" />
+            <Link to="/analytics/staff" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
               Staff Performance
+              <HelpTooltip content="Track individual staff member sales performance, revenue generated, and profit margins" size="sm" />
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/finance/cash-flow">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Cash Flow
+            <Link to="/finance/cash-flow" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Cash Flow  
+              <HelpTooltip content="Monitor daily cash inflows from sales and outflows from purchases to track business liquidity" size="sm" />
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/reports/inventory">
-              <BarChart3 className="mr-2 h-4 w-4" />
+            <Link to="/reports/inventory" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
               Inventory Reports
+              <HelpTooltip content="Analyze inventory levels, stock distribution, and identify items needing attention across all machines" size="sm" />
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/alerts/low-stock">
-              <AlertTriangle className="mr-2 h-4 w-4" />
+            <Link to="/alerts/low-stock" className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
               Low Stock
+              <HelpTooltip content="View all items currently below reorder thresholds and manage restocking priorities" size="sm" />
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/sales">
-              <Plus className="mr-2 h-4 w-4" />
+            <Link to="/sales" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
               Quick Sale
+              <HelpTooltip content="Manually record sales transactions - inventory will be automatically updated" size="sm" />
             </Link>
           </Button>
           <Button asChild>
-            <Link to="/prospects/new">
-              <Plus className="mr-2 h-4 w-4" />
+            <Link to="/prospects/new" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
               New Prospect
+              <HelpTooltip content="Add a new potential location for vending machine placement and track through the sales pipeline" size="sm" />
             </Link>
           </Button>
         </div>
