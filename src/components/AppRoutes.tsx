@@ -137,7 +137,6 @@ const AppRoutes = () => {
           <main className="flex-1 p-4 bg-background">
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
