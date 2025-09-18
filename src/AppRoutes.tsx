@@ -3,6 +3,7 @@ import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
 import LowStock from "@/pages/LowStock";
 import CashFlow from "@/pages/CashFlow";
+import CashCollection from "@/pages/CashCollection";
 
 const AppRoutes = () => {
   return (
@@ -11,6 +12,7 @@ const AppRoutes = () => {
       <Route path="/leads" element={<Leads />} />
       <Route path="/low-stock" element={<LowStock />} />
       <Route path="/cash-flow" element={<CashFlow />} />
+      <Route path="/cash-collection" element={<CashCollection />} />
       <Route path="*" element={<Index />} />
     </Routes>
   );
