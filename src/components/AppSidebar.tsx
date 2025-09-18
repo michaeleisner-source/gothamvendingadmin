@@ -1,8 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useLowStockCount } from "@/hooks/useLowStockCount";
-import { Badge } from "@/components/ui/badge";
 import {
   Home,
   Users,
@@ -201,7 +199,6 @@ export function AppSidebar() {
     ops: true
   });
   const [email, setEmail] = useState<string | null>(null);
-  const { lowCount } = useLowStockCount();
 
   useEffect(() => {
     (async () => {
@@ -263,19 +260,7 @@ export function AppSidebar() {
                               className={getNavCls(isActive(item.to))}
                             >
                               {state !== "collapsed" && (
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{item.label}</span>
-                                  {item.to === "/alerts/low-stock" && lowCount > 0 && (
-                                    <span className="ml-2 inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-full bg-red-600 text-white">
-                                      {lowCount}
-                                    </span>
-                                  )}
-                                  {(item.to === "/inventory" && lowCount > 0) && (
-                                    <Badge variant="destructive" className="ml-2 text-xs">
-                                      {lowCount}
-                                    </Badge>
-                                  )}
-                                </div>
+                                <span>{item.label}</span>
                               )}
                             </NavLink>
                           </SidebarMenuButton>
