@@ -103,3 +103,5 @@ export function Insurance() {
     </div>
   );
 }
+
+export default Insurance;
