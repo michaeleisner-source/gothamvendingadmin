@@ -100,6 +100,10 @@ import NewPurchaseOrder from "@/pages/NewPurchaseOrder";
 import Glossary from "@/pages/help/Glossary";
 import OpsConsole from "@/pages/ops/OpsConsole";
 
+import CashFlow from "@/pages/CashFlow";
+import StaffPerformance from "@/pages/StaffPerformance";
+import InventoryHealth from "@/pages/InventoryHealth";
+
 const AppRoutes = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
@@ -186,6 +190,15 @@ const AppRoutes = () => {
               {/* Purchasing */}
               <Route path="/purchase-orders" element={<PurchaseOrders />} />
               <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
+              
+              {/* Finance & Cash Flow */}
+              <Route path="/finance/cash-flow" element={<CashFlow />} />
+              
+              {/* Analytics & Staff */}
+              <Route path="/analytics/staff" element={<StaffPerformance />} />
+              
+              {/* Reports & Inventory */}
+              <Route path="/reports/inventory" element={<InventoryHealth />} />
               
               {/* Financial & Business */}
               <Route path="/finance" element={<FinanceManagement />} />
