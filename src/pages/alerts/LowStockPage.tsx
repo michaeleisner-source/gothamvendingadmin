@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Package, RefreshCw } from "lucide-react";
+import { AlertTriangle, Package, RefreshCw, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toastError, toastSuccess } from "@/components/useToast";
 
 type Row = {
   machine_id: string;
@@ -16,19 +17,48 @@ type Row = {
   restock_threshold: number;
 };
 
+type Supplier = { id: string; name: string };
+
 export default function LowStockPage() {
   const [rows, setRows] = useState<Row[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [supplierId, setSupplierId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase.rpc("report_low_stock");
-    if (error) {
-      console.error("Error fetching low stock:", error);
+    const [r1, r2] = await Promise.all([
+      supabase.rpc("report_low_stock"),
+      supabase.from("suppliers").select("id,name").order("name", { ascending: true }),
+    ]);
+    if (r1.error) {
+      console.error("Error fetching low stock:", r1.error);
+      toastError(r1.error.message);
     } else {
-      setRows(data || []);
+      setRows(r1.data || []);
+    }
+    if (r2.error) {
+      console.error("Error fetching suppliers:", r2.error);
+      toastError(r2.error.message);
+    } else {
+      setSuppliers(r2.data || []);
     }
     setLoading(false);
+  }
+
+  async function createDraftPO() {
+    if (!supplierId) return toastError("Choose a supplier first");
+    setCreating(true);
+    const { data, error } = await supabase.rpc("create_draft_po_for_low_stock", {
+      p_supplier_id: supplierId,
+      p_note: "Auto restock from Low Stock Alerts",
+    });
+    setCreating(false);
+    if (error) return toastError(error.message);
+    toastSuccess("Draft PO created from low-stock items");
+    // Optional: navigate to POs page
+    setTimeout(() => { window.location.href = "/purchase-orders"; }, 700);
   }
 
   useEffect(() => {
@@ -94,13 +124,38 @@ export default function LowStockPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 items-end">
         <Button asChild>
           <Link to="/restock-entry">
             <Package className="h-4 w-4 mr-2" />
             Start Restock
           </Link>
         </Button>
+        
+        <div className="flex items-end gap-2">
+          <div className="flex flex-col">
+            <label className="text-xs text-muted-foreground mb-1">Supplier</label>
+            <select
+              className="border rounded px-3 py-2 min-h-[40px] min-w-[220px] text-sm"
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value)}
+            >
+              <option value="">Select supplier…</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <Button
+            onClick={createDraftPO}
+            disabled={!supplierId || creating || rows.length === 0}
+            variant="secondary"
+            className="min-h-[40px]"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {creating ? "Creating..." : "Create Draft PO"}
+          </Button>
+        </div>
       </div>
 
       {/* Low Stock Table */}
