@@ -60,7 +60,7 @@ export default function ContractManagement() {
         </div>
         <div className="flex gap-2">
           <button onClick={exportCSV} className="h-9 px-3 rounded-md border text-sm hover:bg-gray-50">Export CSV</button>
-          <button onClick={()=>alert("New Contract (demo)")} className="h-9 px-3 rounded-md bg-black text-white text-sm">New Contract</button>
+          <button onClick={() => window.location.href = "/contracts/new"} className="h-9 px-3 rounded-md bg-black text-white text-sm">New Contract</button>
         </div>
       </div>
 
