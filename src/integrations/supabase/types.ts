@@ -3278,6 +3278,10 @@ export type Database = {
           start_at: string
         }[]
       }
+      adjust_slot_qty: {
+        Args: { p_delta: number; p_machine_id: string; p_slot_label: string }
+        Returns: number
+      }
       bootstrap_org_for_me: {
         Args: { p_org_name?: string }
         Returns: string
@@ -3314,6 +3318,10 @@ export type Database = {
       convert_prospect_to_location: {
         Args: { p_prospect_id: string }
         Returns: string
+      }
+      count_low_stock: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       create_po_with_items: {
         Args: { p_items: Json; p_supplier_id: string }
@@ -3360,6 +3368,18 @@ export type Database = {
           machine_name: string
           silent_flag: boolean
           since_last_sale: unknown
+        }[]
+      }
+      get_machine_inventory: {
+        Args: { p_machine_id: string }
+        Returns: {
+          current_qty: number
+          machine_id: string
+          machine_name: string
+          product_id: string
+          product_name: string
+          restock_threshold: number
+          slot_label: string
         }[]
       }
       get_machine_product_price: {
@@ -3626,6 +3646,10 @@ export type Database = {
           title: string
           url: string
         }[]
+      }
+      set_slot_qty: {
+        Args: { p_machine_id: string; p_qty: number; p_slot_label: string }
+        Returns: number
       }
       start_restock_session: {
         Args: { p_machine_id: string; p_note?: string }
