@@ -30,7 +30,6 @@ import StaffEnhanced from "@/pages/StaffEnhanced";
 
 // Enhanced Dashboards
 import EnhancedDashboard from "@/pages/EnhancedDashboard";
-import HomeDashboard from "@/pages/HomeDashboard";
 import EnhancedReports from "@/pages/EnhancedReports";
 import CustomerAnalytics from "@/pages/CustomerAnalytics";
 import PipelineAnalytics from "@/pages/PipelineAnalytics";
@@ -126,7 +125,6 @@ const AppRoutes = () => {
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
-              <Route path="/home-dashboard" element={<HomeDashboard />} />
               
               {/* Sales */}
               <Route path="/prospects" element={<Prospects />} />
