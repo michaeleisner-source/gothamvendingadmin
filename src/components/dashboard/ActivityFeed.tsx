@@ -60,7 +60,7 @@ export function ActivityFeed({
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
     
-    const variants = {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       success: 'default',
       warning: 'outline',
       error: 'destructive',
@@ -68,7 +68,7 @@ export function ActivityFeed({
     };
     
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className="text-xs">
+      <Badge variant={variants[status] || 'secondary'} className="text-xs">
         {status}
       </Badge>
     );

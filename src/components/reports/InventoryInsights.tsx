@@ -260,7 +260,7 @@ const InventoryInsights = () => {
                   cy="50%"
                   outerRadius={80}
                   dataKey="stockoutRate"
-                  label={({ name, value }) => `${name} ${value.toFixed(1)}%`}
+                  label={({ name, value }: any) => `${name} ${Number(value || 0).toFixed(1)}%`}
                 >
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

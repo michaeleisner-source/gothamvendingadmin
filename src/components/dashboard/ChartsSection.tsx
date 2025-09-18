@@ -162,7 +162,7 @@ export function ChartsSection({
                 cy="50%"
                 outerRadius={80}
                 dataKey="value"
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                label={({ name, percent }: any) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                 labelLine={false}
               >
                 {productData.map((entry, index) => (
@@ -240,11 +240,11 @@ export const formatRevenueData = (sales: any[]) => {
     const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
     const dayRevenue = sales
       .filter(sale => sale.occurred_at?.startsWith(date))
-      .reduce((sum, sale) => sum + (sale.total_amount || sale.unit_price_cents / 100), 0);
+      .reduce((sum, sale) => sum + (Number(sale.total_amount) || Number(sale.unit_price_cents) / 100 || 0), 0);
     
     return {
       name: dayName,
-      value: dayRevenue
+      value: Number(dayRevenue) || 0
     };
   });
 };
@@ -260,11 +260,11 @@ export const formatSalesVolumeData = (sales: any[]) => {
     const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
     const dayItems = sales
       .filter(sale => sale.occurred_at?.startsWith(date))
-      .reduce((sum, sale) => sum + (sale.qty || sale.quantity_sold || 1), 0);
+      .reduce((sum, sale) => sum + (Number(sale.qty) || Number(sale.quantity_sold) || 1), 0);
     
     return {
       name: dayName,
-      value: dayItems
+      value: Number(dayItems) || 0
     };
   });
 };
@@ -272,15 +272,15 @@ export const formatSalesVolumeData = (sales: any[]) => {
 export const formatProductData = (sales: any[]) => {
   const productTotals = sales.reduce((acc, sale) => {
     const productName = sale.product_name || 'Unknown Product';
-    const revenue = sale.total_amount || sale.unit_price_cents / 100;
+    const revenue = Number(sale.total_amount) || Number(sale.unit_price_cents) / 100 || 0;
     acc[productName] = (acc[productName] || 0) + revenue;
     return acc;
   }, {} as Record<string, number>);
 
   return Object.entries(productTotals)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([,a], [,b]) => Number(b || 0) - Number(a || 0))
     .slice(0, 5)
-    .map(([name, value]) => ({ name, value }));
+    .map(([name, value]) => ({ name, value: value || 0 }));
 };
 
 export const formatMachineStatusData = (machines: any[]) => {
@@ -291,6 +291,6 @@ export const formatMachineStatusData = (machines: any[]) => {
   }, {} as Record<string, number>);
 
   return Object.entries(statusCounts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    .map(([name, value]) => ({ name, value: value || 0 }))
+    .sort((a, b) => Number(b.value || 0) - Number(a.value || 0));
 };

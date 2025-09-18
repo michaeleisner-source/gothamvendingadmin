@@ -376,10 +376,10 @@ const Index = () => {
       <div>
         <h2 className="text-xl font-semibold mb-4">Analytics Overview</h2>
         <ChartsSection
-          revenueData={revenueChartData}
-          salesData={salesChartData}
-          productData={productChartData}
-          machineStatusData={machineChartData}
+          revenueData={revenueChartData as any}
+          salesData={salesChartData as any}
+          productData={productChartData as any}
+          machineStatusData={machineChartData as any}
           loading={loading}
         />
       </div>
