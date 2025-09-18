@@ -71,12 +71,24 @@ export default function Auth() {
         }
       });
 
-      if (error) throw error;
-
-      toast({
-        title: "Account created!",
-        description: "Check your email to confirm your account.",
-      });
+      if (error) {
+        if (error.message.includes("Password should be at least")) {
+          toast({
+            title: "Password too weak",
+            description: "Password must be at least 12 characters and include uppercase, lowercase, numbers, and special characters (!@#$%^&*)",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Check your email to confirm your account, then return here to sign in.",
+        });
+        setEmail("");
+        setPassword("");
+      }
     } catch (error: any) {
       toast({
         title: "Sign up failed",
@@ -202,8 +214,11 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={12}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Must be at least 12 characters with uppercase, lowercase, numbers, and special characters (!@#$%^&*)
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
