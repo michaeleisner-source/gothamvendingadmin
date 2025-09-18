@@ -110,11 +110,7 @@ const AppRoutes = () => {
 
   // Auth page with simple layout
   if (isAuthPage) {
-    return (
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-      </Routes>
-    );
+    return <Auth />;
   }
 
   // Main app layout for all other routes
