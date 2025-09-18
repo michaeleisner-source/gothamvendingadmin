@@ -30,7 +30,7 @@ import {
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 import { toast } from "sonner";
 import { 
-  Pencil, Trash2 
+  Pencil, Trash2, Package
 } from "lucide-react";
 
 type Machine = {
@@ -874,6 +874,15 @@ export const MachinesList = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                      >
+                        <Link to={`/machines/${machine.id}/inventory`}>
+                          <Package className="w-4 h-4" />
+                        </Link>
+                      </Button>
                       <EditMachineButton machine={machine} />
                       <DeleteMachineButton machineId={machine.id} />
                     </div>

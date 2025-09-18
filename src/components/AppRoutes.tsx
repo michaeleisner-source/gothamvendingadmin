@@ -6,6 +6,7 @@ import Leads from "@/pages/Leads";
 import Prospects from "@/pages/Prospects";
 import Locations from "@/pages/Locations";
 import Machines from "@/pages/Machines";
+import MachineInventory from "@/pages/MachineInventory";
 import Products from "@/pages/Products";
 import Suppliers from "@/pages/Suppliers";
 import PurchaseOrders from "@/pages/PurchaseOrders";
@@ -50,6 +51,7 @@ const AppRoutes = () => {
               {/* Operations */}
               <Route path="/machines" element={<Machines />} />
               <Route path="/machines/new" element={<Machines />} />
+              <Route path="/machines/:machineId/inventory" element={<MachineInventory />} />
               
               {/* Catalog */}
               <Route path="/products" element={<Products />} />
