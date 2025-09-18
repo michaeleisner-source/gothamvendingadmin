@@ -5,6 +5,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { CreateButton } from "@/components/CreateButton";
 import { GlobalSearchBar } from "@/components/GlobalSearchBar";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { isDemoMode } from "@/lib/auth";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
 import Prospects from "@/pages/Prospects";
@@ -128,9 +130,43 @@ const AuthRedirect = () => {
 };
 
 const AppRoutes = () => {
-  console.log("AppRoutes component rendering");
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-  // Main app layout for all other routes
+  // Show loading spinner while auth is being determined
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // In demo mode, always show the main app
+  if (isDemoMode()) {
+    return <MainAppLayout />;
+  }
+
+  // If not authenticated and not on auth page, show auth page
+  if (!user && location.pathname !== '/auth') {
+    return <Auth />;
+  }
+
+  // If authenticated and on auth page, redirect to main app
+  if (user && location.pathname === '/auth') {
+    return <MainAppLayout />;
+  }
+
+  // Show auth page if on /auth route
+  if (location.pathname === '/auth') {
+    return <Auth />;
+  }
+
+  // Show main app for authenticated users
+  return <MainAppLayout />;
+};
+
+const MainAppLayout = () => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -151,8 +187,8 @@ const AppRoutes = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               
-              {/* Redirect auth page to home in demo mode */}
-              <Route path="/auth" element={<AuthRedirect />} />
+              {/* Auth route - standalone */}
+              <Route path="/auth" element={<Auth />} />
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />

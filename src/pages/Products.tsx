@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useProducts } from "@/hooks/useSupabaseData";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -161,10 +162,7 @@ const Products = () => {
     data: products = [],
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["products", searchTerm],
-    queryFn: () => fetchProducts(searchTerm),
-  });
+  } = useProducts(searchTerm);
 
   const addProductMutation = useMutation({
     mutationFn: upsertProduct,
