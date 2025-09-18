@@ -6,7 +6,7 @@ import { CreateButton } from "@/components/CreateButton";
 import { GlobalSearchBar } from "@/components/GlobalSearchBar";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
-import ProspectsMinimal from "@/pages/ProspectsMinimal";
+import Prospects from "@/pages/Prospects";
 import Locations from "@/pages/Locations";
 import Machines from "@/pages/Machines";
 import SalesEntry from "@/pages/SalesEntry";
@@ -78,7 +78,6 @@ import RestockEntry from "@/pages/RestockEntry";
 // Contracts & Insurance
 import ContractManagement from "@/pages/ContractManagement";
 import ContractView from "@/pages/ContractView";
-import NewContract from "@/pages/NewContract";
 import Insurance from "@/pages/Insurance";
 
 // Tools & Utilities
@@ -139,7 +138,7 @@ const AppRoutes = () => {
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
               
               {/* Sales */}
-              <Route path="/prospects" element={<ProspectsMinimal />} />
+              <Route path="/prospects" element={<Prospects />} />
               <Route path="/prospects/new" element={<NewProspect />} />
               <Route path="/prospect-dashboard" element={<ProspectDashboard />} />
               <Route path="/prospect/:id" element={<ProspectDetail />} />
@@ -201,7 +200,6 @@ const AppRoutes = () => {
               
               {/* Contracts & Insurance */}
               <Route path="/contracts" element={<ContractManagement />} />
-              <Route path="/contracts/new" element={<NewContract />} />
               <Route path="/contract/:id" element={<ContractView />} />
               <Route path="/insurance" element={<Insurance />} />
               

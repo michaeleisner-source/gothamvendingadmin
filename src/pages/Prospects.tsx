@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Building, MapPin, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toastSuccess, toastError } from "@/components/useToast";
+import { useToast } from "@/hooks/use-toast";
 
 interface Prospect {
   id: string;
@@ -46,14 +46,13 @@ export default function Prospects() {
     status: "NEW",
     notes: ""
   });
+  const { toast } = useToast();
 
   useEffect(() => {
-    console.log('Prospects component mounted');
     loadProspects();
   }, []);
 
   const loadProspects = async () => {
-    console.log('Loading prospects...');
     try {
       // Use 'leads' table which actually exists in the database
       const { data, error } = await supabase
@@ -61,7 +60,6 @@ export default function Prospects() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('Database response:', { data, error });
       if (error) throw error;
       // Map leads data to prospect interface
       const mappedData = (data || []).map(lead => ({
@@ -79,10 +77,13 @@ export default function Prospects() {
         notes: lead.notes,
         created_at: lead.created_at
       }));
-      console.log('Mapped prospects:', mappedData);
       setProspects(mappedData);
     } catch (error: any) {
-      toastError(`Error loading prospects: ${error.message}`);
+      toast({
+        title: "Error loading prospects",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -130,7 +131,10 @@ export default function Prospects() {
         
         if (error) throw error;
         
-        toastSuccess("Prospect has been updated successfully.");
+        toast({
+          title: "Prospect updated",
+          description: "Prospect has been updated successfully.",
+        });
       } else {
         // Map to leads table structure for insert
         const leadsData = {
@@ -155,14 +159,21 @@ export default function Prospects() {
         
         if (error) throw error;
         
-        toastSuccess("New prospect has been added successfully.");
+        toast({
+          title: "Prospect added",
+          description: "New prospect has been added successfully.",
+        });
       }
 
       setDialogOpen(false);
       resetForm();
       loadProspects();
     } catch (error: any) {
-      toastError(`Error saving prospect: ${error.message}`);
+      toast({
+        title: "Error saving prospect",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -197,11 +208,18 @@ export default function Prospects() {
 
       if (error) throw error;
 
-      toastSuccess("Prospect has been deleted successfully.");
+      toast({
+        title: "Prospect deleted",
+        description: "Prospect has been deleted successfully.",
+      });
 
       loadProspects();
     } catch (error: any) {
-      toastError(`Error deleting prospect: ${error.message}`);
+      toast({
+        title: "Error deleting prospect",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -215,11 +233,18 @@ export default function Prospects() {
 
       if (error) throw error;
 
-      toastSuccess(`${prospect.business_name} has been converted to a location.`);
+      toast({
+        title: "Prospect converted!",
+        description: `${prospect.business_name} has been converted to a location.`,
+      });
 
       loadProspects();
     } catch (error: any) {
-      toastError(`Error converting prospect: ${error.message}`);
+      toast({
+        title: "Error converting prospect",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
