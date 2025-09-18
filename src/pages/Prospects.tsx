@@ -54,13 +54,30 @@ export default function Prospects() {
 
   const loadProspects = async () => {
     try {
+      // Use 'leads' table which actually exists in the database
       const { data, error } = await supabase
-        .from('prospects')
+        .from('leads')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProspects(data || []);
+      // Map leads data to prospect interface
+      const mappedData = (data || []).map(lead => ({
+        id: lead.id,
+        business_name: lead.company || lead.name || 'Unknown Business',
+        contact_name: lead.name,
+        contact_email: lead.email,
+        contact_phone: lead.phone,
+        address_line1: lead.address,
+        city: lead.city,
+        state: lead.state,
+        postal_code: lead.zip_code,
+        traffic_daily_est: lead.estimated_foot_traffic,
+        status: lead.status || 'NEW',
+        notes: lead.notes,
+        created_at: lead.created_at
+      }));
+      setProspects(mappedData);
     } catch (error: any) {
       toast({
         title: "Error loading prospects",
@@ -92,9 +109,24 @@ export default function Prospects() {
       };
 
       if (editingProspect) {
+        // Map back to leads table structure for update
+        const leadsData = {
+          name: prospectData.contact_name,
+          company: prospectData.business_name,
+          email: prospectData.contact_email,
+          phone: prospectData.contact_phone,
+          address: prospectData.address_line1,
+          city: prospectData.city,
+          state: prospectData.state,
+          zip_code: prospectData.postal_code,
+          estimated_foot_traffic: prospectData.traffic_daily_est,
+          status: prospectData.status,
+          notes: prospectData.notes
+        };
+
         const { error } = await supabase
-          .from('prospects')
-          .update(prospectData)
+          .from('leads')
+          .update(leadsData)
           .eq('id', editingProspect.id);
         
         if (error) throw error;
@@ -104,9 +136,26 @@ export default function Prospects() {
           description: "Prospect has been updated successfully.",
         });
       } else {
+        // Map to leads table structure for insert
+        const leadsData = {
+          name: prospectData.contact_name,
+          company: prospectData.business_name,
+          email: prospectData.contact_email,
+          phone: prospectData.contact_phone,
+          address: prospectData.address_line1,
+          city: prospectData.city,
+          state: prospectData.state,
+          zip_code: prospectData.postal_code,
+          estimated_foot_traffic: prospectData.traffic_daily_est,
+          status: prospectData.status,
+          notes: prospectData.notes,
+          location_type: 'Office', // Default value required by table
+          contact_method: 'email' // Default value required by table
+        };
+
         const { error } = await supabase
-          .from('prospects')
-          .insert([prospectData]);
+          .from('leads')
+          .insert([leadsData]);
         
         if (error) throw error;
         
@@ -153,7 +202,7 @@ export default function Prospects() {
 
     try {
       const { error } = await supabase
-        .from('prospects')
+        .from('leads')
         .delete()
         .eq('id', id);
 
