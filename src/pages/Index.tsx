@@ -355,6 +355,18 @@ const Index = () => {
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" asChild>
+            <Link to="/cash-flow">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Cash Flow
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/low-stock">
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Low Stock
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link to="/sales">
               <Plus className="mr-2 h-4 w-4" />
               Quick Sale
@@ -465,9 +477,16 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-600">{stats.inventory.lowStockAlerts}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.inventory.outOfStockSlots} out of stock
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-muted-foreground">
+                {stats.inventory.outOfStockSlots} out of stock
+              </p>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/low-stock" className="text-xs">
+                  View Details →
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
