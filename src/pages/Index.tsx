@@ -25,6 +25,7 @@ import { RealtimeSalesWidget } from '@/components/sales/RealtimeSalesWidget';
 import { InventoryDashboardWidget } from '@/components/inventory/InventoryDashboardWidget';
 import { RouteOptimizerWidget } from '@/components/routes/RouteOptimizerWidget';
 import { MachineOpsWidget } from '@/components/machine-ops/MachineOpsWidget';
+import { FinancialDashboardWidget } from '@/components/finance/FinancialDashboardWidget';
 
 interface DashboardData {
   kpis: {
@@ -405,8 +406,9 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InventoryDashboardWidget />
             <RouteOptimizerWidget />
+            <MachineOpsWidget />
+            <FinancialDashboardWidget />
           </div>
-          <MachineOpsWidget />
           
           {/* Quick Actions */}
           <Card>
