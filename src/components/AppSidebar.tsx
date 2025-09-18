@@ -1,5 +1,4 @@
 import { Home, Users } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -25,12 +24,6 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "";
-
   return (
     <Sidebar>
       <SidebarContent>
@@ -41,14 +34,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end 
-                      className={({ isActive }) => getNavCls({ isActive })}
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
+                    <a href={item.url}>
+                      <item.icon />
                       <span>{item.title}</span>
-                    </NavLink>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
