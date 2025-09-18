@@ -1,4 +1,5 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { Home, Users } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -8,87 +9,52 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 
-const NAV = [
-  { title: 'Pipeline', items: [
-    { label: 'Leads',    path: '/leads' },
-    { label: 'Installs', path: '/installs' },
-  ]},
-  { title: 'Operations', items: [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Locations', path: '/locations' },
-    { label: 'Machines',  path: '/machines' },
-    { label: 'Products',  path: '/products' },
-    { label: 'Inventory', path: '/inventory' },
-    { label: 'Restock Entry', path: '/restock' },
-    { label: 'Routes', path: '/routes' },
-    { label: 'Contracts', path: '/contracts' },
-    { label: 'Cash Collection', path: '/cash' },
-    { label: 'Machine Health', path: '/maintenance/health' },
-    { label: 'POs',       path: '/purchase-orders' },
-    { label: 'Service',   path: '/service' },
-  ]},
-  { title: 'Sales & Reports', items: [
-    { label: 'Sales Detail',         path: '/sales' },
-    { label: 'Commissions',          path: '/commissions' },
-    { label: 'Commission Statements', path: '/commissions/statements' },
-    { label: 'Machine Performance',  path: '/reports/machines' },
-    { label: 'Product Performance',  path: '/reports/products' },
-    { label: 'Location Performance', path: '/reports/locations' },
-    { label: 'Trends',               path: '/reports/trends' },
-    { label: 'Stock-outs',           path: '/reports/stockouts' },
-    { label: 'Exports',              path: '/exports' },
-  ]},
-  { title: 'Admin', items: [
-    { label: 'Users & Roles', path: '/admin/users' },
-    { label: 'Payment Processors', path: '/admin/payment-processors' },
-    { label: 'Org Settings',  path: '/admin/settings' },
-    { label: 'Billing',       path: '/admin/billing' },
-  ]},
-  { title: 'Help', items: [
-    { label: 'Help Center', path: '/help' },
-    { label: 'Glossary',    path: '/help/glossary' },
-    { label: 'Changelog',   path: '/changelog' },
-  ]},
+const items = [
+  {
+    title: "Dashboard",
+    url: "/",
+    icon: Home,
+  },
+  {
+    title: "Leads",
+    url: "/leads",
+    icon: Users,
+  },
 ];
 
 export function AppSidebar() {
-  const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const isActive = (path: string) => currentPath === path;
-  
-  const getNavClassName = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "";
 
   return (
-    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+    <Sidebar>
       <SidebarContent>
-        {NAV.map((section) => {
-          return (
-            <SidebarGroup key={section.title}>
-              <SidebarGroupLabel className="text-xs text-muted-foreground uppercase tracking-wider">
-                {section.title}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {section.items.map((item) => (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.path} className={getNavClassName}>
-                          <span>{item.label}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          );
-        })}
+        <SidebarGroup>
+          <SidebarGroupLabel>Gotham Vending</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      end 
+                      className={({ isActive }) => getNavCls({ isActive })}
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
