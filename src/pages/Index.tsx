@@ -22,10 +22,11 @@ import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/comp
 import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
 import { StatCard } from "@/components/enhanced/StatCard";
 import { RealtimeSalesWidget } from '@/components/sales/RealtimeSalesWidget';
-import { InventoryDashboardWidget } from '@/components/inventory/InventoryDashboardWidget';
-import { RouteOptimizerWidget } from '@/components/routes/RouteOptimizerWidget';
-import { MachineOpsWidget } from '@/components/machine-ops/MachineOpsWidget';
-import { FinancialDashboardWidget } from '@/components/finance/FinancialDashboardWidget';
+import { InventoryDashboardWidget } from "@/components/inventory/InventoryDashboardWidget";
+import { RouteOptimizerWidget } from "@/components/routes/RouteOptimizerWidget";
+import { MachineOpsWidget } from "@/components/machine-ops/MachineOpsWidget";
+import { FinancialDashboardWidget } from "@/components/finance/FinancialDashboardWidget";
+import { AnalyticsDashboardWidget } from "@/components/analytics/AnalyticsDashboardWidget";
 
 interface DashboardData {
   kpis: {
@@ -402,13 +403,14 @@ const Index = () => {
           />
         </div>
         
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InventoryDashboardWidget />
-            <RouteOptimizerWidget />
-            <MachineOpsWidget />
-            <FinancialDashboardWidget />
-          </div>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InventoryDashboardWidget />
+              <RouteOptimizerWidget />
+              <MachineOpsWidget />
+              <FinancialDashboardWidget />
+              <AnalyticsDashboardWidget />
+            </div>
           
           {/* Quick Actions */}
           <Card>
