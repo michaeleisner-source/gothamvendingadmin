@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
 import Prospects from "@/pages/Prospects";
@@ -119,6 +120,7 @@ const AppRoutes = () => {
             <SidebarTrigger className="ml-2" />
             <h1 className="ml-4 font-semibold">Gotham Vending</h1>
           </header>
+          <Breadcrumbs />
           <main className="flex-1 p-4">
             <Routes>
               <Route path="/" element={<Index />} />
