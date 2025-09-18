@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "@/components/AppRoutes";
 import HelpBot from "@/components/HelpBot";
+import { ToastHost } from "@/lib/toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ function App() {
         <BrowserRouter>
           <AppRoutes />
           <HelpBot />
+          <ToastHost />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
