@@ -265,7 +265,12 @@ export function AppSidebar() {
                               {state !== "collapsed" && (
                                 <div className="flex items-center justify-between w-full">
                                   <span>{item.label}</span>
-                                  {(item.to === "/inventory" || item.to.includes("low-stock")) && lowCount > 0 && (
+                                  {item.to === "/alerts/low-stock" && lowCount > 0 && (
+                                    <span className="ml-2 inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-full bg-red-600 text-white">
+                                      {lowCount}
+                                    </span>
+                                  )}
+                                  {(item.to === "/inventory" && lowCount > 0) && (
                                     <Badge variant="destructive" className="ml-2 text-xs">
                                       {lowCount}
                                     </Badge>
