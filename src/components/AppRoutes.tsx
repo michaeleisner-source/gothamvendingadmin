@@ -21,8 +21,6 @@ import LocationPerformance from "@/pages/reports/LocationPerformance";
 import Trends from "@/pages/reports/Trends";
 import Stockouts from "@/pages/reports/Stockouts";
 import QALauncher from "@/pages/QALauncher";
-import QuickSeed from "@/pages/qa/QuickSeed";
-import SalesEntry from "@/pages/SalesEntry";
 import Prospects from "@/pages/Prospects";
 
 function Card({ title, children }: { title: string; children?: React.ReactNode }) {
@@ -77,7 +75,7 @@ export default function AppRoutes() {
         
         {/* Sales & Reporting */}
         <Route path="dashboard" element={<HomeDashboard />} />
-        <Route path="sales" element={<SalesEntry />} />
+        <Route path="sales" element={<Card title="Sales Entry">Sales entry functionality coming soon...</Card>} />
         <Route path="reports/machines" element={<MachineReports />} />
         <Route path="reports/products" element={<ProductReports />} />
         <Route path="reports/locations" element={<LocationPerformance />} />
@@ -99,7 +97,7 @@ export default function AppRoutes() {
         <Route path="qa" element={<QALauncher />} />
         <Route path="qa/overview" element={<Card title="QA Overview">QA Overview page coming soon...</Card>} />
         <Route path="qa/smoke" element={<Card title="QA Smoke Test">Smoke test coming soon...</Card>} />
-        <Route path="qa/seed" element={<QuickSeed />} />
+        <Route path="qa/seed" element={<Card title="Quick Seed">Data seeding coming soon...</Card>} />
       </Route>
 
       {/* 404 shows current path to help debugging */}
