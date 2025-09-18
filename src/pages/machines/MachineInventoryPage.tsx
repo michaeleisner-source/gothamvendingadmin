@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Minus, Plus } from "lucide-react";
+import { toastError, toastSuccess } from "@/components/useToast";
 
 type Row = {
   machine_id: string;
@@ -28,7 +29,7 @@ export default function MachineInventoryPage() {
     setLoading(true);
     const inv = await supabase.rpc("get_machine_inventory", { p_machine_id: machineId });
     if (inv.error) {
-      alert(inv.error.message);
+      toastError(inv.error.message);
       setLoading(false);
       return;
     }
@@ -46,11 +47,12 @@ export default function MachineInventoryPage() {
       p_slot_label: slot,
       p_delta: delta,
     });
-    if (error) return alert(error.message);
-    // apply client-side
-    setRows((rs) =>
-      rs.map((r) => (r.slot_label === slot ? { ...r, current_qty: data as number } : r))
-    );
+    if (error) {
+      toastError(error.message);
+      return;
+    }
+    setRows((rs) => rs.map((r) => (r.slot_label === slot ? { ...r, current_qty: data as number } : r)));
+    toastSuccess(`Adjusted ${slot} by ${delta > 0 ? "+" : ""}${delta}`);
   }
 
   async function setQty(slot: string, qty: number) {
@@ -60,10 +62,12 @@ export default function MachineInventoryPage() {
       p_slot_label: slot,
       p_qty: qty,
     });
-    if (error) return alert(error.message);
-    setRows((rs) =>
-      rs.map((r) => (r.slot_label === slot ? { ...r, current_qty: data as number } : r))
-    );
+    if (error) {
+      toastError(error.message);
+      return;
+    }
+    setRows((rs) => rs.map((r) => (r.slot_label === slot ? { ...r, current_qty: data as number } : r)));
+    toastSuccess(`Set ${slot} to ${qty}`);
   }
 
   const getStockStatus = (currentQty: number, threshold: number) => {
