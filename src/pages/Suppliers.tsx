@@ -70,8 +70,77 @@ export default function Suppliers() {
           <CardTitle>Supplier Directory</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Supplier management dashboard coming soon...
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <input 
+                type="text" 
+                placeholder="Search suppliers..." 
+                className="px-3 py-2 border rounded-md w-64"
+              />
+              <Button variant="outline">Contact All</Button>
+            </div>
+            
+            <div className="overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Supplier</th>
+                    <th className="text-left py-2">Contact</th>
+                    <th className="text-left py-2">Products</th>
+                    <th className="text-left py-2">Monthly Orders</th>
+                    <th className="text-left py-2">Payment Terms</th>
+                    <th className="text-left py-2">Rating</th>
+                    <th className="text-left py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-2">Coca-Cola Company</td>
+                    <td className="py-2">sales@cocacola.com</td>
+                    <td className="py-2">45</td>
+                    <td className="py-2">$5,600</td>
+                    <td className="py-2">Net 30</td>
+                    <td className="py-2">★★★★★</td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Contact</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">PepsiCo</td>
+                    <td className="py-2">orders@pepsi.com</td>
+                    <td className="py-2">38</td>
+                    <td className="py-2">$4,200</td>
+                    <td className="py-2">Net 45</td>
+                    <td className="py-2">★★★★☆</td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Contact</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">Mars Snackfood</td>
+                    <td className="py-2">supply@mars.com</td>
+                    <td className="py-2">22</td>
+                    <td className="py-2">$2,100</td>
+                    <td className="py-2">Net 30</td>
+                    <td className="py-2">★★★★★</td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Contact</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">Frito-Lay</td>
+                    <td className="py-2">vending@fritolay.com</td>
+                    <td className="py-2">31</td>
+                    <td className="py-2">$3,800</td>
+                    <td className="py-2">Net 30</td>
+                    <td className="py-2">★★★★☆</td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Contact</Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

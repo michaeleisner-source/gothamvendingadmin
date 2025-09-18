@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Plus, Package, AlertTriangle, TrendingDown } from "lucide-react";
 
 export default function Inventory() {
@@ -13,7 +14,7 @@ export default function Inventory() {
         </div>
         <Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Start Restock
+          <Link to="/restock-entry">Start Restock</Link>
         </Button>
       </div>
 
@@ -70,8 +71,72 @@ export default function Inventory() {
           <CardTitle>Inventory Overview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Inventory management dashboard coming soon...
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                className="px-3 py-2 border rounded-md w-64"
+              />
+              <Button variant="outline">Export</Button>
+            </div>
+            
+            <div className="overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Product</th>
+                    <th className="text-left py-2">Machine</th>
+                    <th className="text-left py-2">Current Stock</th>
+                    <th className="text-left py-2">Reorder Point</th>
+                    <th className="text-left py-2">Status</th>
+                    <th className="text-left py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-2">Coca-Cola Classic</td>
+                    <td className="py-2">VM-001 Corporate</td>
+                    <td className="py-2">8</td>
+                    <td className="py-2">12</td>
+                    <td className="py-2"><span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Low Stock</span></td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Restock</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">Pepsi</td>
+                    <td className="py-2">VM-002 Hospital</td>
+                    <td className="py-2">0</td>
+                    <td className="py-2">10</td>
+                    <td className="py-2"><span className="px-2 py-1 bg-red-600 text-white rounded text-xs">Out of Stock</span></td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Urgent Restock</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">Snickers Bar</td>
+                    <td className="py-2">VM-003 Office</td>
+                    <td className="py-2">25</td>
+                    <td className="py-2">15</td>
+                    <td className="py-2"><span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">In Stock</span></td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">View</Button>
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2">Dasani Water</td>
+                    <td className="py-2">VM-004 University</td>
+                    <td className="py-2">5</td>
+                    <td className="py-2">8</td>
+                    <td className="py-2"><span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Low Stock</span></td>
+                    <td className="py-2">
+                      <Button variant="outline" size="sm">Restock</Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>
