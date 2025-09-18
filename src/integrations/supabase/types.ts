@@ -3323,6 +3323,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      create_draft_po_for_low_stock: {
+        Args: { p_note?: string; p_supplier_id: string }
+        Returns: string
+      }
       create_po_with_items: {
         Args: { p_items: Json; p_supplier_id: string }
         Returns: string
