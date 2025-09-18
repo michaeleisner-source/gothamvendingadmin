@@ -22,6 +22,7 @@ import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/comp
 import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
 import { StatCard } from "@/components/enhanced/StatCard";
 import { InventoryDashboardWidget } from "@/components/inventory/InventoryDashboardWidget";
+import { RouteOptimizerWidget } from "@/components/routes/RouteOptimizerWidget";
 
 interface DashboardData {
   kpis: {
@@ -401,6 +402,9 @@ const Index = () => {
         <div className="space-y-6">
           {/* Inventory Widget */}
           <InventoryDashboardWidget />
+          
+          {/* Route Optimizer Widget */}
+          <RouteOptimizerWidget />
           
           {/* Quick Actions */}
           <Card>
