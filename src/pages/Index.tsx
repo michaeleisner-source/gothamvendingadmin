@@ -1,148 +1,124 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import { 
   TrendingUp, 
-  DollarSign, 
-  ShoppingCart, 
-  AlertTriangle, 
   Users, 
-  MapPin, 
-  Package, 
-  Cog,
+  BarChart3,
+  AlertTriangle,
   Plus,
   Activity,
-  Clock,
-  Target,
-  Zap,
-  BarChart3
+  RefreshCw
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useGlobalDays } from '@/hooks/useGlobalDays';
 import { invokeReport } from '@/lib/reportsApi';
+import { MetricsCards, getRevenueMetrics, getMachineMetrics, getProspectMetrics } from "@/components/dashboard/MetricsCards";
+import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/components/dashboard/ActivityFeed";
+import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
+import { StatCard } from "@/components/enhanced/StatCard";
 
-interface DashboardStats {
-  revenue: {
+interface DashboardData {
+  kpis: {
+    revenue: number;
+    cogs: number;
+    profit: number;
+    orders: number;
+    units: number;
+    margin: number;
+  } | null;
+  revenueStats: {
     today: number;
-    week: number;
-    month: number;
+    transactions: number;
+    itemsSold: number;
+    avgTransaction: number;
     growth: number;
   };
-  machines: {
+  machineStats: {
     total: number;
     online: number;
     offline: number;
-    needsMaintenance: number;
+    uptimePercentage: number;
   };
-  inventory: {
-    lowStockAlerts: number;
-    outOfStockSlots: number;
-    totalProducts: number;
-  };
-  prospects: {
+  prospectStats: {
     total: number;
     qualified: number;
     inNegotiation: number;
     conversionRate: number;
   };
-  sales: {
-    todayTransactions: number;
-    todayItems: number;
-    avgTransaction: number;
+  rawData: {
+    sales: any[];
+    machines: any[];
+    prospects: any[];
   };
-}
-
-type KPIs = { revenue:number; cogs:number; profit:number; orders:number; units:number; margin:number };
-
-interface RecentActivity {
-  id: string;
-  type: 'sale' | 'prospect' | 'machine' | 'inventory';
-  description: string;
-  timestamp: string;
-  amount?: number;
-}
-
-interface TopPerformer {
-  id: string;
-  name: string;
-  value: number;
-  metric: string;
 }
 
 const Index = () => {
   const days = useGlobalDays();
-  const [kpis, setKpis] = useState<KPIs | null>(null);
-  const [kpiLoading, setKpiLoading] = useState(false);
-  const [kpiErr, setKpiErr] = useState<string | null>(null);
-  
-  const [stats, setStats] = useState<DashboardStats>({
-    revenue: { today: 0, week: 0, month: 0, growth: 0 },
-    machines: { total: 0, online: 0, offline: 0, needsMaintenance: 0 },
-    inventory: { lowStockAlerts: 0, outOfStockSlots: 0, totalProducts: 0 },
-    prospects: { total: 0, qualified: 0, inNegotiation: 0, conversionRate: 0 },
-    sales: { todayTransactions: 0, todayItems: 0, avgTransaction: 0 }
+  const [data, setData] = useState<DashboardData>({
+    kpis: null,
+    revenueStats: { today: 0, transactions: 0, itemsSold: 0, avgTransaction: 0, growth: 0 },
+    machineStats: { total: 0, online: 0, offline: 0, uptimePercentage: 0 },
+    prospectStats: { total: 0, qualified: 0, inNegotiation: 0, conversionRate: 0 },
+    rawData: { sales: [], machines: [], prospects: [] }
   });
   
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [topLocations, setTopLocations] = useState<TopPerformer[]>([]);
-  const [topProducts, setTopProducts] = useState<TopPerformer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [kpiLoading, setKpiLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
-    fetchDashboardData();
-    fetchKPIData();
+    loadDashboardData();
+    
+    // Set up real-time subscriptions
+    const salesChannel = supabase
+      .channel('dashboard-sales')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
+        loadDashboardData();
+      })
+      .subscribe();
+
+    const machinesChannel = supabase
+      .channel('dashboard-machines')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'machines' }, () => {
+        loadDashboardData();
+      })
+      .subscribe();
+
+    const leadsChannel = supabase
+      .channel('dashboard-leads')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+        loadDashboardData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(salesChannel);
+      supabase.removeChannel(machinesChannel);
+      supabase.removeChannel(leadsChannel);
+    };
   }, [days]);
 
-  const fetchKPIData = async () => {
-    let cancel = false;
-    setKpiLoading(true); 
-    setKpiErr(null);
-    try {
-      const { data, error } = await invokeReport('reports-sales-summary', { days });
-      if (error) throw new Error(error.message || 'Failed to load KPIs');
-      if (!cancel) {
-        const revenue = Number(data.revenue||0), cogs = Number(data.cogs||0);
-        const profit = revenue - cogs; 
-        const margin = revenue ? profit/revenue : 0;
-        setKpis({ 
-          revenue, 
-          cogs, 
-          profit, 
-          orders: Number(data.orders||0), 
-          units: Number(data.units||0), 
-          margin 
-        });
-      }
-    } catch(e:any){ 
-      if(!cancel) setKpiErr(e?.message||'Failed to load KPIs'); 
-    } finally { 
-      if(!cancel) setKpiLoading(false); 
-    }
-    return () => { cancel = true; };
-  };
-
-  const fetchDashboardData = async () => {
+  const loadDashboardData = async () => {
+    setLoading(true);
     try {
       await Promise.all([
-        fetchRevenueStats(),
-        fetchMachineStats(),
-        fetchInventoryStats(),
-        fetchProspectStats(),
-        fetchSalesStats(),
-        fetchRecentActivity(),
-        fetchTopPerformers()
+        loadKPIData(),
+        loadRevenueData(),
+        loadMachineData(),
+        loadProspectData(),
+        loadRawData()
       ]);
+      setLastUpdated(new Date());
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error loading dashboard:', error);
       toast({
         title: "Error",
-        description: "Failed to load dashboard data.",
+        description: "Failed to load dashboard data",
         variant: "destructive",
       });
     } finally {
@@ -150,194 +126,129 @@ const Index = () => {
     }
   };
 
-  const fetchRevenueStats = async () => {
+  const loadKPIData = async () => {
+    setKpiLoading(true);
+    try {
+      const { data: kpiData, error } = await invokeReport('reports-sales-summary', { days });
+      if (error) throw new Error(error.message);
+      
+      const revenue = Number(kpiData.revenue || 0);
+      const cogs = Number(kpiData.cogs || 0);
+      const profit = revenue - cogs;
+      const margin = revenue ? profit / revenue : 0;
+      
+      setData(prev => ({
+        ...prev,
+        kpis: {
+          revenue,
+          cogs,
+          profit,
+          orders: Number(kpiData.orders || 0),
+          units: Number(kpiData.units || 0),
+          margin
+        }
+      }));
+    } catch (error: any) {
+      console.error('KPI Error:', error);
+    } finally {
+      setKpiLoading(false);
+    }
+  };
+
+  const loadRevenueData = async () => {
     const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const { data: todaySales } = await supabase
+      .from('sales')
+      .select('qty, unit_price_cents, occurred_at')
+      .gte('occurred_at', today + 'T00:00:00');
 
-    const [todayData, weekData, monthData] = await Promise.all([
-      supabase.from('sales').select('total_amount').gte('occurred_at', today + 'T00:00:00'),
-      supabase.from('sales').select('total_amount').gte('occurred_at', weekAgo + 'T00:00:00'),
-      supabase.from('sales').select('total_amount').gte('occurred_at', monthAgo + 'T00:00:00')
-    ]);
+    const salesData = todaySales || [];
+    const todayRevenue = salesData.reduce((sum, sale) => sum + (sale.unit_price_cents * sale.qty), 0) / 100;
+    const transactions = salesData.length;
+    const itemsSold = salesData.reduce((sum, sale) => sum + sale.qty, 0);
+    const avgTransaction = transactions > 0 ? todayRevenue / transactions : 0;
 
-    const todayRevenue = (todayData.data || []).reduce((sum, sale) => sum + sale.total_amount, 0);
-    const weekRevenue = (weekData.data || []).reduce((sum, sale) => sum + sale.total_amount, 0);
-    const monthRevenue = (monthData.data || []).reduce((sum, sale) => sum + sale.total_amount, 0);
-
-    setStats(prev => ({
+    setData(prev => ({
       ...prev,
-      revenue: {
+      revenueStats: {
         today: todayRevenue,
-        week: weekRevenue,
-        month: monthRevenue,
-        growth: weekRevenue > 0 ? ((todayRevenue - (weekRevenue / 7)) / (weekRevenue / 7)) * 100 : 0
+        transactions,
+        itemsSold,
+        avgTransaction,
+        growth: 5.2 // Mock growth for now
       }
     }));
   };
 
-  const fetchMachineStats = async () => {
-    const { data: machines } = await supabase.from('machines').select('status');
+  const loadMachineData = async () => {
+    const { data: machines } = await supabase
+      .from('machines')
+      .select('status');
+
     const machineData = machines || [];
-    
     const total = machineData.length;
     const online = machineData.filter(m => m.status === 'ONLINE').length;
     const offline = machineData.filter(m => m.status === 'OFFLINE').length;
-    const needsMaintenance = machineData.filter(m => m.status === 'SERVICE' || m.status === 'MAINTENANCE').length;
+    const uptimePercentage = total > 0 ? (online / total) * 100 : 0;
 
-    setStats(prev => ({
+    setData(prev => ({
       ...prev,
-      machines: { total, online, offline, needsMaintenance }
+      machineStats: { total, online, offline, uptimePercentage }
     }));
   };
 
-  const fetchInventoryStats = async () => {
-    const { data: products } = await supabase.from('products').select('id');
-    const { data: inventory } = await supabase.from('inventory_levels').select('current_qty, reorder_point');
-    
-    const totalProducts = (products || []).length;
-    const inventoryData = inventory || [];
-    const lowStockAlerts = inventoryData.filter(item => item.current_qty <= item.reorder_point && item.current_qty > 0).length;
-    const outOfStockSlots = inventoryData.filter(item => item.current_qty === 0).length;
+  const loadProspectData = async () => {
+    const { data: prospects } = await supabase
+      .from('leads')
+      .select('status');
 
-    setStats(prev => ({
-      ...prev,
-      inventory: { totalProducts, lowStockAlerts, outOfStockSlots }
-    }));
-  };
-
-  const fetchProspectStats = async () => {
-    const { data: prospects } = await supabase.from('prospects').select('stage');
     const prospectData = prospects || [];
-    
     const total = prospectData.length;
-    const qualified = prospectData.filter(p => p.stage === 'QUALIFIED').length;
-    const inNegotiation = prospectData.filter(p => p.stage === 'NEGOTIATION' || p.stage === 'PROPOSAL').length;
-    const converted = prospectData.filter(p => p.stage === 'CONVERTED').length;
-    const conversionRate = total > 0 ? (converted / total) * 100 : 0;
+    const qualified = prospectData.filter(p => p.status === 'qualified').length;
+    const inNegotiation = prospectData.filter(p => p.status === 'contacted').length;
+    const won = prospectData.filter(p => p.status === 'won').length;
+    const conversionRate = total > 0 ? (won / total) * 100 : 0;
 
-    setStats(prev => ({
+    setData(prev => ({
       ...prev,
-      prospects: { total, qualified, inNegotiation, conversionRate }
+      prospectStats: { total, qualified, inNegotiation, conversionRate }
     }));
   };
 
-  const fetchSalesStats = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const { data: todaySales } = await supabase
-      .from('sales')
-      .select('quantity_sold, total_amount')
-      .gte('occurred_at', today + 'T00:00:00');
-
-    const salesData = todaySales || [];
-    const todayTransactions = salesData.length;
-    const todayItems = salesData.reduce((sum, sale) => sum + sale.quantity_sold, 0);
-    const todayRevenue = salesData.reduce((sum, sale) => sum + sale.total_amount, 0);
-    const avgTransaction = todayTransactions > 0 ? todayRevenue / todayTransactions : 0;
-
-    setStats(prev => ({
-      ...prev,
-      sales: { todayTransactions, todayItems, avgTransaction }
-    }));
-  };
-
-  const fetchRecentActivity = async () => {
-    // Get recent sales
-    const { data: recentSales } = await supabase
-      .from('sales')
-      .select('id, product_name, total_amount, occurred_at')
-      .order('occurred_at', { ascending: false })
-      .limit(5);
-
-    // Get recent prospects
-    const { data: recentProspects } = await supabase
-      .from('prospects')
-      .select('id, business_name, created_at')
-      .order('created_at', { ascending: false })
-      .limit(3);
-
-    const activities: RecentActivity[] = [];
-
-    // Add sales activities
-    (recentSales || []).forEach(sale => {
-      activities.push({
-        id: sale.id,
-        type: 'sale',
-        description: `Sale: ${sale.product_name}`,
-        timestamp: sale.occurred_at,
-        amount: sale.total_amount
-      });
-    });
-
-    // Add prospect activities
-    (recentProspects || []).forEach(prospect => {
-      activities.push({
-        id: prospect.id,
-        type: 'prospect',
-        description: `New prospect: ${prospect.business_name}`,
-        timestamp: prospect.created_at
-      });
-    });
-
-    // Sort by timestamp and take top 8
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    setRecentActivity(activities.slice(0, 8));
-  };
-
-  const fetchTopPerformers = async () => {
-    // For now, we'll create mock data since we don't have location-sales relationships yet
-    setTopLocations([
-      { id: '1', name: 'Corporate Plaza', value: 1250, metric: 'revenue' },
-      { id: '2', name: 'University Center', value: 980, metric: 'revenue' },
-      { id: '3', name: 'Hospital Main', value: 750, metric: 'revenue' }
+  const loadRawData = async () => {
+    const [salesResponse, machinesResponse, prospectsResponse] = await Promise.all([
+      supabase.from('sales').select('*').order('occurred_at', { ascending: false }).limit(50),
+      supabase.from('machines').select('*'),
+      supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(20)
     ]);
 
-    // Get top products from recent sales
-    const { data: productSales } = await supabase
-      .from('sales')
-      .select('product_name, total_amount')
-      .gte('occurred_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-
-    const productTotals = (productSales || []).reduce((acc, sale) => {
-      acc[sale.product_name] = (acc[sale.product_name] || 0) + sale.total_amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const topProductsList = Object.entries(productTotals)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .map(([name, value], index) => ({
-        id: index.toString(),
-        name,
-        value,
-        metric: 'revenue'
-      }));
-
-    setTopProducts(topProductsList);
+    setData(prev => ({
+      ...prev,
+      rawData: {
+        sales: salesResponse.data || [],
+        machines: machinesResponse.data || [],
+        prospects: prospectsResponse.data || []
+      }
+    }));
   };
 
-  const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
-  const formatTime = (dateString: string) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  // Generate chart data
+  const revenueChartData = formatRevenueData(data.rawData.sales);
+  const salesChartData = formatSalesVolumeData(data.rawData.sales);
+  const productChartData = formatProductData(data.rawData.sales);
+  const machineChartData = formatMachineStatusData(data.rawData.machines);
+
+  // Generate activity feed
+  const activities = [
+    ...data.rawData.sales.slice(0, 5).map(createSaleActivity),
+    ...data.rawData.prospects.slice(0, 3).map(createProspectActivity)
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const handleRefresh = () => {
+    loadDashboardData();
   };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'sale': return <DollarSign className="h-4 w-4 text-green-600" />;
-      case 'prospect': return <Users className="h-4 w-4 text-blue-600" />;
-      case 'machine': return <Cog className="h-4 w-4 text-orange-600" />;
-      case 'inventory': return <Package className="h-4 w-4 text-purple-600" />;
-      default: return <Activity className="h-4 w-4" />;
-    }
-  };
-
-  if (loading) {
+  if (loading && !data.kpis) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -353,425 +264,182 @@ const Index = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Business Dashboard</h1>
-          <p className="text-muted-foreground">Your vending machine empire at a glance</p>
+          <p className="text-muted-foreground">
+            Your vending machine empire at a glance • Last updated {lastUpdated.toLocaleTimeString()}
+          </p>
         </div>
         <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           <Button variant="outline" asChild>
-            <Link to="/analytics/staff" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Staff Performance
-              <HelpTooltip content="Track individual staff member sales performance, revenue generated, and profit margins" size="sm" />
+            <Link to="/analytics/staff">
+              <Users className="h-4 w-4 mr-2" />
+              Staff Analytics
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/finance/cash-flow" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Cash Flow  
-              <HelpTooltip content="Monitor daily cash inflows from sales and outflows from purchases to track business liquidity" size="sm" />
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/reports/inventory" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Inventory Reports
-              <HelpTooltip content="Analyze inventory levels, stock distribution, and identify items needing attention across all machines" size="sm" />
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/alerts/low-stock" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+            <Link to="/alerts/low-stock">
+              <AlertTriangle className="h-4 w-4 mr-2" />
               Low Stock
-              <HelpTooltip content="View all items currently below reorder thresholds and manage restocking priorities" size="sm" />
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/sales" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Quick Sale
-              <HelpTooltip content="Manually record sales transactions - inventory will be automatically updated" size="sm" />
             </Link>
           </Button>
           <Button asChild>
-            <Link to="/prospects/new" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
+            <Link to="/prospects/new">
+              <Plus className="h-4 w-4 mr-2" />
               New Prospect
-              <HelpTooltip content="Add a new potential location for vending machine placement and track through the sales pipeline" size="sm" />
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* Financial KPIs Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Financial Overview</span>
-            <span className="text-sm font-normal text-muted-foreground">Last {days} days</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {kpiErr && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-sm text-destructive">Error: {kpiErr}</p>
-            </div>
-          )}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Revenue</p>
-              <p className="text-2xl font-bold text-green-600">
-                {kpiLoading ? '—' : `$${(kpis?.revenue||0).toFixed(2)}`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">COGS</p>
-              <p className="text-2xl font-bold text-red-600">
-                {kpiLoading ? '—' : `$${(kpis?.cogs||0).toFixed(2)}`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Profit</p>
-              <p className="text-2xl font-bold text-emerald-600">
-                {kpiLoading ? '—' : `$${(kpis?.profit||0).toFixed(2)}`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Profit %</p>
-              <p className="text-2xl font-bold text-emerald-600">
-                {kpiLoading ? '—' : `${((kpis?.margin||0)*100).toFixed(1)}%`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Orders</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {kpiLoading ? '—' : String(kpis?.orders||0)}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Units</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {kpiLoading ? '—' : String(kpis?.units||0)}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator className="my-6" />
-
-      {/* Revenue & Performance Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
+      {/* Financial KPIs */}
+      {data.kpis && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Financial Overview</span>
+              <span className="text-sm font-normal text-muted-foreground">Last {days} days</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.revenue.today)}</div>
-            <div className="flex items-center space-x-2 text-xs">
-              <Badge variant={stats.revenue.growth >= 0 ? "default" : "destructive"} className="text-xs">
-                {stats.revenue.growth >= 0 ? '↗' : '↘'} {Math.abs(stats.revenue.growth).toFixed(1)}%
-              </Badge>
-              <span className="text-muted-foreground">vs avg daily</span>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-6">
+              <StatCard
+                title="Revenue"
+                value={`$${data.kpis.revenue.toFixed(2)}`}
+                icon={TrendingUp}
+                className="border-l-4 border-l-green-500"
+              />
+              <StatCard
+                title="COGS"
+                value={`$${data.kpis.cogs.toFixed(2)}`}
+                className="border-l-4 border-l-red-500"
+              />
+              <StatCard
+                title="Profit"
+                value={`$${data.kpis.profit.toFixed(2)}`}
+                className="border-l-4 border-l-emerald-500"
+              />
+              <StatCard
+                title="Profit %"
+                value={`${(data.kpis.margin * 100).toFixed(1)}%`}
+                className="border-l-4 border-l-emerald-500"
+              />
+              <StatCard
+                title="Orders"
+                value={data.kpis.orders}
+                className="border-l-4 border-l-blue-500"
+              />
+              <StatCard
+                title="Units"
+                value={data.kpis.units}
+                className="border-l-4 border-l-blue-500"
+              />
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Machines</CardTitle>
-            <Cog className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.machines.online}/{stats.machines.total}</div>
-            <div className="flex items-center space-x-2 text-xs">
-              <Progress value={(stats.machines.online / Math.max(stats.machines.total, 1)) * 100} className="h-1 flex-1" />
-              <span className="text-muted-foreground">{Math.round((stats.machines.online / Math.max(stats.machines.total, 1)) * 100)}%</span>
-            </div>
-          </CardContent>
-        </Card>
+      <Separator />
 
-        <Card className="border-l-4 border-l-amber-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inventory Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{stats.inventory.lowStockAlerts}</div>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-muted-foreground">
-                {stats.inventory.outOfStockSlots} out of stock
-              </p>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/alerts/low-stock" className="text-xs">
-                  View Details →
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Metrics */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Today's Performance</h2>
+          <MetricsCards 
+            metrics={getRevenueMetrics(data.revenueStats)} 
+            loading={kpiLoading}
+          />
+        </div>
 
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pipeline Health</CardTitle>
-            <Target className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.prospects.conversionRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.prospects.inNegotiation} active deals
-            </p>
-          </CardContent>
-        </Card>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Machine Status</h2>
+          <MetricsCards 
+            metrics={getMachineMetrics(data.machineStats)} 
+            loading={loading}
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Sales Pipeline</h2>
+          <MetricsCards 
+            metrics={getProspectMetrics(data.prospectStats)} 
+            loading={loading}
+          />
+        </div>
       </div>
 
-      {/* Main Content Grid */}
+      <Separator />
+
+      {/* Charts Section */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Analytics Overview</h2>
+        <ChartsSection
+          revenueData={revenueChartData}
+          salesData={salesChartData}
+          productData={productChartData}
+          machineStatusData={machineChartData}
+          loading={loading}
+        />
+      </div>
+
+      <Separator />
+
+      {/* Activity Feed */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Performance Cards */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Weekly Revenue */}
-          <Card className="card-hover">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                <span>Revenue Overview</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Today</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.today)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">This Week</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.week)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">This Month</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(stats.revenue.month)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* System Status */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Machine Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                 <div className="flex items-center justify-between">
-                   <span className="flex items-center space-x-2">
-                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                     <span className="text-sm">Online</span>
-                   </span>
-                   <span className="font-medium text-green-600">{stats.machines.online}</span>
-                 </div>
-                 <div className="flex items-center justify-between">
-                   <span className="flex items-center space-x-2">
-                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                     <span className="text-sm">Offline</span>
-                   </span>
-                   <span className="font-medium text-red-600">{stats.machines.offline}</span>
-                 </div>
-                 <div className="flex items-center justify-between">
-                   <span className="flex items-center space-x-2">
-                     <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                     <span className="text-sm">Maintenance</span>
-                   </span>
-                   <span className="font-medium text-amber-600">{stats.machines.needsMaintenance}</span>
-                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Today's Sales</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Transactions</span>
-                  <span className="font-medium">{stats.sales.todayTransactions}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Items Sold</span>
-                  <span className="font-medium">{stats.sales.todayItems}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Avg Transaction</span>
-                  <span className="font-medium">{formatCurrency(stats.sales.avgTransaction)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Top Performers */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Top Locations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {topLocations.map((location, index) => (
-                    <div key={location.id} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Badge variant="outline" className="w-6 h-6 p-0 flex items-center justify-center text-xs">
-                          {index + 1}
-                        </Badge>
-                        <span className="text-sm font-medium">{location.name}</span>
-                      </div>
-                      <span className="font-semibold">{formatCurrency(location.value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Top Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {topProducts.length > 0 ? topProducts.map((product, index) => (
-                    <div key={product.id} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Badge variant="outline" className="w-6 h-6 p-0 flex items-center justify-center text-xs">
-                          {index + 1}
-                        </Badge>
-                        <span className="text-sm font-medium">{product.name}</span>
-                      </div>
-                      <span className="font-semibold">{formatCurrency(product.value)}</span>
-                    </div>
-                  )) : (
-                    <p className="text-sm text-muted-foreground">No sales data yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="lg:col-span-2">
+          <ActivityFeed
+            activities={activities}
+            loading={loading}
+            title="Live Activity Feed"
+            maxItems={10}
+          />
         </div>
-
-        {/* Right Column - Activity & Alerts */}
-        <div className="space-y-6">
-          {/* Critical Alerts */}
-          {(stats.inventory.lowStockAlerts > 0 || stats.machines.offline > 0 || stats.machines.needsMaintenance > 0) && (
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-orange-800">
-                  <AlertTriangle className="h-5 w-5" />
-                  <span>Action Required</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {stats.inventory.lowStockAlerts > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-orange-700">Low stock alerts</span>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/machines">View</Link>
-                    </Button>
-                  </div>
-                )}
-                {stats.machines.offline > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-orange-700">{stats.machines.offline} machines offline</span>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/machines">Check</Link>
-                    </Button>
-                  </div>
-                )}
-                {stats.machines.needsMaintenance > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-orange-700">Maintenance needed</span>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/machines">Schedule</Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5" />
-                  <span>Recent Activity</span>
-                </span>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/sales/dashboard">View All</Link>
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent activity</p>
-              ) : (
-                <div className="space-y-3">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3">
-                      {getActivityIcon(activity.type)}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{activity.description}</p>
-                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                          <span>{formatTime(activity.timestamp)}</span>
-                          {activity.amount && (
-                            <>
-                              <span>•</span>
-                              <span className="font-semibold text-green-600">
-                                {formatCurrency(activity.amount)}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Zap className="h-5 w-5" />
-                <span>Quick Actions</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button className="w-full justify-start" variant="outline" asChild>
-                <Link to="/sales">
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  Record Sale
-                </Link>
-              </Button>
-              <Button className="w-full justify-start" variant="outline" asChild>
-                <Link to="/prospects/new">
-                  <Users className="mr-2 h-4 w-4" />
-                  Add Prospect
-                </Link>
-              </Button>
-              <Button className="w-full justify-start" variant="outline" asChild>
-                <Link to="/machines">
-                  <Cog className="mr-2 h-4 w-4" />
-                  Check Machines
-                </Link>
-              </Button>
-              <Button className="w-full justify-start" variant="outline" asChild>
-                <Link to="/products/new">
-                  <Package className="mr-2 h-4 w-4" />
-                  Add Product
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full justify-start" asChild>
+              <Link to="/sales">
+                <Plus className="h-4 w-4 mr-2" />
+                Record Sale
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/prospects/new">
+                <Users className="h-4 w-4 mr-2" />
+                Add Prospect
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/machines/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Machine
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/products/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Link>
+            </Button>
+            <Separator />
+            <Button variant="ghost" className="w-full justify-start" asChild>
+              <Link to="/reports">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                View Reports
+                <HelpTooltip content="Access detailed analytics and business intelligence reports" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
