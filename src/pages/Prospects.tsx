@@ -46,7 +46,6 @@ export default function Prospects() {
     status: "NEW",
     notes: ""
   });
-  
 
   useEffect(() => {
     loadProspects();
