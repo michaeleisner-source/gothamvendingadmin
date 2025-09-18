@@ -1,4 +1,5 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -104,7 +105,24 @@ import CashFlow from "@/pages/CashFlow";
 import StaffPerformance from "@/pages/StaffPerformance";
 import InventoryHealth from "@/pages/InventoryHealth";
 
+// Simple redirect component for auth page in demo mode
+const AuthRedirect = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    console.log("AuthRedirect component mounted, redirecting to home...");
+    navigate("/", { replace: true });
+  }, [navigate]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  );
+};
+
 const AppRoutes = () => {
+  console.log("AppRoutes component rendering");
 
   // Main app layout for all other routes
   return (
@@ -128,7 +146,7 @@ const AppRoutes = () => {
               <Route path="/" element={<Index />} />
               
               {/* Redirect auth page to home in demo mode */}
-              <Route path="/auth" element={<Navigate to="/" replace />} />
+              <Route path="/auth" element={<AuthRedirect />} />
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
