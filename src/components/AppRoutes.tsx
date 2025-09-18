@@ -103,9 +103,6 @@ import OpsConsole from "@/pages/ops/OpsConsole";
 const AppRoutes = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
-  
-  console.log("AppRoutes rendering - Current path:", location.pathname);
-  console.log("Is auth page:", isAuthPage);
 
   // During development - bypass authentication
   if (isAuthPage) {
