@@ -48,10 +48,12 @@ export default function Prospects() {
   });
 
   useEffect(() => {
+    console.log('Prospects component mounted');
     loadProspects();
   }, []);
 
   const loadProspects = async () => {
+    console.log('Loading prospects...');
     try {
       // Use 'leads' table which actually exists in the database
       const { data, error } = await supabase
@@ -59,6 +61,7 @@ export default function Prospects() {
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Database response:', { data, error });
       if (error) throw error;
       // Map leads data to prospect interface
       const mappedData = (data || []).map(lead => ({
@@ -76,6 +79,7 @@ export default function Prospects() {
         notes: lead.notes,
         created_at: lead.created_at
       }));
+      console.log('Mapped prospects:', mappedData);
       setProspects(mappedData);
     } catch (error: any) {
       toastError(`Error loading prospects: ${error.message}`);
