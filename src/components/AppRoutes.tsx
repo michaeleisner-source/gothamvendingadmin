@@ -105,13 +105,6 @@ import StaffPerformance from "@/pages/StaffPerformance";
 import InventoryHealth from "@/pages/InventoryHealth";
 
 const AppRoutes = () => {
-  const location = useLocation();
-  const isAuthPage = location.pathname === "/auth";
-
-  // Auth page with simple layout
-  if (isAuthPage) {
-    return <Auth />;
-  }
 
   // Main app layout for all other routes
   return (
