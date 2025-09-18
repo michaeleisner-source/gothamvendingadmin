@@ -156,15 +156,6 @@ const toolsItems = [
   { title: "Ops Console", url: "/ops/console", icon: Monitor },
 ];
 
-const quickCreateItems = [
-  { title: "New Prospect", url: "/prospects/new", icon: Plus },
-  { title: "New Location", url: "/locations/new", icon: Plus },
-  { title: "New Machine", url: "/machines/new", icon: Plus },
-  { title: "New Product", url: "/products/new", icon: Plus },
-  { title: "New Supplier", url: "/suppliers/new", icon: Plus },
-  { title: "New PO", url: "/purchase-orders/new", icon: Plus },
-];
-
 export function AppSidebar() {
   const location = useLocation();
   
@@ -413,25 +404,6 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <Link to={item.url}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Quick Create */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Quick Create</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {quickCreateItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild size="sm">
-                    <Link to={item.url}>
-                      <item.icon className="h-3 w-3" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

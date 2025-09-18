@@ -2,6 +2,8 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { CreateButton } from "@/components/CreateButton";
+import { GlobalSearchBar } from "@/components/GlobalSearchBar";
 import Index from "@/pages/Index";
 import Leads from "@/pages/Leads";
 import Prospects from "@/pages/Prospects";
@@ -116,9 +118,15 @@ const AppRoutes = () => {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b bg-background">
-            <SidebarTrigger className="ml-2" />
-            <h1 className="ml-4 font-semibold">Gotham Vending</h1>
+          <header className="h-12 flex items-center justify-between border-b bg-background px-4">
+            <div className="flex items-center">
+              <SidebarTrigger className="mr-2" />
+              <h1 className="font-semibold">Gotham Vending</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <GlobalSearchBar />
+              <CreateButton />
+            </div>
           </header>
           <Breadcrumbs />
           <main className="flex-1 p-4">
