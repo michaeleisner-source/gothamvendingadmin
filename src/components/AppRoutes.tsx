@@ -108,6 +108,7 @@ import OpsConsole from "@/pages/ops/OpsConsole";
 import Customers from "@/pages/Customers";
 import CustomerDetail from "@/pages/CustomerDetail";  
 import CustomerInsights from "@/pages/CustomerInsights";
+import CustomerExperience from "@/pages/CustomerExperience";
 import MachineTemplates from "@/pages/MachineTemplates";
 import PricingManagement from "@/pages/PricingManagement";
 import ProductCatalog from "@/pages/ProductCatalog";
@@ -205,6 +206,7 @@ const MainAppLayout = () => {
               <Route path="/customers" element={<Customers />} />
               <Route path="/customers/:id" element={<CustomerDetail />} />
               <Route path="/customer-insights" element={<CustomerInsights />} />
+              <Route path="/customer-experience" element={<CustomerExperience />} />
               
               <Route path="/locations" element={<Locations />} />
               <Route path="/locations/new" element={<NewLocation />} />

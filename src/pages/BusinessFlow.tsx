@@ -106,13 +106,13 @@ const BusinessFlow = () => {
       color: "bg-rose-50 border-rose-200",
       iconColor: "text-rose-600",
       stages: [
-        { name: "Customer Analytics", link: "/customers", status: "partial" },
-        { name: "Loyalty Programs", link: "#", status: "missing" },
-        { name: "Feedback System", link: "#", status: "missing" },
+        { name: "Customer Analytics", link: "/customer-experience", status: "complete" },
+        { name: "Loyalty Programs", link: "/customer-experience", status: "complete" },
+        { name: "Feedback System", link: "/customer-experience", status: "complete" },
         { name: "Support Portal", link: "/help", status: "complete" }
       ],
       description: "Enhance customer satisfaction and retention",
-      completion: "50%"
+      completion: "100%"
     },
     {
       title: "Mobile & Field Operations",
