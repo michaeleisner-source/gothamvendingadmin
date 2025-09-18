@@ -104,6 +104,9 @@ import OpsConsole from "@/pages/ops/OpsConsole";
 import Customers from "@/pages/Customers";
 import CustomerDetail from "@/pages/CustomerDetail";  
 import CustomerInsights from "@/pages/CustomerInsights";
+import MachineTemplates from "@/pages/MachineTemplates";
+import PricingManagement from "@/pages/PricingManagement";
+import ProductCatalog from "@/pages/ProductCatalog";
 import CashFlow from "@/pages/CashFlow";
 import StaffPerformance from "@/pages/StaffPerformance";
 import InventoryHealth from "@/pages/InventoryHealth";
@@ -196,10 +199,15 @@ const AppRoutes = () => {
               <Route path="/products" element={<Products />} />
               <Route path="/products/new" element={<Products />} />
               <Route path="/products-enhanced" element={<ProductsEnhanced />} />
+              <Route path="/catalog" element={<ProductCatalog />} />
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/suppliers/new" element={<Suppliers />} />
               <Route path="/suppliers-enhanced" element={<SuppliersEnhanced />} />
               <Route path="/supplier-management" element={<SupplierManagement />} />
+              
+              {/* System Configuration */}
+              <Route path="/machine-templates" element={<MachineTemplates />} />
+              <Route path="/pricing" element={<PricingManagement />} />
               
               {/* Inventory & Logistics */}
               <Route path="/inventory" element={<Inventory />} />
