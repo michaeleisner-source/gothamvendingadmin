@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "@/AppRoutes";
+import { AppSidebar } from "@/components/AppSidebar";
+import AppRoutes from "@/components/AppRoutes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,14 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <AppRoutes />
+          <div className="flex min-h-screen">
+            <div className="w-64 bg-muted border-r">
+              <AppSidebar />
+            </div>
+            <div className="flex-1">
+              <AppRoutes />
+            </div>
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
