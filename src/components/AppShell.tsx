@@ -14,6 +14,7 @@ const queryClient = new QueryClient({
 });
 
 export default function AppShell() {
+  console.log("AppShell component rendering!");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
