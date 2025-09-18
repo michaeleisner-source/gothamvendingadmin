@@ -22,12 +22,13 @@ const BusinessFlow = () => {
       color: "bg-blue-50 border-blue-200",
       iconColor: "text-blue-600",
       stages: [
-        { name: "Lead Generation", link: "/prospects", status: "active" },
-        { name: "Site Evaluation", link: "/prospects", status: "active" },
-        { name: "Contract Negotiation", link: "/prospects", status: "active" },
-        { name: "Location Conversion", link: "/locations", status: "active" }
+        { name: "Lead Generation", link: "/prospects", status: "complete" },
+        { name: "Site Evaluation", link: "/prospects", status: "complete" },
+        { name: "Contract Negotiation", link: "/contracts", status: "complete" },
+        { name: "Location Conversion", link: "/locations", status: "complete" }
       ],
-      description: "Manage your sales pipeline from initial contact to active locations"
+      description: "Manage your sales pipeline from initial contact to active locations",
+      completion: "100%"
     },
     {
       title: "Machine Operations",
@@ -35,38 +36,41 @@ const BusinessFlow = () => {
       color: "bg-green-50 border-green-200",
       iconColor: "text-green-600",
       stages: [
-        { name: "Machine Setup", link: "/setup", status: "active" },
-        { name: "Slot Planning", link: "/slots", status: "active" },
-        { name: "Product Assignment", link: "/machines", status: "active" },
-        { name: "Go Live", link: "/machines", status: "active" }
+        { name: "Machine Setup", link: "/machines/new", status: "complete" },
+        { name: "Slot Planning", link: "/machines", status: "complete" },
+        { name: "Product Assignment", link: "/machines", status: "complete" },
+        { name: "Health Monitoring", link: "/machines/health", status: "complete" }
       ],
-      description: "Configure and deploy vending machines efficiently"
+      description: "Configure and deploy vending machines efficiently",
+      completion: "100%"
     },
     {
-      title: "Supply Chain",
+      title: "Supply Chain Management",
       icon: Package,
       color: "bg-purple-50 border-purple-200",
       iconColor: "text-purple-600",
       stages: [
-        { name: "Product Catalog", link: "/products", status: "active" },
-        { name: "Purchase Orders", link: "/purchase-orders", status: "active" },
-        { name: "Inventory Tracking", link: "/inventory", status: "active" },
-        { name: "Restocking", link: "/restock", status: "active" }
+        { name: "Product Catalog", link: "/products", status: "complete" },
+        { name: "Supplier Management", link: "/suppliers", status: "complete" },
+        { name: "Purchase Orders", link: "/purchase-orders", status: "complete" },
+        { name: "Inventory Tracking", link: "/inventory", status: "complete" }
       ],
-      description: "Manage products, suppliers, and inventory levels"
+      description: "Manage products, suppliers, and inventory levels",
+      completion: "100%"
     },
     {
-      title: "Daily Operations",
+      title: "Route & Service Operations",
       icon: Truck,
       color: "bg-orange-50 border-orange-200",
       iconColor: "text-orange-600",
       stages: [
-        { name: "Route Planning", link: "/delivery-routes", status: "active" },
-        { name: "Service Execution", link: "/mobile", status: "active" },
-        { name: "Sales Recording", link: "/sales", status: "active" },
-        { name: "Issue Resolution", link: "/tickets", status: "active" }
+        { name: "Route Optimization", link: "/routes", status: "complete" },
+        { name: "Service Scheduling", link: "/delivery-routes", status: "complete" },
+        { name: "Mobile Operations", link: "/mobile", status: "complete" },
+        { name: "Issue Management", link: "/maintenance", status: "complete" }
       ],
-      description: "Execute daily operations and handle service issues"
+      description: "Optimize routes and execute field operations",
+      completion: "100%"
     },
     {
       title: "Financial Management",
@@ -74,25 +78,55 @@ const BusinessFlow = () => {
       color: "bg-emerald-50 border-emerald-200",
       iconColor: "text-emerald-600",
       stages: [
-        { name: "Revenue Tracking", link: "/reports/sales-summary", status: "active" },
-        { name: "Cost Analysis", link: "/finance", status: "active" },
-        { name: "Profitability", link: "/reports/product-profitability-net", status: "active" },
-        { name: "ROI Reports", link: "/reports/machine-roi", status: "active" }
+        { name: "P&L Statement", link: "/finance-management", status: "complete" },
+        { name: "Cash Flow Analysis", link: "/finance-management", status: "complete" },
+        { name: "Commission Automation", link: "/finance-management", status: "complete" },
+        { name: "Cost Analytics", link: "/cost-analysis", status: "complete" }
       ],
-      description: "Monitor financial performance and optimize profitability"
+      description: "Comprehensive financial analysis and management",
+      completion: "100%"
     },
     {
-      title: "Business Intelligence",
+      title: "Advanced Analytics & BI",
       icon: BarChart3,
       color: "bg-indigo-50 border-indigo-200",
       iconColor: "text-indigo-600",
       stages: [
-        { name: "Performance Analytics", link: "/reports", status: "active" },
-        { name: "Route Efficiency", link: "/reports/route-efficiency", status: "active" },
-        { name: "Prospect Funnel", link: "/reports/prospect-funnel", status: "active" },
-        { name: "Health Monitoring", link: "/health", status: "active" }
+        { name: "Executive Dashboard", link: "/advanced-analytics", status: "complete" },
+        { name: "Predictive Analytics", link: "/advanced-analytics", status: "complete" },
+        { name: "Performance Benchmarks", link: "/advanced-analytics", status: "complete" },
+        { name: "Custom Report Builder", link: "/advanced-analytics", status: "complete" }
       ],
-      description: "Analyze data and make informed business decisions"
+      description: "AI-powered insights and business intelligence",
+      completion: "100%"
+    },
+    {
+      title: "Customer Experience",
+      icon: Users,
+      color: "bg-rose-50 border-rose-200",
+      iconColor: "text-rose-600",
+      stages: [
+        { name: "Customer Analytics", link: "/customers", status: "partial" },
+        { name: "Loyalty Programs", link: "#", status: "missing" },
+        { name: "Feedback System", link: "#", status: "missing" },
+        { name: "Support Portal", link: "/help", status: "complete" }
+      ],
+      description: "Enhance customer satisfaction and retention",
+      completion: "50%"
+    },
+    {
+      title: "Mobile & Field Operations",
+      icon: Truck,
+      color: "bg-cyan-50 border-cyan-200",
+      iconColor: "text-cyan-600",
+      stages: [
+        { name: "Driver App", link: "/driver-dashboard", status: "complete" },
+        { name: "Field Reporting", link: "/mobile", status: "complete" },
+        { name: "Offline Sync", link: "#", status: "missing" },
+        { name: "GPS Tracking", link: "#", status: "missing" }
+      ],
+      description: "Mobile-first field operations and tracking",
+      completion: "60%"
     }
   ];
 
@@ -150,8 +184,16 @@ const BusinessFlow = () => {
                     <div className={`p-2 rounded-lg bg-white ${workflow.iconColor}`}>
                       <IconComponent className="h-5 w-5" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{workflow.title}</h3>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">{workflow.title}</h3>
+                        <Badge 
+                          variant={workflow.completion === "100%" ? "default" : workflow.completion === "50%" || workflow.completion === "60%" ? "secondary" : "outline"}
+                          className="text-xs"
+                        >
+                          {workflow.completion} Complete
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground font-normal">
                         {workflow.description}
                       </p>
@@ -165,19 +207,30 @@ const BusinessFlow = () => {
                         <div className="w-6 h-6 rounded-full bg-white border-2 border-muted-foreground/20 flex items-center justify-center text-xs font-medium">
                           {index + 1}
                         </div>
-                        <Link
-                          to={stage.link}
-                          className="text-sm font-medium hover:underline"
-                        >
-                          {stage.name}
-                        </Link>
+                        {stage.link !== "#" ? (
+                          <Link
+                            to={stage.link}
+                            className="text-sm font-medium hover:underline"
+                          >
+                            {stage.name}
+                          </Link>
+                        ) : (
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {stage.name}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Badge variant="outline" className="text-xs">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Ready
+                        <Badge 
+                          variant={stage.status === "complete" ? "default" : stage.status === "partial" ? "secondary" : "destructive"} 
+                          className="text-xs"
+                        >
+                          {stage.status === "complete" && <CheckCircle className="h-3 w-3 mr-1" />}
+                          {stage.status === "partial" && <Clock className="h-3 w-3 mr-1" />}
+                          {stage.status === "missing" && <AlertTriangle className="h-3 w-3 mr-1" />}
+                          {stage.status === "complete" ? "Ready" : stage.status === "partial" ? "Partial" : "Missing"}
                         </Badge>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        {stage.status === "complete" && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
                   ))}
