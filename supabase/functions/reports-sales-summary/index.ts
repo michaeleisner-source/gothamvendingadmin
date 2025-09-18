@@ -54,9 +54,7 @@ serve(async (req) => {
         product_id,
         qty,
         unit_price_cents,
-        occurred_at,
-        products(name, sku),
-        machines(name)
+        occurred_at
       `)
       .gte('occurred_at', startDate.toISOString())
       .lte('occurred_at', endDate.toISOString())
