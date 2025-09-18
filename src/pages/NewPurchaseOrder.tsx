@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Layout } from "@/components/Layout";
 
 type Supplier = { id: string; name: string; contact?: string | null };
 type Product = { id: string; name: string; sku: string; cost: number };
@@ -121,8 +120,7 @@ export default function NewPurchaseOrderPage() {
   }
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-3">New Purchase Order</h1>
 
       {error && (
@@ -250,6 +248,5 @@ export default function NewPurchaseOrderPage() {
         </div>
       </div>
     </div>
-    </Layout>
   );
 }
