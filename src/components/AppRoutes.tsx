@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import Sidebar from "@/components/Sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { CreateButton } from "@/components/CreateButton";
 import { GlobalSearchBar } from "@/components/GlobalSearchBar";
@@ -113,20 +114,22 @@ const AppRoutes = () => {
 
   // Main app layout without authentication requirement
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <header className="h-14 flex items-center justify-between border-b bg-background px-4">
-          <div className="flex items-center">
-            <h1 className="font-semibold text-foreground">Gotham Vending</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <GlobalSearchBar />
-            <CreateButton />
-          </div>
-        </header>
-        <Breadcrumbs />
-        <main className="flex-1 p-4 bg-background">{/* ... keep existing code */}
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col">
+          <header className="h-14 flex items-center justify-between border-b bg-background px-4">
+            <div className="flex items-center">
+              <SidebarTrigger />
+              <h1 className="ml-4 font-semibold text-foreground">Gotham Vending</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <GlobalSearchBar />
+              <CreateButton />
+            </div>
+          </header>
+          <Breadcrumbs />
+          <main className="flex-1 p-4 bg-background">
             <Routes>
               <Route path="/" element={<Index />} />
               
@@ -235,9 +238,10 @@ const AppRoutes = () => {
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
