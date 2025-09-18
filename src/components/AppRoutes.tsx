@@ -101,6 +101,9 @@ import NewPurchaseOrder from "@/pages/NewPurchaseOrder";
 import Glossary from "@/pages/help/Glossary";
 import OpsConsole from "@/pages/ops/OpsConsole";
 
+import Customers from "@/pages/Customers";
+import CustomerDetail from "@/pages/CustomerDetail";  
+import CustomerInsights from "@/pages/CustomerInsights";
 import CashFlow from "@/pages/CashFlow";
 import StaffPerformance from "@/pages/StaffPerformance";
 import InventoryHealth from "@/pages/InventoryHealth";
@@ -156,6 +159,12 @@ const AppRoutes = () => {
               <Route path="/prospects/new" element={<NewProspect />} />
               <Route path="/prospect-dashboard" element={<ProspectDashboard />} />
               <Route path="/prospect/:id" element={<ProspectDetail />} />
+              
+              {/* Customer Management */}
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/customers/:id" element={<CustomerDetail />} />
+              <Route path="/customer-insights" element={<CustomerInsights />} />
+              
               <Route path="/locations" element={<Locations />} />
               <Route path="/locations/new" element={<NewLocation />} />
               <Route path="/locations-enhanced" element={<LocationsEnhanced />} />
