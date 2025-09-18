@@ -4,6 +4,7 @@ import Leads from "@/pages/Leads";
 import LowStock from "@/pages/LowStock";
 import CashFlow from "@/pages/CashFlow";
 import CashCollection from "@/pages/CashCollection";
+import InventoryReports from "@/pages/InventoryReports";
 
 const AppRoutes = () => {
   return (
@@ -13,6 +14,7 @@ const AppRoutes = () => {
       <Route path="/low-stock" element={<LowStock />} />
       <Route path="/cash-flow" element={<CashFlow />} />
       <Route path="/cash-collection" element={<CashCollection />} />
+      <Route path="/inventory-reports" element={<InventoryReports />} />
       <Route path="*" element={<Index />} />
     </Routes>
   );

@@ -18,7 +18,8 @@ import {
   Activity,
   Clock,
   Target,
-  Zap
+  Zap,
+  BarChart3
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -358,6 +359,12 @@ const Index = () => {
             <Link to="/cash-flow">
               <TrendingUp className="mr-2 h-4 w-4" />
               Cash Flow
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/inventory-reports">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Inventory Reports
             </Link>
           </Button>
           <Button variant="outline" asChild>
