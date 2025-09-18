@@ -21,8 +21,10 @@ import { MetricsCards, getRevenueMetrics, getMachineMetrics, getProspectMetrics 
 import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/components/dashboard/ActivityFeed";
 import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
 import { StatCard } from "@/components/enhanced/StatCard";
-import { InventoryDashboardWidget } from "@/components/inventory/InventoryDashboardWidget";
-import { RouteOptimizerWidget } from "@/components/routes/RouteOptimizerWidget";
+import { RealtimeSalesWidget } from '@/components/sales/RealtimeSalesWidget';
+import { InventoryDashboardWidget } from '@/components/inventory/InventoryDashboardWidget';
+import { RouteOptimizerWidget } from '@/components/routes/RouteOptimizerWidget';
+import { MachineOpsWidget } from '@/components/machine-ops/MachineOpsWidget';
 
 interface DashboardData {
   kpis: {
@@ -400,11 +402,11 @@ const Index = () => {
         </div>
         
         <div className="space-y-6">
-          {/* Inventory Widget */}
-          <InventoryDashboardWidget />
-          
-          {/* Route Optimizer Widget */}
-          <RouteOptimizerWidget />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InventoryDashboardWidget />
+            <RouteOptimizerWidget />
+          </div>
+          <MachineOpsWidget />
           
           {/* Quick Actions */}
           <Card>
