@@ -220,9 +220,18 @@ export default function SalesEntry() {
       return;
     }
 
+    if (!selectedMachine) {
+      toast({
+        title: "No Machine Selected",
+        description: "Please select a machine before processing sale.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setProcessingSale(true);
     try {
-      // Record each item as a separate sale
+      // Record each item as a separate sale with enhanced data
       for (const item of cart) {
         // Get product cost
         const { data: productData, error: productError } = await supabase
@@ -231,25 +240,43 @@ export default function SalesEntry() {
           .eq('id', item.product_id)
           .single();
 
-        if (productError) throw productError;
+        if (productError) {
+          console.warn('Could not fetch product cost:', productError);
+        }
 
-        // Record the sale - using the correct required fields
+        // Record the sale using both old and new field formats for compatibility
         const { error: salesError } = await supabase
           .from('sales')
           .insert({
+            machine_id: selectedMachine,
+            product_id: item.product_id,
             product_name: item.product_name,
-            unit_price: item.unit_price_cents / 100, // Convert cents to dollars
-            total_amount: (item.unit_price_cents * item.qty) / 100, // Total in dollars
-            quantity_sold: item.qty,
+            qty: item.qty,
+            quantity_sold: item.qty, // Legacy compatibility
+            unit_price_cents: item.unit_price_cents,
+            unit_price: item.unit_price_cents / 100, // Legacy compatibility
+            total_amount: (item.unit_price_cents * item.qty) / 100, // Legacy compatibility
+            payment_method: 'cash',
             occurred_at: new Date().toISOString()
           });
 
         if (salesError) throw salesError;
+
+        // Update inventory levels
+        const slot = machineSlots.find(s => s.product_id === item.product_id);
+        if (slot) {
+          await supabase
+            .from('machine_slots')
+            .update({ 
+              current_qty: Math.max(0, slot.current_qty - item.qty)
+            })
+            .eq('id', slot.id);
+        }
       }
 
       toast({
-        title: "Sale Processed",
-        description: `Successfully recorded sale of ${cart.length} items for $${(calculateTotal() / 100).toFixed(2)}`,
+        title: "🎉 Sale Processed Successfully!",
+        description: `Recorded ${cart.reduce((sum, item) => sum + item.qty, 0)} items for $${(calculateTotal() / 100).toFixed(2)}`,
       });
 
       // Clear cart and refresh inventory

@@ -213,6 +213,7 @@ const MainAppLayout = () => {
               <Route path="/location-performance" element={<LocationPerformance />} />
               <Route path="/sales" element={<SalesEntry />} />
               <Route path="/sales/dashboard" element={<SalesDashboard />} />
+              <Route path="/sales-dashboard" element={<SalesDashboard />} />
               
               {/* Operations */}
               <Route path="/machines" element={<Machines />} />

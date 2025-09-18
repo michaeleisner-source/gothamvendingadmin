@@ -34,7 +34,8 @@ export const NAV: NavSection[] = [
   ]},
   { title: 'Sales & Reporting', items: [
     { label: 'Dashboard',                path: '/dashboard',           icon: 'lucide:layout-dashboard' },
-    { label: 'Sales Detail',             path: '/sales',               icon: 'lucide:receipt-text' },
+    { label: 'Sales Dashboard',          path: '/sales-dashboard',     icon: 'lucide:trending-up' },
+    { label: 'Sales Entry',              path: '/sales',               icon: 'lucide:receipt-text' },
     { label: 'Machine Performance',      path: '/reports/machines',    icon: 'lucide:robot' },
     { label: 'Product Performance',      path: '/reports/products',    icon: 'lucide:candy' },
     { label: 'Location Performance',     path: '/reports/locations',   icon: 'lucide:map' },
