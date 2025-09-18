@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -126,6 +126,9 @@ const AppRoutes = () => {
           <main className="flex-1 p-4 bg-background">
             <Routes>
               <Route path="/" element={<Index />} />
+              
+              {/* Redirect auth page to home in demo mode */}
+              <Route path="/auth" element={<Navigate to="/" replace />} />
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
