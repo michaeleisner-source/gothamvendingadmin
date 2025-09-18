@@ -1,204 +1,200 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OptimizedLoadingState } from "@/components/common/OptimizedLoadingState";
-import { QuickStatsCard } from "@/components/dashboard/QuickStatsCard";
-import { useDashboardStats, useLeads, useMachines, useLocations, useSales } from "@/hooks/useApiData";
-import { 
-  Factory, 
-  MapPin, 
-  Users, 
-  TrendingUp, 
-  Activity,
-  Clock,
-  DollarSign
-} from "lucide-react";
+import { useDashboardStats } from "@/hooks/useApiData";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus, TrendingUp, Users, MapPin, DollarSign, Target } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
-const HomeDashboard = () => {
-  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
-  const { data: leads, isLoading: leadsLoading } = useLeads();
-  const { data: machines, isLoading: machinesLoading } = useMachines();
-  const { data: locations, isLoading: locationsLoading } = useLocations();
-  const { data: sales, isLoading: salesLoading } = useSales();
-
-  const isLoading = statsLoading || leadsLoading || machinesLoading || locationsLoading;
+export default function HomeDashboard() {
+  const { data, isLoading, error } = useDashboardStats();
 
   if (isLoading) {
-    return <OptimizedLoadingState type="dashboard" title="Mission Control Dashboard" />;
-  }
-
-  const stats = dashboardStats || {
-    totalRevenue: 0,
-    monthlyRevenue: 0,
-    activeMachines: 0,
-    totalMachines: 0,
-    newLeads: 0,
-    totalLeads: 0,
-    activeLocations: 0,
-    totalLocations: 0,
-    salesCount: 0
-  };
-
-  const kpiData = [
-    {
-      title: "Total Machines",
-      value: stats.totalMachines,
-      icon: Factory,
-      className: "text-primary"
-    },
-    {
-      title: "Active Machines",
-      value: stats.activeMachines,
-      icon: TrendingUp,
-      className: "text-green-600"
-    },
-    {
-      title: "Active Locations",
-      value: stats.activeLocations,
-      icon: MapPin,
-      className: "text-blue-600"
-    },
-    {
-      title: "New Leads",
-      value: stats.newLeads,
-      icon: Users,
-      className: "text-purple-600"
-    },
-    {
-      title: "Monthly Revenue",
-      value: `$${stats.monthlyRevenue.toFixed(0)}`,
-      icon: DollarSign,
-      className: "text-emerald-600"
-    },
-    {
-      title: "Total Sales",
-      value: stats.salesCount,
-      icon: Activity,
-      className: "text-orange-600"
-    }
-  ];
-
-  // Create recent activity from available data
-  const recentActivity = [
-    ...(sales?.slice(0, 3).map(sale => ({
-      message: `Sale: ${sale.product_name} - $${sale.total_amount.toFixed(2)}`,
-      timestamp: sale.sale_date,
-      type: 'sale'
-    })) || []),
-    ...(leads?.slice(0, 2).map(lead => ({
-      message: `New Lead: ${lead.name} (${lead.location_type})`,
-      timestamp: lead.created_at,
-      type: 'lead'
-    })) || []),
-    ...(machines?.slice(0, 2).map(machine => ({
-      message: `Machine Status: ${machine.machine_model} - ${machine.status}`,
-      timestamp: machine.updated_at,
-      type: 'machine'
-    })) || [])
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
-
-  return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">Mission Control</h1>
-          <p className="text-muted-foreground mt-1">
-            Real-time overview of your vending operations
-          </p>
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {kpiData.map((kpi) => (
-          <QuickStatsCard
-            key={kpi.title}
-            title={kpi.title}
-            value={kpi.value}
-            icon={kpi.icon}
-            className={kpi.className}
-          />
-        ))}
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load dashboard data. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Lead Management Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track and manage your sales prospects
+          </p>
+        </div>
+        <Link to="/prospects">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            New Lead
+          </Button>
+        </Link>
       </div>
 
-      {/* Recent Activity */}
+      {/* Key Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Leads
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.totalLeads}</div>
+            <p className="text-xs text-muted-foreground">
+              {data.leadsThisMonth} new this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              New Leads
+            </CardTitle>
+            <Plus className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.newLeads}</div>
+            <p className="text-xs text-muted-foreground">
+              Require follow-up
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Interested Leads
+            </CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.interestedLeads}</div>
+            <p className="text-xs text-muted-foreground">
+              Hot prospects
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Conversion Rate
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.conversionRate}%</div>
+            <p className="text-xs text-muted-foreground">
+              {data.closedLeads} closed deals
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue & Pipeline */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Potential Revenue</CardTitle>
+            <CardDescription>
+              Revenue pipeline from active leads
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              ${data.potentialRevenue?.toLocaleString() || '0'}
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              From {data.interestedLeads + data.closedLeads} qualified leads
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Lead Status Breakdown</CardTitle>
+            <CardDescription>
+              Current pipeline distribution
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">New</span>
+              <Badge variant="secondary">{data.newLeads}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Interested</span>
+              <Badge variant="default">{data.interestedLeads}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Closed</span>
+              <Badge variant="outline" className="text-green-600">{data.closedLeads}</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Recent Activity
-          </CardTitle>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>
+            Common tasks and navigation
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          {recentActivity.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No recent activity</p>
-          ) : (
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center gap-3 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{activity.message}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {new Date(activity.timestamp).toLocaleDateString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+        <CardContent className="flex gap-4">
+          <Link to="/prospects">
+            <Button variant="outline">
+              <Users className="mr-2 h-4 w-4" />
+              View All Leads
+            </Button>
+          </Link>
+          <Link to="/prospects">
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Lead
+            </Button>
+          </Link>
         </CardContent>
       </Card>
-
-      {/* Business Summary */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total Revenue</span>
-                <span className="text-sm font-medium">${stats.totalRevenue.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Avg Revenue/Machine</span>
-                <span className="text-sm font-medium">
-                  ${stats.totalMachines > 0 ? (stats.totalRevenue / stats.totalMachines).toFixed(2) : '0.00'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Machine Utilization</span>
-                <span className="text-sm font-medium">
-                  {stats.totalMachines > 0 ? Math.round((stats.activeMachines / stats.totalMachines) * 100) : 0}%
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Lead Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total Leads</span>
-                <span className="text-sm font-medium">{stats.totalLeads}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">New This Month</span>
-                <span className="text-sm font-medium">{stats.newLeads}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Conversion Rate</span>
-                <span className="text-sm font-medium">
-                  {stats.totalLeads > 0 ? Math.round((stats.totalLocations / stats.totalLeads) * 100) : 0}%
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
-};
-
-export default HomeDashboard;
+}
