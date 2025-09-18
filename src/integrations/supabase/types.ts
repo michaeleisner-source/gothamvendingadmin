@@ -2841,6 +2841,7 @@ export type Database = {
           unit_price: number
           unit_price_cents: number | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -2858,6 +2859,7 @@ export type Database = {
           unit_price: number
           unit_price_cents?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -2875,6 +2877,7 @@ export type Database = {
           unit_price?: number
           unit_price_cents?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -3420,6 +3423,22 @@ export type Database = {
         }
         Returns: string
       }
+      report_cash_flow: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          cash_in_cents: number
+          cash_out_cents: number
+          day: string
+          net_cents: number
+        }[]
+      }
+      report_dead_stock: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          product_id: string
+          product_name: string
+        }[]
+      }
       report_financial_kpis: {
         Args: { p_end?: string; p_start?: string }
         Returns: {
@@ -3427,6 +3446,16 @@ export type Database = {
           gross_revenue_cents: number
           net_profit_cents: number
           profit_pct: number
+        }[]
+      }
+      report_inventory_velocity: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          avg_per_day: number
+          days: number
+          product_id: string
+          product_name: string
+          qty_sold: number
         }[]
       }
       report_low_stock: {
@@ -3509,6 +3538,19 @@ export type Database = {
           product_id: string
           product_name: string
           qty_sold: number
+        }[]
+      }
+      report_staff_performance: {
+        Args: { p_end?: string; p_start?: string }
+        Returns: {
+          cost_cents: number
+          email: string
+          gross_revenue_cents: number
+          net_profit_cents: number
+          orders: number
+          profit_pct: number
+          qty_sold: number
+          user_id: string
         }[]
       }
       rpc_log_help_click: {
