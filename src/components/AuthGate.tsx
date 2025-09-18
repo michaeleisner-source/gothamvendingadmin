@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const PUBLIC_PATHS = new Set<string>([
   "/", // Making all routes public
-  "/auth",
   "/reset-password",
 ]);
 
@@ -22,6 +21,13 @@ export default function AuthGate({ children }: { children: ReactNode }) {
       if (!mounted) return;
 
       const path = loc.pathname;
+      
+      // In demo mode, redirect away from auth page
+      if (path === "/auth") {
+        nav("/", { replace: true });
+        return;
+      }
+      
       const isPublic = Array.from(PUBLIC_PATHS).some((p) =>
         path === p || path.startsWith(p + "/")
       );
@@ -38,15 +44,22 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Not authed and trying to access a protected route
+      // Not authed and trying to access a protected route (shouldn't happen in demo mode)
       setAuthed(false);
       setLoading(false);
-      nav("/auth", { replace: true });
+      nav("/", { replace: true });
     })();
 
     // keep session in sync (handles sign-in/out from other tabs)
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
       const path = loc.pathname;
+      
+      // In demo mode, redirect away from auth page
+      if (path === "/auth") {
+        nav("/", { replace: true });
+        return;
+      }
+      
       const isPublic = Array.from(PUBLIC_PATHS).some((p) =>
         path === p || path.startsWith(p + "/")
       );
@@ -54,7 +67,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         setAuthed(true);
       } else {
         setAuthed(false);
-        if (!isPublic) nav("/auth", { replace: true });
+        if (!isPublic) nav("/", { replace: true });
       }
     });
 
