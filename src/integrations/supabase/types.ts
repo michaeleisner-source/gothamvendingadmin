@@ -1297,16 +1297,24 @@ export type Database = {
       locations: {
         Row: {
           address: string
+          address_line1: string | null
+          address_line2: string | null
           city: string
+          commission_flat_cents: number | null
+          commission_min_cents: number | null
+          commission_model: string | null
+          commission_pct_bps: number | null
           contact_email: string | null
           contact_name: string
           contact_phone: string | null
           created_at: string | null
           id: string
           location_type: string
+          location_type_id: string | null
           name: string
           notes: string | null
           org_id: string | null
+          postal_code: string | null
           revenue_split: number | null
           state: string
           status: string | null
@@ -1315,16 +1323,24 @@ export type Database = {
         }
         Insert: {
           address: string
+          address_line1?: string | null
+          address_line2?: string | null
           city: string
+          commission_flat_cents?: number | null
+          commission_min_cents?: number | null
+          commission_model?: string | null
+          commission_pct_bps?: number | null
           contact_email?: string | null
           contact_name: string
           contact_phone?: string | null
           created_at?: string | null
           id?: string
           location_type: string
+          location_type_id?: string | null
           name: string
           notes?: string | null
           org_id?: string | null
+          postal_code?: string | null
           revenue_split?: number | null
           state: string
           status?: string | null
@@ -1333,16 +1349,24 @@ export type Database = {
         }
         Update: {
           address?: string
+          address_line1?: string | null
+          address_line2?: string | null
           city?: string
+          commission_flat_cents?: number | null
+          commission_min_cents?: number | null
+          commission_model?: string | null
+          commission_pct_bps?: number | null
           contact_email?: string | null
           contact_name?: string
           contact_phone?: string | null
           created_at?: string | null
           id?: string
           location_type?: string
+          location_type_id?: string | null
           name?: string
           notes?: string | null
           org_id?: string | null
+          postal_code?: string | null
           revenue_split?: number | null
           state?: string
           status?: string | null
