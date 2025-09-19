@@ -25,6 +25,11 @@ const RevenueTrends = () => {
 
   const { start, end } = getDatesForRange(timeRange);
   
+  // Calculate previous period dates safely
+  const daysDifference = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const previousStart = subDays(start, daysDifference);
+  const previousEnd = start;
+  
   const { data: sales = [] } = useSupabaseQuery(
     'sales',
     'total_amount, quantity_sold, occurred_at, product_name',
@@ -40,7 +45,10 @@ const RevenueTrends = () => {
     'sales',
     'total_amount, occurred_at',
     [
-      { column: 'occurred_at', operator: 'gte', value: subDays(start, end.getTime() - start.getTime()).toISOString() },
+      { column: 'occurred_at', operator: 'gte', value: (() => {
+        const daysDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return subDays(start, daysDiff).toISOString();
+      })() },
       { column: 'occurred_at', operator: 'lt', value: start.toISOString() }
     ],
     { column: 'occurred_at', ascending: true },
@@ -48,6 +56,11 @@ const RevenueTrends = () => {
   ) as { data: any[] };
 
   const trendData = useMemo(() => {
+    // Safety check for valid dates
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return [];
+    }
+
     let intervals;
     let formatString;
     
@@ -73,7 +86,10 @@ const RevenueTrends = () => {
                          granularity === 'monthly' ? endOfMonth(interval) : interval;
 
       const intervalSales = sales.filter(sale => {
+        // Safely handle invalid dates
+        if (!sale.occurred_at) return false;
         const saleDate = new Date(sale.occurred_at);
+        if (isNaN(saleDate.getTime())) return false; // Check for invalid dates
         return saleDate >= intervalStart && saleDate <= intervalEnd;
       });
 
@@ -83,7 +99,14 @@ const RevenueTrends = () => {
       const avgTransaction = transactions > 0 ? revenue / transactions : 0;
 
       return {
-        date: format(intervalStart, formatString),
+        date: (() => {
+          try {
+            return format(intervalStart, formatString);
+          } catch (error) {
+            console.error('Date formatting error:', error);
+            return 'Invalid Date';
+          }
+        })(),
         revenue,
         transactions,
         quantity,
