@@ -115,6 +115,7 @@ const NAV: NavGroup[] = [
       { label: "Staff", to: "/staff", icon: Users },
       { label: "Contracts & Insurance", to: "/contracts", icon: FileText },
       { label: "Business Flow", to: "/business-flow", icon: Activity },
+      { label: "New Location Workflow", to: "/workflows/new-location", icon: MapPin },
     ],
   },
   {
