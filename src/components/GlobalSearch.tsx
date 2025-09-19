@@ -137,7 +137,7 @@ export default function GlobalSearch() {
               {loading ? (
                 <div className="p-4 flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="size-4 animate-spin" /> 
-                  Searching…
+                  Searching all data…
                 </div>
               ) : (
                 <div>
@@ -185,6 +185,9 @@ function EntityIcon({ entity }: { entity: string }) {
     supplier: <Tag className="size-4 text-orange-500" />,
     staff: <User className="size-4 text-cyan-500" />,
     route: <Truck className="size-4 text-yellow-500" />,
+    sale: <Box className="size-4 text-emerald-600" />,
+    purchase_order: <Search className="size-4 text-indigo-500" />,
+    prospect: <User className="size-4 text-pink-500" />,
   };
   return <>{iconMap[entity] ?? <Box className="size-4 text-muted-foreground" />}</>;
 }
