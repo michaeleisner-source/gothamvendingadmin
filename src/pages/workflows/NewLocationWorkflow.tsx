@@ -868,10 +868,13 @@ export default function NewLocationWorkflow() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">New Location Workflow</h1>
+          <h1 className="text-3xl font-bold mb-2 text-primary">New Location Workflow</h1>
           <p className="text-muted-foreground">
             Guide a prospect from initial lead to live vending machine operation.
           </p>
+          <div className="mt-2 p-2 bg-primary/10 border border-primary/20 rounded-lg text-sm">
+            ✅ Workflow system active - Step {currentStep + 1} of {steps.length}
+          </div>
         </div>
 
         <StepHeader steps={steps} current={currentStep} />
@@ -897,7 +900,22 @@ export default function NewLocationWorkflow() {
 
       <style>{`
         .input { 
-          @apply bg-background border border-input rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted-foreground w-full focus:outline-none focus:ring-2 focus:ring-ring; 
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.75rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.875rem;
+          color: hsl(var(--foreground));
+          width: 100%;
+          transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input:focus {
+          outline: none;
+          border-color: hsl(var(--ring));
+          box-shadow: 0 0 0 2px hsla(var(--ring), 0.2);
+        }
+        .input::placeholder {
+          color: hsl(var(--muted-foreground));
         }
       `}</style>
     </div>
