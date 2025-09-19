@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { ScopeProvider } from "@/context/Scope";
 import AppRoutes from "@/components/AppRoutes";
 import HelpBot from "@/components/HelpBot";
 
@@ -18,11 +19,13 @@ export default function AppShell() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <AppRoutes />
-          <HelpBot />
-        </TooltipProvider>
+        <ScopeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <AppRoutes />
+            <HelpBot />
+          </TooltipProvider>
+        </ScopeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
