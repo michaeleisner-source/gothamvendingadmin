@@ -102,18 +102,22 @@ export default function SalesDashboard() {
           break;
       }
 
-      // Fetch sales data
+      // Fetch sales data (using existing columns instead of joins to avoid FK errors)
       const { data: sales, error: salesError } = await supabase
         .from('sales')
-        .select(`
-          *,
-          machines(name),
-          products(name, category)
-        `)
+        .select('*')
         .gte('occurred_at', startDate.toISOString())
         .order('occurred_at', { ascending: false });
 
       if (salesError) throw salesError;
+
+      // Get machine names separately to avoid FK relationship issues
+      const machineIds = [...new Set((sales || []).map(s => s.machine_id).filter(Boolean))];
+      const { data: machines } = machineIds.length > 0 
+        ? await supabase.from('machines').select('id, name').in('id', machineIds)
+        : { data: [] };
+      
+      const machineMap = new Map((machines || []).map(m => [m.id, m.name]));
 
       setSalesData(sales || []);
 
@@ -194,8 +198,8 @@ export default function SalesDashboard() {
         product.value += sale.total_amount || 0;
         product.count += sale.qty || 1;
 
-        // Machines
-        const machineName = sale.machines?.name || 'Unknown Machine';
+        // Machines (use machine name map or fallback to ID)
+        const machineName = machineMap.get(sale.machine_id) || `Machine ${sale.machine_id?.slice(0,8) || 'Unknown'}`;
         if (!machinePerformance.has(machineName)) {
           machinePerformance.set(machineName, { value: 0, count: 0, id: sale.machine_id });
         }
