@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useContractStats } from "@/hooks/useContracts";
+import { ContractsList } from "@/components/contracts/ContractsList";
 
 export default function Contracts() {
   const navigate = useNavigate();
+  const { data: stats, isLoading: statsLoading } = useContractStats();
 
   const handleNewContract = () => {
-    // For now, navigate to a contracts form or show a toast
-    // You can customize this based on your needs
     navigate("/contracts/new");
   };
 
@@ -34,7 +35,9 @@ export default function Contracts() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">18</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats?.active || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Signed agreements</p>
           </CardContent>
         </Card>
@@ -45,7 +48,9 @@ export default function Contracts() {
             <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">2</div>
+            <div className="text-2xl font-bold text-warning">
+              {statsLoading ? "..." : stats?.pending || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Awaiting signature</p>
           </CardContent>
         </Card>
@@ -56,7 +61,9 @@ export default function Contracts() {
             <AlertCircle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">1</div>
+            <div className="text-2xl font-bold text-destructive">
+              {statsLoading ? "..." : stats?.renewals_due || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Next 30 days</p>
           </CardContent>
         </Card>
@@ -67,23 +74,16 @@ export default function Contracts() {
             <CheckCircle2 className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15%</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : `${(stats?.avg_commission || 0).toFixed(1)}%`}
+            </div>
             <p className="text-xs text-muted-foreground">Average rate</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Contracts List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Contract Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Contract management dashboard coming soon...
-          </div>
-        </CardContent>
-      </Card>
+      <ContractsList />
     </div>
   );
 }
