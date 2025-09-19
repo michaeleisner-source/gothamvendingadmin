@@ -127,26 +127,46 @@ export function GlobalSearchBar() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
+  // Debug: Log the total pages available
+  console.log('GlobalSearchBar loaded with', allPages.length, 'pages');
+  console.log('Sample contract entries:', allPages.filter(p => p.title.toLowerCase().includes('contract')));
+
   const filteredPages = useMemo(() => {
     if (!search) return [];
     
     const searchLower = search.toLowerCase().trim();
+    console.log('Searching for:', searchLower);
     
-    return allPages.filter(page => {
+    const results = allPages.filter(page => {
       // Check title
-      if (page.title.toLowerCase().includes(searchLower)) return true;
+      if (page.title.toLowerCase().includes(searchLower)) {
+        console.log('Title match:', page.title);
+        return true;
+      }
       
       // Check category
-      if (page.category.toLowerCase().includes(searchLower)) return true;
+      if (page.category.toLowerCase().includes(searchLower)) {
+        console.log('Category match:', page.title, 'category:', page.category);
+        return true;
+      }
       
       // Check aliases
-      if (page.aliases?.some(alias => alias.toLowerCase().includes(searchLower))) return true;
+      if (page.aliases?.some(alias => alias.toLowerCase().includes(searchLower))) {
+        console.log('Alias match:', page.title, 'aliases:', page.aliases);
+        return true;
+      }
       
       // Check if search matches URL path
-      if (page.url.toLowerCase().includes(searchLower)) return true;
+      if (page.url.toLowerCase().includes(searchLower)) {
+        console.log('URL match:', page.title, 'url:', page.url);
+        return true;
+      }
       
       return false;
     }).slice(0, 12); // Show more results
+    
+    console.log('Total results:', results.length, results.map(r => r.title));
+    return results;
   }, [search]);
 
   const handleSelect = (url: string) => {
