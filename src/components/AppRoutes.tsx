@@ -80,6 +80,7 @@ import DeliveryRoutes from "@/pages/DeliveryRoutes";
 import RestockEntry from "@/pages/RestockEntry";
 
 // Contracts & Insurance
+import Contracts from "@/pages/Contracts";
 import ContractManagement from "@/pages/ContractManagement";
 import ContractView from "@/pages/ContractView";
 import Insurance from "@/pages/Insurance";
@@ -287,7 +288,8 @@ const MainAppLayout = () => {
               <Route path="/payment-processors" element={<PaymentProcessors />} />
               
               {/* Contracts & Insurance */}
-              <Route path="/contracts" element={<ContractManagement />} />
+              <Route path="/contracts" element={<Contracts />} />
+              <Route path="/contract-management" element={<ContractManagement />} />
               <Route path="/contract/:id" element={<ContractView />} />
               <Route path="/insurance" element={<Insurance />} />
               
