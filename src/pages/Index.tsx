@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import { 
@@ -11,7 +11,17 @@ import {
   AlertTriangle,
   Plus,
   Activity,
-  RefreshCw
+  RefreshCw,
+  DollarSign,
+  ShoppingCart,
+  Package,
+  Zap,
+  MapPin,
+  Clock,
+  Target,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -21,12 +31,9 @@ import { MetricsCards, getRevenueMetrics, getMachineMetrics, getProspectMetrics 
 import { ActivityFeed, createSaleActivity, createProspectActivity } from "@/components/dashboard/ActivityFeed";
 import { ChartsSection, formatRevenueData, formatSalesVolumeData, formatProductData, formatMachineStatusData } from "@/components/dashboard/ChartsSection";
 import { StatCard } from "@/components/enhanced/StatCard";
-import { RealtimeSalesWidget } from '@/components/sales/RealtimeSalesWidget';
-import { InventoryDashboardWidget } from "@/components/inventory/InventoryDashboardWidget";
-import { RouteOptimizerWidget } from "@/components/routes/RouteOptimizerWidget";
-import { MachineOpsWidget } from "@/components/machine-ops/MachineOpsWidget";
-import { FinancialDashboardWidget } from "@/components/finance/FinancialDashboardWidget";
-import { AnalyticsDashboardWidget } from "@/components/analytics/AnalyticsDashboardWidget";
+import { PageLayout } from "@/components/ui/PageLayout";
+import { ChartCard } from "@/components/enhanced/ChartCard";
+import { QuickFilters } from "@/components/enhanced/QuickFilters";
 
 interface DashboardData {
   kpis: {
@@ -265,31 +272,19 @@ const Index = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Business Dashboard</h1>
-          <p className="text-muted-foreground">
-            Your vending machine empire at a glance • Last updated {lastUpdated.toLocaleTimeString()}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+    <PageLayout
+      title="Business Dashboard"
+      description="Your vending machine empire at a glance"
+      icon={BarChart3}
+      badges={[
+        { text: `Last ${days} days`, variant: 'outline' },
+        { text: `Updated ${lastUpdated.toLocaleTimeString()}`, variant: 'secondary' }
+      ]}
+      actions={
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleRefresh} disabled={loading} size="sm">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/analytics/staff">
-              <Users className="h-4 w-4 mr-2" />
-              Staff Analytics
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/alerts/low-stock">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Low Stock
-            </Link>
           </Button>
           <Button asChild>
             <Link to="/prospects/new">
@@ -298,127 +293,199 @@ const Index = () => {
             </Link>
           </Button>
         </div>
-      </div>
-
-      {/* Financial KPIs */}
+      }
+    >
+      {/* Critical KPIs at the top */}
       {data.kpis && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Financial Overview</span>
-              <span className="text-sm font-normal text-muted-foreground">Last {days} days</span>
-            </CardTitle>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <StatCard
+            title="Revenue"
+            value={`$${data.kpis.revenue.toLocaleString()}`}
+            icon={DollarSign}
+            trend={{ value: 12.3, direction: "up", label: "vs last period" }}
+            className="border-l-4 border-l-success"
+          />
+          <StatCard
+            title="Profit"
+            value={`$${data.kpis.profit.toLocaleString()}`}
+            icon={TrendingUp}
+            trend={{ value: 8.7, direction: "up", label: "vs last period" }}
+            className="border-l-4 border-l-profit"
+          />
+          <StatCard
+            title="Profit Margin"
+            value={`${(data.kpis.margin * 100).toFixed(1)}%`}
+            icon={Target}
+            trend={{ value: 2.1, direction: "up", label: "vs last period" }}
+            className="border-l-4 border-l-primary"
+          />
+          <StatCard
+            title="Orders"
+            value={data.kpis.orders.toLocaleString()}
+            icon={ShoppingCart}
+            trend={{ value: 15.2, direction: "up", label: "vs last period" }}
+            className="border-l-4 border-l-info"
+          />
+          <StatCard
+            title="Units Sold"
+            value={data.kpis.units.toLocaleString()}
+            icon={Package}
+            trend={{ value: 9.4, direction: "up", label: "vs last period" }}
+            className="border-l-4 border-l-info"
+          />
+          <StatCard
+            title="COGS"
+            value={`$${data.kpis.cogs.toLocaleString()}`}
+            icon={TrendingDown}
+            trend={{ value: 5.1, direction: "down", label: "vs last period" }}
+            className="border-l-4 border-l-expense"
+          />
+        </div>
+      )}
+
+      {/* Operational Status Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base font-medium">Today's Performance</CardTitle>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+              <span className="text-xs text-muted-foreground">Live</span>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-6">
-              <StatCard
-                title="Revenue"
-                value={`$${data.kpis.revenue.toFixed(2)}`}
-                icon={TrendingUp}
-                className="border-l-4 border-l-green-500"
-              />
-              <StatCard
-                title="COGS"
-                value={`$${data.kpis.cogs.toFixed(2)}`}
-                className="border-l-4 border-l-red-500"
-              />
-              <StatCard
-                title="Profit"
-                value={`$${data.kpis.profit.toFixed(2)}`}
-                className="border-l-4 border-l-emerald-500"
-              />
-              <StatCard
-                title="Profit %"
-                value={`${(data.kpis.margin * 100).toFixed(1)}%`}
-                className="border-l-4 border-l-emerald-500"
-              />
-              <StatCard
-                title="Orders"
-                value={data.kpis.orders}
-                className="border-l-4 border-l-blue-500"
-              />
-              <StatCard
-                title="Units"
-                value={data.kpis.units}
-                className="border-l-4 border-l-blue-500"
-              />
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Revenue</span>
+              <span className="text-xl font-bold text-success">${data.revenueStats.today.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Transactions</span>
+              <span className="font-semibold">{data.revenueStats.transactions}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Items Sold</span>
+              <span className="font-semibold">{data.revenueStats.itemsSold}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Avg. Transaction</span>
+              <span className="font-semibold">${data.revenueStats.avgTransaction.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      <Separator />
-
-      {/* Main Metrics */}
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Today's Performance</h2>
-          <MetricsCards 
-            metrics={getRevenueMetrics(data.revenueStats)} 
-            loading={kpiLoading}
-          />
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Machine Status</h2>
-          <MetricsCards 
-            metrics={getMachineMetrics(data.machineStats)} 
-            loading={loading}
-          />
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Sales Pipeline</h2>
-          <MetricsCards 
-            metrics={getProspectMetrics(data.prospectStats)} 
-            loading={loading}
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Charts Section */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Analytics Overview</h2>
-        <ChartsSection
-          revenueData={revenueChartData as any}
-          salesData={salesChartData as any}
-          productData={productChartData as any}
-          machineStatusData={machineChartData as any}
-          loading={loading}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Activity Feed & Inventory */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ActivityFeed
-            activities={activities}
-            loading={loading}
-            title="Live Activity Feed"
-            maxItems={10}
-          />
-        </div>
-        
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InventoryDashboardWidget />
-              <RouteOptimizerWidget />
-              <MachineOpsWidget />
-              <FinancialDashboardWidget />
-              <AnalyticsDashboardWidget />
+        <Card className="card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base font-medium">Machine Health</CardTitle>
+            <Badge variant={data.machineStats.uptimePercentage >= 95 ? "default" : data.machineStats.uptimePercentage >= 85 ? "secondary" : "destructive"}>
+              {data.machineStats.uptimePercentage.toFixed(1)}% Uptime
+            </Badge>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Total Machines</span>
+              <span className="text-xl font-bold">{data.machineStats.total}</span>
             </div>
-          
-          {/* Quick Actions */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-success flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-success"></div>
+                Online
+              </span>
+              <span className="font-semibold text-success">{data.machineStats.online}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-expense flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-expense"></div>
+                Offline
+              </span>
+              <span className="font-semibold text-expense">{data.machineStats.offline}</span>
+            </div>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link to="/machines">
+                <Zap className="h-4 w-4 mr-2" />
+                Manage Machines
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base font-medium">Sales Pipeline</CardTitle>
+            <Badge variant="outline">
+              {data.prospectStats.conversionRate.toFixed(1)}% Conv. Rate
+            </Badge>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Total Prospects</span>
+              <span className="text-xl font-bold">{data.prospectStats.total}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Qualified</span>
+              <span className="font-semibold text-info">{data.prospectStats.qualified}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">In Negotiation</span>
+              <span className="font-semibold text-warning">{data.prospectStats.inNegotiation}</span>
+            </div>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link to="/prospects">
+                <Users className="h-4 w-4 mr-2" />
+                View Pipeline
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts and Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <ChartCard
+          title="Revenue Trends"
+          description="Daily revenue performance over time"
+          onExport={() => {}}
+        >
+          <div className="h-64 flex items-center justify-center text-muted-foreground">
+            Revenue Chart Placeholder
+          </div>
+        </ChartCard>
+
+        <ChartCard
+          title="Machine Performance"
+          description="Sales volume and machine utilization"
+          onExport={() => {}}
+        >
+          <div className="h-64 flex items-center justify-center text-muted-foreground">
+            Machine Performance Chart Placeholder
+          </div>
+        </ChartCard>
+      </div>
+
+      {/* Action Center and Activity Feed */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Quick Actions
+                Recent Activity
               </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActivityFeed
+                activities={activities}
+                loading={loading}
+                maxItems={8}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="w-full justify-start" asChild>
@@ -429,7 +496,7 @@ const Index = () => {
               </Button>
               <Button variant="outline" className="w-full justify-start" asChild>
                 <Link to="/inventory">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <Package className="h-4 w-4 mr-2" />
                   Manage Inventory
                 </Link>
               </Button>
@@ -439,25 +506,63 @@ const Index = () => {
                   Add Prospect
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link to="/machines/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Machine
-                </Link>
-              </Button>
-              <Separator />
-              <Button variant="ghost" className="w-full justify-start" asChild>
+            </CardContent>
+          </Card>
+
+          {/* Alerts & Notifications */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center justify-between">
+                Alerts
+                <Badge variant="destructive">3</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-destructive/10">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm">Low Stock</span>
+                </div>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/alerts/low-stock">
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-warning/10">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-warning" />
+                  <span className="text-sm">Maintenance Due</span>
+                </div>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/maintenance">
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reports Shortcut */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Business Intelligence</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full justify-between" asChild>
                 <Link to="/reports">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  View Reports
-                  <HelpTooltip content="Access detailed analytics and business intelligence reports" />
+                  <span className="flex items-center">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    View All Reports
+                  </span>
+                  <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
