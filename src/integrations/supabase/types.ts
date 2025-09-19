@@ -230,6 +230,9 @@ export type Database = {
           body_html: string
           cancellation_notice_days: number | null
           commission_flat_cents: number | null
+          contract_file_name: string | null
+          contract_file_size: number | null
+          contract_file_url: string | null
           contract_number: string | null
           created_at: string
           html: string | null
@@ -254,6 +257,9 @@ export type Database = {
           body_html: string
           cancellation_notice_days?: number | null
           commission_flat_cents?: number | null
+          contract_file_name?: string | null
+          contract_file_size?: number | null
+          contract_file_url?: string | null
           contract_number?: string | null
           created_at?: string
           html?: string | null
@@ -278,6 +284,9 @@ export type Database = {
           body_html?: string
           cancellation_notice_days?: number | null
           commission_flat_cents?: number | null
+          contract_file_name?: string | null
+          contract_file_size?: number | null
+          contract_file_url?: string | null
           contract_number?: string | null
           created_at?: string
           html?: string | null
