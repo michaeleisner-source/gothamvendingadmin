@@ -101,6 +101,7 @@ import Picklists from "@/pages/Picklists";
 import NewLocation from "@/pages/NewLocation";
 import NewProspect from "@/pages/NewProspect";
 import NewMachine from "@/pages/NewMachine";
+import NewLocationWorkflow from "@/pages/workflows/NewLocationWorkflow";
 import NewProduct from "@/pages/NewProduct";
 import NewPurchaseOrder from "@/pages/NewPurchaseOrder";
 
@@ -242,7 +243,8 @@ const MainAppLayout = () => {
               <Route path="/machines/:machineId/inventory" element={<MachineInventoryPage />} />
               <Route path="/alerts/low-stock" element={<LowStockPage />} />
               <Route path="/routes" element={<RouteManagement />} />
-              <Route path="/delivery-routes" element={<DeliveryRoutes />} />
+        <Route path="/delivery-routes" element={<DeliveryRoutes />} />
+        <Route path="/workflows/new-location" element={<NewLocationWorkflow />} />
               <Route path="/driver" element={<DriverDashboard />} />
               <Route path="/maintenance" element={<MaintenanceScheduler />} />
               <Route path="/machine-maintenance" element={<MachineMaintenance />} />

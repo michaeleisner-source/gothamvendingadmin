@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_collection_schedule: {
+        Row: {
+          cadence_days: number | null
+          created_at: string | null
+          id: string
+          machine_id: string | null
+          next_collection: string | null
+          org_id: string | null
+        }
+        Insert: {
+          cadence_days?: number | null
+          created_at?: string | null
+          id?: string
+          machine_id?: string | null
+          next_collection?: string | null
+          org_id?: string | null
+        }
+        Update: {
+          cadence_days?: number | null
+          created_at?: string | null
+          id?: string
+          machine_id?: string | null
+          next_collection?: string | null
+          org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_collection_schedule_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_collections: {
         Row: {
           collected_amount_cents: number
@@ -407,6 +442,60 @@ export type Database = {
           reason?: string | null
         }
         Relationships: []
+      }
+      deliveries: {
+        Row: {
+          assigned_route_date: string | null
+          created_at: string | null
+          driver_id: string | null
+          id: string
+          location_id: string | null
+          machine_order_id: string | null
+          org_id: string | null
+          status: string | null
+          window_end: string | null
+          window_start: string | null
+        }
+        Insert: {
+          assigned_route_date?: string | null
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          location_id?: string | null
+          machine_order_id?: string | null
+          org_id?: string | null
+          status?: string | null
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          assigned_route_date?: string | null
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          location_id?: string | null
+          machine_order_id?: string | null
+          org_id?: string | null
+          status?: string | null
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_machine_order_id_fkey"
+            columns: ["machine_order_id"]
+            isOneToOne: false
+            referencedRelation: "machine_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       delivery_routes: {
         Row: {
@@ -1201,12 +1290,14 @@ export type Database = {
           created_at: string | null
           email: string | null
           estimated_foot_traffic: number | null
+          fit_score: number | null
           follow_up_date: string | null
           id: string
           location_type: string
           name: string
           notes: string | null
           phone: string | null
+          pipeline_stage: string | null
           revenue_split: number | null
           state: string
           status: string | null
@@ -1221,12 +1312,14 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           estimated_foot_traffic?: number | null
+          fit_score?: number | null
           follow_up_date?: string | null
           id?: string
           location_type: string
           name: string
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
           revenue_split?: number | null
           state: string
           status?: string | null
@@ -1241,12 +1334,14 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           estimated_foot_traffic?: number | null
+          fit_score?: number | null
           follow_up_date?: string | null
           id?: string
           location_type?: string
           name?: string
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
           revenue_split?: number | null
           state?: string
           status?: string | null
@@ -1406,6 +1501,57 @@ export type Database = {
           },
         ]
       }
+      machine_assignments: {
+        Row: {
+          activated_at: string | null
+          cash_float: number | null
+          created_at: string | null
+          id: string
+          initial_fill_qty: number | null
+          installed_at: string | null
+          location_id: string | null
+          machine_id: string | null
+          org_id: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          cash_float?: number | null
+          created_at?: string | null
+          id?: string
+          initial_fill_qty?: number | null
+          installed_at?: string | null
+          location_id?: string | null
+          machine_id?: string | null
+          org_id?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          cash_float?: number | null
+          created_at?: string | null
+          id?: string
+          initial_fill_qty?: number | null
+          installed_at?: string | null
+          location_id?: string | null
+          machine_id?: string | null
+          org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_assignments_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_assignments_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machine_finance: {
         Row: {
           acquisition_type: string
@@ -1552,6 +1698,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      machine_orders: {
+        Row: {
+          created_at: string | null
+          expected_delivery_date: string | null
+          id: string
+          lead_id: string | null
+          location_id: string | null
+          model: string | null
+          notes: string | null
+          order_date: string | null
+          org_id: string | null
+          quantity: number | null
+          vendor: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          lead_id?: string | null
+          location_id?: string | null
+          model?: string | null
+          notes?: string | null
+          order_date?: string | null
+          org_id?: string | null
+          quantity?: number | null
+          vendor?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          lead_id?: string | null
+          location_id?: string | null
+          model?: string | null
+          notes?: string | null
+          order_date?: string | null
+          org_id?: string | null
+          quantity?: number | null
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_orders_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_orders_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       machine_performance_metrics: {
         Row: {
@@ -2191,6 +2394,101 @@ export type Database = {
         }
         Relationships: []
       }
+      planogram_items: {
+        Row: {
+          capacity: number | null
+          col_idx: number | null
+          facings: number | null
+          id: string
+          org_id: string | null
+          par_level: number | null
+          planogram_id: string | null
+          product_id: string | null
+          product_name: string | null
+          row_idx: number | null
+        }
+        Insert: {
+          capacity?: number | null
+          col_idx?: number | null
+          facings?: number | null
+          id?: string
+          org_id?: string | null
+          par_level?: number | null
+          planogram_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          row_idx?: number | null
+        }
+        Update: {
+          capacity?: number | null
+          col_idx?: number | null
+          facings?: number | null
+          id?: string
+          org_id?: string | null
+          par_level?: number | null
+          planogram_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          row_idx?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planogram_items_planogram_id_fkey"
+            columns: ["planogram_id"]
+            isOneToOne: false
+            referencedRelation: "planograms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planograms: {
+        Row: {
+          cols: number | null
+          created_at: string | null
+          id: string
+          location_id: string | null
+          machine_id: string | null
+          name: string | null
+          org_id: string | null
+          rows: number | null
+        }
+        Insert: {
+          cols?: number | null
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          machine_id?: string | null
+          name?: string | null
+          org_id?: string | null
+          rows?: number | null
+        }
+        Update: {
+          cols?: number | null
+          created_at?: string | null
+          id?: string
+          location_id?: string | null
+          machine_id?: string | null
+          name?: string | null
+          org_id?: string | null
+          rows?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planograms_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planograms_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       processor_fee_rules: {
         Row: {
           created_at: string
@@ -2773,6 +3071,41 @@ export type Database = {
           },
         ]
       }
+      restock_tasks: {
+        Row: {
+          cadence_days: number | null
+          created_at: string | null
+          id: string
+          machine_id: string | null
+          next_visit: string | null
+          org_id: string | null
+        }
+        Insert: {
+          cadence_days?: number | null
+          created_at?: string | null
+          id?: string
+          machine_id?: string | null
+          next_visit?: string | null
+          org_id?: string | null
+        }
+        Update: {
+          cadence_days?: number | null
+          created_at?: string | null
+          id?: string
+          machine_id?: string | null
+          next_visit?: string | null
+          org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_tasks_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       route_assignments: {
         Row: {
           assigned_from: string | null
@@ -2914,6 +3247,65 @@ export type Database = {
             columns: ["machine_id"]
             isOneToOne: false
             referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_surveys: {
+        Row: {
+          constraints: string | null
+          created_at: string | null
+          earliest_install_date: string | null
+          elevator_access: boolean | null
+          entrance_width_cm: number | null
+          id: string
+          lead_id: string | null
+          network_type: string | null
+          org_id: string | null
+          parking: boolean | null
+          power_outlets_count: number | null
+          recommended_machine_count: number | null
+          recommended_machine_type: string | null
+          visit_date: string | null
+        }
+        Insert: {
+          constraints?: string | null
+          created_at?: string | null
+          earliest_install_date?: string | null
+          elevator_access?: boolean | null
+          entrance_width_cm?: number | null
+          id?: string
+          lead_id?: string | null
+          network_type?: string | null
+          org_id?: string | null
+          parking?: boolean | null
+          power_outlets_count?: number | null
+          recommended_machine_count?: number | null
+          recommended_machine_type?: string | null
+          visit_date?: string | null
+        }
+        Update: {
+          constraints?: string | null
+          created_at?: string | null
+          earliest_install_date?: string | null
+          elevator_access?: boolean | null
+          entrance_width_cm?: number | null
+          id?: string
+          lead_id?: string | null
+          network_type?: string | null
+          org_id?: string | null
+          parking?: boolean | null
+          power_outlets_count?: number | null
+          recommended_machine_count?: number | null
+          recommended_machine_type?: string | null
+          visit_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_surveys_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
