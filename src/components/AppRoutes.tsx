@@ -110,6 +110,7 @@ import CustomerDetail from "@/pages/CustomerDetail";
 import CustomerInsights from "@/pages/CustomerInsights";
 import CustomerExperience from "@/pages/CustomerExperience";
 import MobileOperations from "@/pages/MobileOperations";
+import DemandForecasting from "@/pages/DemandForecasting";
 import MachineTemplates from "@/pages/MachineTemplates";
 import PricingManagement from "@/pages/PricingManagement";
 import ProductCatalog from "@/pages/ProductCatalog";
@@ -209,6 +210,7 @@ const MainAppLayout = () => {
               <Route path="/customer-insights" element={<CustomerInsights />} />
               <Route path="/customer-experience" element={<CustomerExperience />} />
               <Route path="/mobile-operations" element={<MobileOperations />} />
+              <Route path="/demand-forecasting" element={<DemandForecasting />} />
               
               <Route path="/locations" element={<Locations />} />
               <Route path="/locations/new" element={<NewLocation />} />

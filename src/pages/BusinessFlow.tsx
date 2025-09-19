@@ -127,6 +127,20 @@ const BusinessFlow = () => {
       ],
       description: "Mobile-first field operations and tracking",
       completion: "100%"
+    },
+    {
+      title: "AI-Powered Demand Forecasting",
+      icon: TrendingUp,
+      color: "bg-violet-50 border-violet-200",
+      iconColor: "text-violet-600",
+      stages: [
+        { name: "Machine Learning Models", link: "/demand-forecasting", status: "complete" },
+        { name: "Predictive Analytics", link: "/demand-forecasting", status: "complete" },
+        { name: "Inventory Optimization", link: "/demand-forecasting", status: "complete" },
+        { name: "Automated Reordering", link: "/demand-forecasting", status: "complete" }
+      ],
+      description: "AI-driven demand prediction and inventory optimization",
+      completion: "100%"
     }
   ];
 
@@ -134,7 +148,8 @@ const BusinessFlow = () => {
     { name: "Record Sale", link: "/sales", icon: TrendingUp },
     { name: "Quick Restock", link: "/restock", icon: Package },
     { name: "Field Actions", link: "/mobile", icon: Truck },
-    { name: "Create Ticket", link: "/tickets", icon: AlertTriangle }
+    { name: "Create Ticket", link: "/tickets", icon: AlertTriangle },
+    { name: "AI Forecasting", link: "/demand-forecasting", icon: TrendingUp }
   ];
 
   return (
