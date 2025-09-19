@@ -109,6 +109,7 @@ import Customers from "@/pages/Customers";
 import CustomerDetail from "@/pages/CustomerDetail";  
 import CustomerInsights from "@/pages/CustomerInsights";
 import CustomerExperience from "@/pages/CustomerExperience";
+import DocumentProcessing from "@/pages/DocumentProcessing";
 import MobileOperations from "@/pages/MobileOperations";
 import DemandForecasting from "@/pages/DemandForecasting";
 import MachineTemplates from "@/pages/MachineTemplates";
@@ -209,6 +210,7 @@ const MainAppLayout = () => {
               <Route path="/customers/:id" element={<CustomerDetail />} />
               <Route path="/customer-insights" element={<CustomerInsights />} />
               <Route path="/customer-experience" element={<CustomerExperience />} />
+              <Route path="/document-processing" element={<DocumentProcessing />} />
               <Route path="/mobile-operations" element={<MobileOperations />} />
               <Route path="/demand-forecasting" element={<DemandForecasting />} />
               

@@ -54,6 +54,13 @@ export class EdgeFunctionClient {
   static async getProductPerformance(params?: ProductPerformanceParams) {
     return this.call('product-performance', params);
   }
+
+  /**
+   * Extract address from PDF text using AI
+   */
+  static async extractAddress(text: string) {
+    return this.call('ai-extract-address', { text });
+  }
 }
 
 // Example usage:

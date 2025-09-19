@@ -255,6 +255,43 @@ const BusinessFlow = () => {
           })}
         </div>
 
+        {/* AI-Powered Document Processing */}
+        <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-indigo-700">
+              <TrendingUp className="h-5 w-5" />
+              AI Document Processing
+              <HelpTooltip content="Extract addresses and data from documents using AI" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Automatically extract property addresses, contact information, and other structured data from PDFs and documents using advanced AI.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col items-center gap-2 p-3 rounded-lg border border-indigo-200 bg-white/50">
+                <TrendingUp className="h-6 w-6 text-indigo-600" />
+                <span className="text-sm font-medium text-center">Address Extraction</span>
+                <span className="text-xs text-muted-foreground text-center">Extract property addresses from contracts & documents</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 p-3 rounded-lg border border-indigo-200 bg-white/50">
+                <Users className="h-6 w-6 text-indigo-600" />
+                <span className="text-sm font-medium text-center">Contact Processing</span>
+                <span className="text-xs text-muted-foreground text-center">Parse contact details from business forms</span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Link
+                to="/document-processing"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Launch AI Document Processor
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* System Health */}
         <Card>
           <CardHeader>
