@@ -241,7 +241,14 @@ export default function NewLocationWorkflow() {
     if (!leadId) return
     setLoading(true)
     try {
-      const { error } = await supabase.from('site_surveys').insert({ ...survey, lead_id: leadId })
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { error } = await supabase.from('site_surveys').insert({ 
+        ...survey, 
+        lead_id: leadId,
+        org_id: null // Will be set by RLS/trigger
+      })
       if (error) throw error
       setCurrentStep(2)
       toast({ title: "Site survey saved successfully" })
@@ -311,12 +318,16 @@ export default function NewLocationWorkflow() {
     if (!locationId) return
     setLoading(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const rows = planogram.rows ?? 6
       const cols = planogram.cols ?? 6
       const { data: p, error } = await supabase.from('planograms').insert({
         location_id: locationId,
         name: planogram.name ?? 'Default Planogram',
-        rows, cols
+        rows, cols,
+        org_id: null // Will be set by RLS/trigger
       }).select('id').single()
       if (error) throw error
       setPlanogramId(p.id)
@@ -377,6 +388,9 @@ export default function NewLocationWorkflow() {
     if (!locationId) return
     setLoading(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       // create machine
       const machineData = {
         location_id: locationId,
@@ -384,7 +398,8 @@ export default function NewLocationWorkflow() {
         status: 'installed',
         install_date: new Date().toISOString().split('T')[0],
         machine_model: order.model || 'Standard',
-        serial_number: install.serial_number || 'SERIAL001'
+        serial_number: install.serial_number || 'SERIAL001',
+        org_id: null // Will be set by RLS/trigger
       }
       const { data: m, error: e1 } = await supabase.from('machines').insert(machineData).select('id').single()
       if (e1) throw e1
@@ -397,26 +412,28 @@ export default function NewLocationWorkflow() {
         installed_at: install.installed_at ? install.installed_at : new Date().toISOString(),
         activated_at: install.activated_at ? install.activated_at : new Date().toISOString(),
         initial_fill_qty: install.initial_fill_qty || 0,
-        cash_float: install.cash_float || 0
+        cash_float: install.cash_float || 0,
+        org_id: null // Will be set by RLS/trigger
       })
       if (e2) throw e2
 
       // create default service schedules
-      const today = new Date()
       const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       const nextTwoWeeks = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
       
       const { error: e3 } = await supabase.from('restock_tasks').insert({ 
         machine_id: m.id, 
         next_visit: nextWeek.toISOString().split('T')[0], 
-        cadence_days: 7 
+        cadence_days: 7,
+        org_id: null // Will be set by RLS/trigger
       })
       if (e3) throw e3
       
       const { error: e4 } = await supabase.from('cash_collection_schedule').insert({ 
         machine_id: m.id, 
         next_collection: nextTwoWeeks.toISOString().split('T')[0], 
-        cadence_days: 14 
+        cadence_days: 14,
+        org_id: null // Will be set by RLS/trigger
       })
       if (e4) throw e4
 
@@ -472,9 +489,15 @@ export default function NewLocationWorkflow() {
           <input className="input" type="date" placeholder="Follow Up Date" value={lead.follow_up_date||''} onChange={e=>setLead({...lead, follow_up_date:e.target.value})}/>
           <input className="input" type="number" step="0.01" placeholder="Revenue Split %" value={lead.revenue_split||''} onChange={e=>setLead({...lead, revenue_split:Number(e.target.value)})}/>
         </div>
-        <textarea className="input mt-4" placeholder="Notes" value={lead.notes||''} onChange={e=>setLead({...lead, notes:e.target.value})}/>
-        <div className="mt-3 text-sm text-muted-foreground">Fit Score: <span className="font-semibold">{computeFitScore(lead).toFixed(0)}</span></div>
-        <SaveBar onNext={saveLead} disabled={loading} />
+        <textarea 
+          className="input mt-4" 
+          placeholder="Additional Notes"
+          value={lead.notes||''} 
+          onChange={e=>setLead({...lead, notes:e.target.value})}
+        />
+        <div className="mt-4 text-sm text-muted-foreground">
+          Fit Score: <strong>{computeFitScore(lead)}%</strong>
+        </div>
       </Section>
     )
   }
@@ -483,33 +506,84 @@ export default function NewLocationWorkflow() {
     return (
       <Section title="Step 2 — Site Survey">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" type="date" placeholder="Visit Date" value={survey.visit_date||''} onChange={e=>setSurvey({...survey, visit_date:e.target.value})}/>
-          <input className="input" type="number" placeholder="# Power Outlets" value={survey.power_outlets_count||''} onChange={e=>setSurvey({...survey, power_outlets_count:Number(e.target.value)})}/>
-          <select className="input" value={survey.network_type||''} onChange={e=>setSurvey({...survey, network_type:e.target.value})}>
+          <input 
+            className="input" 
+            type="date" 
+            placeholder="Visit Date"
+            value={survey.visit_date||''} 
+            onChange={e=>setSurvey({...survey, visit_date:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Power Outlets Count"
+            value={survey.power_outlets_count||''} 
+            onChange={e=>setSurvey({...survey, power_outlets_count:Number(e.target.value)})}
+          />
+          <select 
+            className="input"
+            value={survey.network_type||''} 
+            onChange={e=>setSurvey({...survey, network_type:e.target.value})}
+          >
             <option value="">Network Type</option>
-            <option>Cellular</option>
             <option>WiFi</option>
+            <option>Ethernet</option>
+            <option>Cellular</option>
             <option>None</option>
           </select>
-          <input className="input" type="number" placeholder="Entrance Width (cm)" value={survey.entrance_width_cm||''} onChange={e=>setSurvey({...survey, entrance_width_cm:Number(e.target.value)})}/>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input type="checkbox" checked={!!survey.elevator_access} onChange={e=>setSurvey({...survey, elevator_access:e.target.checked})}/>
-            Elevator Access
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Entrance Width (cm)"
+            value={survey.entrance_width_cm||''} 
+            onChange={e=>setSurvey({...survey, entrance_width_cm:Number(e.target.value)})}
+          />
+          <label className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              checked={!!survey.elevator_access} 
+              onChange={e=>setSurvey({...survey, elevator_access:e.target.checked})}
+            />
+            <span>Elevator Access</span>
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input type="checkbox" checked={!!survey.parking} onChange={e=>setSurvey({...survey, parking:e.target.checked})}/>
-            Parking Available
+          <label className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              checked={!!survey.parking} 
+              onChange={e=>setSurvey({...survey, parking:e.target.checked})}
+            />
+            <span>Parking Available</span>
           </label>
-          <select className="input" value={survey.recommended_machine_type||'Combo'} onChange={e=>setSurvey({...survey, recommended_machine_type: e.target.value as any})}>
+          <select 
+            className="input"
+            value={survey.recommended_machine_type||'Combo'} 
+            onChange={e=>setSurvey({...survey, recommended_machine_type: e.target.value as any})}
+          >
             <option>Snack</option>
             <option>Beverage</option>
             <option>Combo</option>
           </select>
-          <input className="input" type="number" placeholder="# of Machines" value={survey.recommended_machine_count||''} onChange={e=>setSurvey({...survey, recommended_machine_count:Number(e.target.value)})}/>
-          <input className="input" type="date" placeholder="Earliest Install Date" value={survey.earliest_install_date||''} onChange={e=>setSurvey({...survey, earliest_install_date:e.target.value})}/>
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Recommended Machine Count"
+            value={survey.recommended_machine_count||''} 
+            onChange={e=>setSurvey({...survey, recommended_machine_count:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            type="date" 
+            placeholder="Earliest Install Date"
+            value={survey.earliest_install_date||''} 
+            onChange={e=>setSurvey({...survey, earliest_install_date:e.target.value})}
+          />
         </div>
-        <textarea className="input mt-4" placeholder="Constraints / Notes" value={survey.constraints||''} onChange={e=>setSurvey({...survey, constraints:e.target.value})}/>
-        <SaveBar onBack={()=>setCurrentStep(0)} onNext={saveSurvey} disabled={loading} />
+        <textarea 
+          className="input mt-4" 
+          placeholder="Site Constraints & Notes"
+          value={survey.constraints||''} 
+          onChange={e=>setSurvey({...survey, constraints:e.target.value})}
+        />
       </Section>
     )
   }
@@ -517,20 +591,50 @@ export default function NewLocationWorkflow() {
   function ContractStep() {
     return (
       <Section title="Step 3 — Proposal & Contract">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" type="number" placeholder="Commission %" value={contract.commission_rate||''} onChange={e=>setContract({...contract, commission_rate:Number(e.target.value)})}/>
-          <input className="input" placeholder="Service Level (SLA)" value={contract.service_level||''} onChange={e=>setContract({...contract, service_level:e.target.value})}/>
-          <input className="input" type="number" placeholder="Placement Fee" value={contract.placement_fee||''} onChange={e=>setContract({...contract, placement_fee:Number(e.target.value)})}/>
-          <input className="input" type="number" placeholder="Term (months)" value={contract.term_months||''} onChange={e=>setContract({...contract, term_months:Number(e.target.value)})}/>
-          <select className="input" value={contract.status||'draft'} onChange={e=>setContract({...contract, status:e.target.value as any})}>
-            <option>draft</option>
-            <option>sent</option>
-            <option>signed</option>
-            <option>declined</option>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Commission Rate (%)"
+            value={contract.commission_rate||''} 
+            onChange={e=>setContract({...contract, commission_rate:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            placeholder="Service Level Agreement"
+            value={contract.service_level||''} 
+            onChange={e=>setContract({...contract, service_level:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Placement Fee"
+            value={contract.placement_fee||''} 
+            onChange={e=>setContract({...contract, placement_fee:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Term (months)"
+            value={contract.term_months||''} 
+            onChange={e=>setContract({...contract, term_months:Number(e.target.value)})}
+          />
+          <select 
+            className="input"
+            value={contract.status||'draft'} 
+            onChange={e=>setContract({...contract, status:e.target.value as any})}
+          >
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="signed">Signed</option>
+            <option value="declined">Declined</option>
           </select>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">When status is <span className="font-semibold">signed</span>, a location record will be created automatically.</p>
-        <SaveBar onBack={()=>setCurrentStep(1)} onNext={saveContract} disabled={loading} />
+        {contract.status === 'signed' && (
+          <div className="mt-4 p-4 bg-green-100 border border-green-400 rounded-xl text-green-800">
+            Contract signed! Location record will be created automatically.
+          </div>
+        )}
       </Section>
     )
   }
@@ -539,14 +643,46 @@ export default function NewLocationWorkflow() {
     return (
       <Section title="Step 4 — Machine Order">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" placeholder="Vendor" value={order.vendor||''} onChange={e=>setOrder({...order, vendor:e.target.value})}/>
-          <input className="input" placeholder="Model" value={order.model||''} onChange={e=>setOrder({...order, model:e.target.value})}/>
-          <input className="input" type="number" placeholder="Quantity" value={order.quantity||''} onChange={e=>setOrder({...order, quantity:Number(e.target.value)})}/>
-          <input className="input" type="date" placeholder="Order Date" value={order.order_date||''} onChange={e=>setOrder({...order, order_date:e.target.value})}/>
-          <input className="input" type="date" placeholder="Expected Delivery" value={order.expected_delivery_date||''} onChange={e=>setOrder({...order, expected_delivery_date:e.target.value})}/>
-          <input className="input" placeholder="Notes" value={order.notes||''} onChange={e=>setOrder({...order, notes:e.target.value})}/>
+          <input 
+            className="input" 
+            placeholder="Vendor"
+            value={order.vendor||''} 
+            onChange={e=>setOrder({...order, vendor:e.target.value})}
+          />
+          <input 
+            className="input" 
+            placeholder="Machine Model"
+            value={order.model||''} 
+            onChange={e=>setOrder({...order, model:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Quantity"
+            value={order.quantity||''} 
+            onChange={e=>setOrder({...order, quantity:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            type="date" 
+            placeholder="Order Date"
+            value={order.order_date||''} 
+            onChange={e=>setOrder({...order, order_date:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="date" 
+            placeholder="Expected Delivery"
+            value={order.expected_delivery_date||''} 
+            onChange={e=>setOrder({...order, expected_delivery_date:e.target.value})}
+          />
         </div>
-        <SaveBar onBack={()=>setCurrentStep(2)} onNext={saveOrder} disabled={loading || !locationId} />
+        <textarea 
+          className="input mt-4" 
+          placeholder="Order Notes"
+          value={order.notes||''} 
+          onChange={e=>setOrder({...order, notes:e.target.value})}
+        />
       </Section>
     )
   }
@@ -555,12 +691,32 @@ export default function NewLocationWorkflow() {
     return (
       <Section title="Step 5 — Planogram & Inventory">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" placeholder="Planogram Name" value={planogram.name||''} onChange={e=>setPlanogram({...planogram, name:e.target.value})}/>
-          <input className="input" type="number" placeholder="Rows" value={planogram.rows||''} onChange={e=>setPlanogram({...planogram, rows:Number(e.target.value)})}/>
-          <input className="input" type="number" placeholder="Cols" value={planogram.cols||''} onChange={e=>setPlanogram({...planogram, cols:Number(e.target.value)})}/>
+          <input 
+            className="input" 
+            placeholder="Planogram Name"
+            value={planogram.name||''} 
+            onChange={e=>setPlanogram({...planogram, name:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Rows"
+            value={planogram.rows||''} 
+            onChange={e=>setPlanogram({...planogram, rows:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Columns"
+            value={planogram.cols||''} 
+            onChange={e=>setPlanogram({...planogram, cols:Number(e.target.value)})}
+          />
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">A basic planogram will be generated with slot labels. You can customize products later.</p>
-        <SaveBar onBack={()=>setCurrentStep(3)} onNext={savePlanogram} disabled={loading || !locationId} />
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-sm text-blue-800">
+            A {planogram.rows || 6} × {planogram.cols || 6} planogram will be generated with {(planogram.rows || 6) * (planogram.cols || 6)} slots.
+          </p>
+        </div>
       </Section>
     )
   }
@@ -568,14 +724,35 @@ export default function NewLocationWorkflow() {
   function DeliveryStep() {
     return (
       <Section title="Step 6 — Schedule Delivery">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" type="datetime-local" placeholder="Window Start" value={delivery.window_start||''} onChange={e=>setDelivery({...delivery, window_start:e.target.value})}/>
-          <input className="input" type="datetime-local" placeholder="Window End" value={delivery.window_end||''} onChange={e=>setDelivery({...delivery, window_end:e.target.value})}/>
-          <input className="input" type="date" placeholder="Assigned Route Date" value={delivery.assigned_route_date||''} onChange={e=>setDelivery({...delivery, assigned_route_date:e.target.value})}/>
-          <input className="input" placeholder="Driver ID (optional)" value={delivery.driver_id||''} onChange={e=>setDelivery({...delivery, driver_id:e.target.value})}/>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input 
+            className="input" 
+            type="datetime-local" 
+            placeholder="Delivery Window Start"
+            value={delivery.window_start||''} 
+            onChange={e=>setDelivery({...delivery, window_start:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="datetime-local" 
+            placeholder="Delivery Window End"
+            value={delivery.window_end||''} 
+            onChange={e=>setDelivery({...delivery, window_end:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="date" 
+            placeholder="Assigned Route Date"
+            value={delivery.assigned_route_date||''} 
+            onChange={e=>setDelivery({...delivery, assigned_route_date:e.target.value})}
+          />
+          <input 
+            className="input" 
+            placeholder="Driver ID"
+            value={delivery.driver_id||''} 
+            onChange={e=>setDelivery({...delivery, driver_id:e.target.value})}
+          />
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">This will create delivery schedule entries for route planning.</p>
-        <SaveBar onBack={()=>setCurrentStep(4)} onNext={saveDelivery} disabled={loading || !machineOrderId || !locationId} />
       </Section>
     )
   }
@@ -584,67 +761,142 @@ export default function NewLocationWorkflow() {
     return (
       <Section title="Step 7 — Install & Activate">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="input" placeholder="Serial Number" value={install.serial_number||''} onChange={e=>setInstall({...install, serial_number:e.target.value})}/>
-          <input className="input" placeholder="Telemetry Device ID" value={install.telemetry_device_id||''} onChange={e=>setInstall({...install, telemetry_device_id:e.target.value})}/>
-          <input className="input" type="datetime-local" placeholder="Installed At" value={install.installed_at||''} onChange={e=>setInstall({...install, installed_at:e.target.value})}/>
-          <input className="input" type="datetime-local" placeholder="Activated At" value={install.activated_at||''} onChange={e=>setInstall({...install, activated_at:e.target.value})}/>
-          <input className="input" type="number" placeholder="Initial Fill Qty" value={install.initial_fill_qty||''} onChange={e=>setInstall({...install, initial_fill_qty:Number(e.target.value)})}/>
-          <input className="input" type="number" step="0.01" placeholder="Cash Float" value={install.cash_float||''} onChange={e=>setInstall({...install, cash_float:Number(e.target.value)})}/>
+          <input 
+            className="input" 
+            placeholder="Serial Number"
+            value={install.serial_number||''} 
+            onChange={e=>setInstall({...install, serial_number:e.target.value})}
+          />
+          <input 
+            className="input" 
+            placeholder="Telemetry Device ID"
+            value={install.telemetry_device_id||''} 
+            onChange={e=>setInstall({...install, telemetry_device_id:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="datetime-local" 
+            placeholder="Installed At"
+            value={install.installed_at||''} 
+            onChange={e=>setInstall({...install, installed_at:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="datetime-local" 
+            placeholder="Activated At"
+            value={install.activated_at||''} 
+            onChange={e=>setInstall({...install, activated_at:e.target.value})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            placeholder="Initial Fill Quantity"
+            value={install.initial_fill_qty||''} 
+            onChange={e=>setInstall({...install, initial_fill_qty:Number(e.target.value)})}
+          />
+          <input 
+            className="input" 
+            type="number" 
+            step="0.01"
+            placeholder="Cash Float"
+            value={install.cash_float||''} 
+            onChange={e=>setInstall({...install, cash_float:Number(e.target.value)})}
+          />
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">Creates machine record, links to location, and sets up maintenance schedules.</p>
-        <SaveBar onBack={()=>setCurrentStep(5)} onNext={saveInstall} disabled={loading || !locationId} />
+        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+          <p className="text-sm text-green-800">
+            Installation will create restock and cash collection schedules automatically.
+          </p>
+        </div>
       </Section>
     )
   }
 
-  function LiveStep() {
+  function GoLiveStep() {
     return (
       <Section title="Step 8 — Go‑Live & Monitoring">
-        <p className="text-sm text-muted-foreground">Congratulations! Your location is ready to go live. The machine will now appear in operational dashboards for monitoring, restocking, and cash collection.</p>
-        <div className="mt-4 flex gap-3">
-          <button className="px-4 py-2 rounded-xl border border-border text-foreground hover:bg-accent" onClick={()=>setCurrentStep(6)}>Back</button>
-          <button 
-            className="px-4 py-2 rounded-xl font-semibold bg-primary hover:bg-primary/90 text-primary-foreground" 
-            onClick={finishGoLive}
-            disabled={loading}
-          >
-            {loading ? 'Processing...' : 'Finish & Mark Live'}
-          </button>
+        <div className="p-6 bg-green-50 border border-green-200 rounded-xl text-center">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">
+            🎉 Ready to Go Live!
+          </h3>
+          <p className="text-green-700 mb-4">
+            All setup steps are complete. The machine is ready for operation.
+          </p>
+          <ul className="text-sm text-green-600 space-y-1 mb-6">
+            <li>✓ Machine installed and activated</li>
+            <li>✓ Planogram configured</li>
+            <li>✓ Restock schedule created</li>
+            <li>✓ Cash collection schedule created</li>
+          </ul>
         </div>
       </Section>
     )
   }
 
-  // Set breadcrumb
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent("breadcrumbs:set", {
-      detail: { title: "New Location Workflow" }
-    }))
-  }, [])
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0: return lead.name && lead.address && lead.city
+      case 1: return survey.visit_date
+      case 2: return contract.status
+      case 3: return order.model && order.quantity
+      case 4: return planogram.name && planogram.rows && planogram.cols
+      case 5: return delivery.window_start && delivery.window_end
+      case 6: return install.serial_number
+      default: return true
+    }
+  }
+
+  const handleNext = () => {
+    switch (currentStep) {
+      case 0: saveLead(); break
+      case 1: saveSurvey(); break
+      case 2: saveContract(); break
+      case 3: saveOrder(); break
+      case 4: savePlanogram(); break
+      case 5: saveDelivery(); break
+      case 6: saveInstall(); break
+      case 7: finishGoLive(); break
+    }
+  }
+
+  const handleBack = () => {
+    if (currentStep > 0) setCurrentStep(currentStep - 1)
+  }
 
   return (
-    <div className="max-w-6xl mx-auto px-3 py-6">
-      <h1 className="text-2xl font-bold mb-2">New Location Workflow</h1>
-      <p className="text-sm text-muted-foreground mb-4">
-        Guide a prospect from initial lead to live machines. Progress is saved automatically. 
-        Resume via <code className="bg-muted px-2 py-1 rounded">?leadId=...</code>
-      </p>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">New Location Workflow</h1>
+          <p className="text-muted-foreground">
+            Guide a prospect from initial lead to live vending machine operation.
+          </p>
+        </div>
 
-      <StepHeader steps={steps} current={currentStep} />
+        <StepHeader steps={steps} current={currentStep} />
 
-      {currentStep === 0 && <LeadStep />}
-      {currentStep === 1 && <SurveyStep />}
-      {currentStep === 2 && <ContractStep />}
-      {currentStep === 3 && <OrderStep />}
-      {currentStep === 4 && <PlanogramStep />}
-      {currentStep === 5 && <DeliveryStep />}
-      {currentStep === 6 && <InstallStep />}
-      {currentStep === 7 && <LiveStep />}
+        <div className="min-h-[600px]">
+          {currentStep === 0 && <LeadStep />}
+          {currentStep === 1 && <SurveyStep />}
+          {currentStep === 2 && <ContractStep />}
+          {currentStep === 3 && <OrderStep />}
+          {currentStep === 4 && <PlanogramStep />}
+          {currentStep === 5 && <DeliveryStep />}
+          {currentStep === 6 && <InstallStep />}
+          {currentStep === 7 && <GoLiveStep />}
+        </div>
 
-      {/* Styles for inputs */}
+        <SaveBar 
+          onBack={currentStep > 0 ? handleBack : undefined}
+          onNext={handleNext}
+          isLast={currentStep === 7}
+          disabled={!canProceed() || loading}
+        />
+      </div>
+
       <style>{`
         .input { 
-          @apply bg-background border border-input rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground w-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50; 
+          @apply bg-background border border-input rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted-foreground w-full focus:outline-none focus:ring-2 focus:ring-ring; 
         }
       `}</style>
     </div>
