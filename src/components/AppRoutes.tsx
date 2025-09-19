@@ -106,6 +106,10 @@ import NewPurchaseOrder from "@/pages/NewPurchaseOrder";
 
 // Subdirectory Pages
 import Glossary from "@/pages/help/Glossary";
+import UserManual from "@/pages/help/UserManual";
+import SOPs from "@/pages/help/SOPs";
+import AdminGuide from "@/pages/help/AdminGuide";
+import TrainingMaterials from "@/pages/help/TrainingMaterials";
 import OpsConsole from "@/pages/ops/OpsConsole";
 
 import Customers from "@/pages/Customers";
@@ -322,6 +326,10 @@ const MainAppLayout = () => {
               
               {/* Subdirectory Pages */}
               <Route path="/help/glossary" element={<Glossary />} />
+              <Route path="/help/user-manual" element={<UserManual />} />
+              <Route path="/help/sops" element={<SOPs />} />
+              <Route path="/help/admin-guide" element={<AdminGuide />} />
+              <Route path="/help/training" element={<TrainingMaterials />} />
               <Route path="/ops/console" element={<OpsConsole />} />
               
               {/* Account */}

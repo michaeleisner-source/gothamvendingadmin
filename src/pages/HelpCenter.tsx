@@ -130,6 +130,41 @@ export default function HelpCenter() {
           ))}
         </div>
       )}
+
+      {/* Documentation Quick Links */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <h2 className="text-lg font-semibold mb-4">Documentation & Training</h2>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <Link
+            to="/help/user-manual"
+            className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+          >
+            <h3 className="font-medium text-sm">User Manual</h3>
+            <p className="text-xs text-muted-foreground mt-1">Complete system guide</p>
+          </Link>
+          <Link
+            to="/help/sops"
+            className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+          >
+            <h3 className="font-medium text-sm">Standard Operating Procedures</h3>
+            <p className="text-xs text-muted-foreground mt-1">Daily, weekly, monthly tasks</p>
+          </Link>
+          <Link
+            to="/help/admin-guide"
+            className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+          >
+            <h3 className="font-medium text-sm">Administrator Guide</h3>
+            <p className="text-xs text-muted-foreground mt-1">System configuration & security</p>
+          </Link>
+          <Link
+            to="/help/training"
+            className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+          >
+            <h3 className="font-medium text-sm">Training Materials</h3>
+            <p className="text-xs text-muted-foreground mt-1">Staff onboarding & education</p>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

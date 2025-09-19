@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FileUpload } from "@/components/FileUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NewContract() {
   const navigate = useNavigate();
@@ -21,6 +23,9 @@ export default function NewContract() {
     term_months: "12",
     auto_renew: true,
     cancellation_notice_days: "30",
+    contract_file_url: "",
+    contract_file_name: "",
+    contract_file_size: 0,
   });
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -41,18 +46,40 @@ export default function NewContract() {
     }
 
     try {
-      // For now, just show success message and navigate back
-      // In a real app, you would submit to Supabase here
+      // Submit to Supabase
+      const contractData = {
+        title: formData.title,
+        location_id: formData.location_id || null,
+        contract_number: formData.contract_number,
+        revenue_share_pct: formData.revenue_share_pct ? parseFloat(formData.revenue_share_pct) : null,
+        commission_flat_cents: formData.commission_flat_cents ? parseInt(formData.commission_flat_cents) : null,
+        term_months: parseInt(formData.term_months),
+        auto_renew: formData.auto_renew,
+        cancellation_notice_days: parseInt(formData.cancellation_notice_days),
+        contract_file_url: formData.contract_file_url || null,
+        contract_file_name: formData.contract_file_name || null,
+        contract_file_size: formData.contract_file_size || null,
+        status: 'draft',
+        body_html: '<p>Contract content to be added...</p>'
+      } as any;
+
+      const { error } = await supabase
+        .from('contracts')
+        .insert(contractData);
+
+      if (error) throw error;
+
       toast({
         title: "Contract Created",
         description: "New contract has been created successfully!",
       });
       
       navigate("/contracts");
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error creating contract:', error);
       toast({
         title: "Error",
-        description: "Failed to create contract. Please try again.",
+        description: error.message || "Failed to create contract. Please try again.",
         variant: "destructive",
       });
     }
@@ -95,6 +122,20 @@ export default function NewContract() {
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   placeholder="Vending Services Agreement"
                   required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Contract Document</Label>
+                <FileUpload
+                  onFileUploaded={(url, fileName, fileSize) => {
+                    setFormData({
+                      ...formData,
+                      contract_file_url: url,
+                      contract_file_name: fileName,
+                      contract_file_size: fileSize
+                    });
+                  }}
                 />
               </div>
               
