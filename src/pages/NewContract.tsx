@@ -59,23 +59,24 @@ export default function NewContract() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="page-padding max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
+          className="touch-friendly"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">New Contract</h1>
-          <p className="text-muted-foreground">Create a new vending service agreement</p>
+          <h1 className="heading-mobile font-bold">New Contract</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Create a new vending service agreement</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="section-spacing">
         {/* Basic Information */}
         <Card>
           <CardHeader>
@@ -84,8 +85,8 @@ export default function NewContract() {
               Contract Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="card-padding space-y-4">
+            <div className="grid-form">
               <div className="space-y-2">
                 <Label htmlFor="title">Contract Title *</Label>
                 <Input
@@ -130,8 +131,8 @@ export default function NewContract() {
           <CardHeader>
             <CardTitle>Financial Terms</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="card-padding space-y-4">
+            <div className="grid-form">
               <div className="space-y-2">
                 <Label htmlFor="revenue_share">Revenue Share (%)</Label>
                 <Input
@@ -166,8 +167,8 @@ export default function NewContract() {
           <CardHeader>
             <CardTitle>Contract Terms</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="card-padding space-y-4">
+            <div className="grid-form">
               <div className="space-y-2">
                 <Label htmlFor="term_months">Term (Months)</Label>
                 <Select 
@@ -201,11 +202,11 @@ export default function NewContract() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-4 pt-6">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-4 sm:pt-6">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="touch-friendly order-2 sm:order-1">
             Cancel
           </Button>
-          <Button type="submit" className="flex items-center gap-2">
+          <Button type="submit" className="touch-friendly flex items-center justify-center gap-2 order-1 sm:order-2">
             <Save className="h-4 w-4" />
             Create Contract
           </Button>

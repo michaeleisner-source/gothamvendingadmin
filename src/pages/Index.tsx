@@ -263,7 +263,7 @@ const Index = () => {
 
   if (loading && !data.kpis) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container-mobile page-padding">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -297,7 +297,7 @@ const Index = () => {
     >
       {/* Critical KPIs at the top */}
       {data.kpis && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatCard
             title="Revenue"
             value={`$${data.kpis.revenue.toLocaleString()}`}
@@ -344,7 +344,7 @@ const Index = () => {
       )}
 
       {/* Operational Status Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-base font-medium">Today's Performance</CardTitle>
@@ -439,7 +439,7 @@ const Index = () => {
       </div>
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <ChartCard
           title="Revenue Trends"
           description="Daily revenue performance over time"
@@ -462,7 +462,7 @@ const Index = () => {
       </div>
 
       {/* Action Center and Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="lg:col-span-3">
           <Card>
             <CardHeader>
