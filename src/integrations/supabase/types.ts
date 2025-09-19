@@ -3063,6 +3063,48 @@ export type Database = {
         }
         Relationships: []
       }
+      system_backups: {
+        Row: {
+          backup_data: Json | null
+          backup_id: string
+          compressed_size_bytes: number | null
+          created_at: string
+          file_path: string | null
+          id: string
+          notes: string | null
+          org_id: string | null
+          status: string
+          table_counts: Json
+          updated_at: string
+        }
+        Insert: {
+          backup_data?: Json | null
+          backup_id: string
+          compressed_size_bytes?: number | null
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string | null
+          status?: string
+          table_counts: Json
+          updated_at?: string
+        }
+        Update: {
+          backup_data?: Json | null
+          backup_id?: string
+          compressed_size_bytes?: number | null
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string | null
+          status?: string
+          table_counts?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tax_configs: {
         Row: {
           applies_to: string | null
