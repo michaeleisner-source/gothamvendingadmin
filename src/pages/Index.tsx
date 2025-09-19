@@ -34,6 +34,7 @@ import { StatCard } from "@/components/enhanced/StatCard";
 import { PageLayout } from "@/components/ui/PageLayout";
 import { ChartCard } from "@/components/enhanced/ChartCard";
 import { QuickFilters } from "@/components/enhanced/QuickFilters";
+import { BackupStatusWidget } from "@/components/BackupStatusWidget";
 
 interface DashboardData {
   kpis: {
@@ -482,6 +483,8 @@ const Index = () => {
         </div>
 
         <div className="space-y-4">
+          <BackupStatusWidget />
+          
           {/* Quick Actions */}
           <Card>
             <CardHeader>
