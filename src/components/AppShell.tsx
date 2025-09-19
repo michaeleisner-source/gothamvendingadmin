@@ -21,9 +21,11 @@ export default function AppShell() {
       <AuthProvider>
         <ScopeProvider>
           <TooltipProvider>
-            <Toaster />
-            <AppRoutes />
-            <HelpBot />
+            <div className="min-h-screen bg-background">
+              <Toaster />
+              <AppRoutes />
+              <HelpBot />
+            </div>
           </TooltipProvider>
         </ScopeProvider>
       </AuthProvider>
