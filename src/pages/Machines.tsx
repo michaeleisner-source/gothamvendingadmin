@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useMachines } from "@/hooks/useSupabaseData";
 import { EnhancedDataTable, DataTableColumn, DataTableAction } from "@/components/enhanced/EnhancedDataTable";
 import { StatCard } from "@/components/enhanced/StatCard";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 export default function Machines() {
   const { data: machines = [], isLoading, error } = useMachines();
@@ -93,14 +94,19 @@ export default function Machines() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Machines</h1>
-          <p className="text-muted-foreground">
-            Monitor and manage your vending machines
-          </p>
+    <HelpTooltipProvider>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Machines</h1>
+            <HelpTooltip content="Manage your vending machine fleet. Monitor status, track performance, and manage machine configurations. Use the search to quickly find specific machines by name, model, or serial number." />
+          </div>
+          <div className="text-right">
+            <p className="text-muted-foreground text-sm">
+              Monitor and manage your vending machines
+            </p>
+          </div>
         </div>
         <Link to="/machines/new">
           <Button className="bg-primary hover:bg-primary/90">
@@ -108,10 +114,9 @@ export default function Machines() {
             Add Machine
           </Button>
         </Link>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           title="Total Machines"
           value={stats.total}
@@ -145,5 +150,6 @@ export default function Machines() {
         emptyMessage="No machines found. Add your first machine to get started."
       />
     </div>
+    </HelpTooltipProvider>
   );
 }

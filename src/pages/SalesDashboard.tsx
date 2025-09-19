@@ -24,6 +24,7 @@ import { RealtimeSalesWidget } from "@/components/sales/RealtimeSalesWidget";
 import { ChartsSection } from "@/components/dashboard/ChartsSection";
 import { formatRevenueData, formatSalesVolumeData, formatProductData } from "@/components/dashboard/ChartsSection";
 import { Link } from "react-router-dom";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 interface SalesMetric {
   title: string;
@@ -262,16 +263,20 @@ export default function SalesDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-4">
-          <Activity className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Sales Dashboard</h1>
-            <p className="text-muted-foreground">Real-time sales analytics and performance metrics</p>
+    <HelpTooltipProvider>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <Activity className="h-8 w-8 text-primary" />
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-3xl font-bold">Sales Dashboard</h1>
+                <p className="text-muted-foreground">Real-time sales analytics and performance metrics</p>
+              </div>
+              <HelpTooltip content="Monitor real-time sales performance, track revenue trends, and analyze top performing products and machines. Use filters to view data by different time periods." />
+            </div>
           </div>
-        </div>
 
         <div className="flex items-center space-x-2">
           <Button asChild>
@@ -467,5 +472,6 @@ export default function SalesDashboard() {
         </div>
       </div>
     </div>
+    </HelpTooltipProvider>
   );
 }

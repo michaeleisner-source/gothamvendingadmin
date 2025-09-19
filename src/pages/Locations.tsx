@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useLocations } from "@/hooks/useSupabaseData";
 import { EnhancedDataTable, DataTableColumn, DataTableAction } from "@/components/enhanced/EnhancedDataTable";
 import { StatCard } from "@/components/enhanced/StatCard";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 export default function Locations() {
   const { data: locations = [], isLoading, error } = useLocations();
@@ -117,14 +118,19 @@ export default function Locations() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
-          <p className="text-muted-foreground">
-            Manage your vending machine locations
-          </p>
+    <HelpTooltipProvider>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
+            <HelpTooltip content="Manage all your vending machine locations. Track location performance, contact information, and status. Use search to find locations by name, city, state, or contact person." />
+          </div>
+          <div className="text-right">
+            <p className="text-muted-foreground text-sm">
+              Manage your vending machine locations
+            </p>
+          </div>
         </div>
         <Link to="/locations/new">
           <Button className="bg-primary hover:bg-primary/90">
@@ -132,10 +138,9 @@ export default function Locations() {
             Add Location
           </Button>
         </Link>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           title="Total Locations"
           value={stats.total}
@@ -169,5 +174,6 @@ export default function Locations() {
         emptyMessage="No locations found. Add your first location to get started."
       />
     </div>
+    </HelpTooltipProvider>
   );
 }

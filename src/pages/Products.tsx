@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useProducts } from "@/hooks/useSupabaseData";
 import { EnhancedDataTable, DataTableColumn, DataTableAction } from "@/components/enhanced/EnhancedDataTable";
 import { StatCard } from "@/components/enhanced/StatCard";
+import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
 
 export default function Products() {
   const { data: products = [], isLoading, error } = useProducts();
@@ -108,14 +109,19 @@ export default function Products() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Manage your product catalog and pricing
-          </p>
+    <HelpTooltipProvider>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+            <HelpTooltip content="Manage your complete product catalog including pricing, costs, and profit margins. Use search to find products by name, SKU, or category. Track profitability across your entire inventory." />
+          </div>
+          <div className="text-right">
+            <p className="text-muted-foreground text-sm">
+              Manage your product catalog and pricing
+            </p>
+          </div>
         </div>
         <Link to="/products/new">
           <Button className="bg-primary hover:bg-primary/90">
@@ -123,10 +129,9 @@ export default function Products() {
             Add Product
           </Button>
         </Link>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           title="Total Products"
           value={stats.total}
@@ -161,5 +166,6 @@ export default function Products() {
         emptyMessage="No products found. Add your first product to get started."
       />
     </div>
+    </HelpTooltipProvider>
   );
 }
