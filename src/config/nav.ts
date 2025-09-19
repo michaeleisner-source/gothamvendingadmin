@@ -35,6 +35,7 @@ export const NAV: NavSection[] = [
   { title: 'Operations', items: [
     { label: 'Locations', path: '/locations', icon: 'lucide:map-pin' },
     { label: 'Machines', path: '/machines', icon: 'lucide:cpu' },
+    { label: 'API Management', path: '/machines/api', icon: 'lucide:plug' },
     { label: 'Products', path: '/products', icon: 'lucide:shopping-bag' },
     { label: 'Inventory', path: '/inventory', icon: 'lucide:boxes' },
     { label: 'Routes & Delivery', path: '/routes', icon: 'lucide:truck' },

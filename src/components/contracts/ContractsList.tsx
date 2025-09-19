@@ -52,7 +52,7 @@ export function ContractsList() {
   };
 
   const handleEdit = (contractId: string) => {
-    navigate(`/contracts/edit/${contractId}`);
+    navigate(`/contracts/${contractId}/edit`);
   };
 
   const handleDelete = (contractId: string) => {

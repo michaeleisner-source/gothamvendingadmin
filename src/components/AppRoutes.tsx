@@ -120,6 +120,8 @@ import DocumentProcessing from "@/pages/DocumentProcessing";
 import MobileOperations from "@/pages/MobileOperations";
 import DemandForecasting from "@/pages/DemandForecasting";
 import MachineTemplates from "@/pages/MachineTemplates";
+import MachineAPIManagement from "@/pages/MachineAPIManagement";
+import ContractEdit from "@/pages/ContractEdit";
 import PricingManagement from "@/pages/PricingManagement";
 import ProductCatalog from "@/pages/ProductCatalog";
 import CashFlow from "@/pages/CashFlow";
@@ -233,6 +235,7 @@ const MainAppLayout = () => {
               {/* Operations */}
               <Route path="/machines" element={<Machines />} />
               <Route path="/machines/new" element={<NewMachine />} />
+              <Route path="/machines/api" element={<MachineAPIManagement />} />
               <Route path="/machines-enhanced" element={<MachinesEnhanced />} />
               <Route path="/machine/:id" element={<MachineDetail />} />
               <Route path="/machine-setup" element={<MachineSetup />} />
@@ -295,6 +298,7 @@ const MainAppLayout = () => {
               {/* Contracts & Insurance */}
               <Route path="/contracts" element={<Contracts />} />
               <Route path="/contracts/new" element={<NewContract />} />
+              <Route path="/contracts/:id/edit" element={<ContractEdit />} />
               <Route path="/contract-management" element={<ContractManagement />} />
               <Route path="/contract/:id" element={<ContractView />} />
               <Route path="/insurance" element={<Insurance />} />

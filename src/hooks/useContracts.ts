@@ -35,7 +35,7 @@ export function useContracts(search?: string) {
         .from('contracts')
         .select(`
           *,
-          locations (
+          locations!contracts_location_id_fkey (
             name
           )
         `);
