@@ -145,6 +145,7 @@ function SaveBar({ onBack, onNext, isLast, disabled }: { onBack?: () => void; on
 
 // ============ Main Component ============
 export default function NewLocationWorkflow() {
+  console.log('NewLocationWorkflow component loaded!')
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(0)
   const [leadId, setLeadId] = useState<string | null>(null)
