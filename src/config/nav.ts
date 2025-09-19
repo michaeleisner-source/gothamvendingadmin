@@ -60,6 +60,7 @@ export const NAV: NavSection[] = [
     { label: 'Staff', path: '/staff', icon: 'lucide:user-check' },
     { label: 'Contracts & Insurance', path: '/contracts', icon: 'lucide:file-text' },
     { label: 'Business Flow', path: '/business-flow', icon: 'lucide:workflow' },
+    { label: 'New Location Workflow', path: '/workflows/new-location', icon: 'lucide:map-pin-plus' },
   ]},
   { title: 'Admin', items: [
     { label: 'Settings', path: '/admin/settings', icon: 'lucide:settings' },
