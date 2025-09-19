@@ -20,6 +20,7 @@ import Products from "@/pages/Products";
 import Suppliers from "@/pages/Suppliers";
 import PurchaseOrders from "@/pages/PurchaseOrders";
 import Reports from "@/pages/Reports";
+import ReportsHub from "@/pages/ReportsHub";
 import Account from "@/pages/Account";
 import Auth from "@/pages/Auth";
 import RouteManagement from "@/pages/RouteManagement";
@@ -291,7 +292,8 @@ const MainAppLayout = () => {
               <Route path="/insurance" element={<Insurance />} />
               
               {/* Analytics */}
-              <Route path="/reports" element={<Reports />} />
+              <Route path="/reports" element={<ReportsHub />} />
+              <Route path="/reports-legacy" element={<Reports />} />
               <Route path="/enhanced-reports" element={<EnhancedReports />} />
               <Route path="/customer-analytics" element={<CustomerAnalytics />} />
               <Route path="/pipeline-analytics" element={<PipelineAnalytics />} />

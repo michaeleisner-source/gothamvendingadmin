@@ -4,7 +4,8 @@ import { LucideIcon } from "lucide-react";
 interface StatCardProps {
   title: string;
   value: string | number;
-  description?: string;
+  description?: string; // Keep description for backward compatibility
+  subtitle?: string;
   icon?: LucideIcon;
   trend?: {
     value: number;
@@ -18,6 +19,7 @@ export function StatCard({
   title,
   value,
   description,
+  subtitle,
   icon: Icon,
   trend,
   className = "",
@@ -25,9 +27,9 @@ export function StatCard({
   const getTrendColor = (direction: "up" | "down" | "neutral") => {
     switch (direction) {
       case "up":
-        return "text-green-600";
+        return "text-success";
       case "down":
-        return "text-red-600";
+        return "text-expense";
       default:
         return "text-muted-foreground";
     }
@@ -45,7 +47,7 @@ export function StatCard({
   };
 
   return (
-    <div className={`rounded-xl border border-border bg-card p-6 space-y-3 ${className}`}>
+    <div className={`rounded-xl border border-border bg-card p-6 space-y-3 card-hover ${className}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
@@ -53,8 +55,8 @@ export function StatCard({
       
       <div className="space-y-1">
         <p className="text-2xl font-bold">{value}</p>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
+        {(description || subtitle) && (
+          <p className="text-sm text-muted-foreground">{description || subtitle}</p>
         )}
       </div>
 

@@ -18,44 +18,64 @@ export const isDevEnv = () =>
   /localhost|127\.0\.0\.1|qa|staging/i.test(window.location.hostname) ||
   (import.meta as any)?.env?.MODE === 'development';
 
-// Navigation configuration
+// Streamlined Navigation Configuration
 export const NAV: NavSection[] = [
-  { title: 'Pipeline', items: [
-    { label: 'Leads',    path: '/leads',    icon: 'lucide:user-plus' },
-    { label: 'Installs', path: '/installs', icon: 'lucide:hammer' },
+  { title: 'Dashboards', items: [
+    { label: 'Business Overview', path: '/', icon: 'lucide:layout-dashboard' },
+    { label: 'Mission Control', path: '/enhanced-dashboard', icon: 'lucide:activity' },
+    { label: 'Sales Dashboard', path: '/sales-dashboard', icon: 'lucide:trending-up' },
+    { label: 'Low Stock Alerts', path: '/alerts/low-stock', icon: 'lucide:triangle-alert' },
+  ]},
+  { title: 'Sales & Prospects', items: [
+    { label: 'Prospects', path: '/prospects', icon: 'lucide:users' },
+    { label: 'Leads (Legacy)', path: '/leads', icon: 'lucide:user-plus' },
+    { label: 'Sales Entry', path: '/sales', icon: 'lucide:receipt-text' },
+    { label: 'Pipeline Analytics', path: '/pipeline-analytics', icon: 'lucide:bar-chart-3' },
   ]},
   { title: 'Operations', items: [
-    { label: 'Locations',        path: '/locations',        icon: 'lucide:map-pin' },
-    { label: 'Machines',         path: '/machines',         icon: 'lucide:cpu' },
-    { label: 'Products',         path: '/products',         icon: 'lucide:shopping-bag' },
-    { label: 'Inventory',        path: '/inventory',        icon: 'lucide:boxes' },
-    { label: 'Purchase Orders',  path: '/purchase-orders',  icon: 'lucide:clipboard-list' },
-    { label: 'Service',          path: '/service',          icon: 'lucide:wrench' },
+    { label: 'Locations', path: '/locations', icon: 'lucide:map-pin' },
+    { label: 'Machines', path: '/machines', icon: 'lucide:cpu' },
+    { label: 'Products', path: '/products', icon: 'lucide:shopping-bag' },
+    { label: 'Inventory', path: '/inventory', icon: 'lucide:boxes' },
+    { label: 'Routes & Delivery', path: '/routes', icon: 'lucide:truck' },
+    { label: 'Maintenance', path: '/maintenance', icon: 'lucide:wrench' },
+    { label: 'Daily Ops', path: '/daily-ops', icon: 'lucide:clipboard-list' },
   ]},
-  { title: 'Sales & Reporting', items: [
-    { label: 'Dashboard',                path: '/dashboard',           icon: 'lucide:layout-dashboard' },
-    { label: 'Sales Dashboard',          path: '/sales-dashboard',     icon: 'lucide:trending-up' },
-    { label: 'Sales Entry',              path: '/sales',               icon: 'lucide:receipt-text' },
-    { label: 'Machine Performance',      path: '/reports/machines',    icon: 'lucide:robot' },
-    { label: 'Product Performance',      path: '/reports/products',    icon: 'lucide:candy' },
-    { label: 'Location Performance',     path: '/reports/locations',   icon: 'lucide:map' },
-    { label: 'Trends',                   path: '/reports/trends',      icon: 'lucide:line-chart' },
-    { label: 'Inventory & Stock-outs',   path: '/reports/stockouts',   icon: 'lucide:triangle-alert' },
-    { label: 'Exports',                  path: '/exports',             icon: 'lucide:download' },
+  { title: 'Finance & Purchasing', items: [
+    { label: 'Finance Management', path: '/finance', icon: 'lucide:dollar-sign' },
+    { label: 'Purchase Orders', path: '/purchase-orders', icon: 'lucide:shopping-cart' },
+    { label: 'Commission Dashboard', path: '/commissions', icon: 'lucide:pie-chart' },
+    { label: 'Cost Analysis', path: '/cost-analysis', icon: 'lucide:bar-chart-3' },
+    { label: 'Cash Collection', path: '/cash-collection', icon: 'lucide:banknote' },
+  ]},
+  { title: 'Reports & Analytics', items: [
+    { label: 'Reports Hub', path: '/reports', icon: 'lucide:bar-chart-4' },
+    { label: 'Enhanced Analytics', path: '/enhanced-reports', icon: 'lucide:line-chart' },
+    { label: 'Customer Analytics', path: '/customer-analytics', icon: 'lucide:users-2' },
+    { label: 'Data Exports', path: '/exports', icon: 'lucide:download' },
+  ]},
+  { title: 'Management', items: [
+    { label: 'Suppliers', path: '/suppliers', icon: 'lucide:store' },
+    { label: 'Staff', path: '/staff', icon: 'lucide:user-check' },
+    { label: 'Contracts & Insurance', path: '/contracts', icon: 'lucide:file-text' },
+    { label: 'Business Flow', path: '/business-flow', icon: 'lucide:workflow' },
   ]},
   { title: 'Admin', items: [
-    { label: 'Users & Roles', path: '/admin/users',    icon: 'lucide:users' },
-    { label: 'Org Settings',  path: '/admin/settings', icon: 'lucide:settings' },
-    { label: 'Billing',       path: '/admin/billing',  icon: 'lucide:credit-card' },
+    { label: 'Settings', path: '/admin/settings', icon: 'lucide:settings' },
+    { label: 'Users & Roles', path: '/admin/users', icon: 'lucide:users' },
+    { label: 'Billing', path: '/admin/billing', icon: 'lucide:credit-card' },
+    { label: 'Health & Audit', path: '/health', icon: 'lucide:activity' },
   ]},
-  { title: 'Help', items: [
-    { label: 'Help Center', path: '/help',           icon: 'lucide:circle-help' },
-    { label: 'Glossary',    path: '/help/glossary',  icon: 'lucide:book-text' },
-    { label: "What's New",  path: '/changelog',      icon: 'lucide:history' },
+  { title: 'Help & Tools', items: [
+    { label: 'Help Center', path: '/help', icon: 'lucide:circle-help' },
+    { label: 'Glossary', path: '/help/glossary', icon: 'lucide:book-text' },
+    { label: "What's New", path: '/changelog', icon: 'lucide:history' },
+    { label: 'Document Processing', path: '/document-processing', icon: 'lucide:file-scan' },
   ]},
-  { title: 'QA & Tools', devOnly: true, items: [
-    { label: 'QA Overview', path: '/qa/overview', icon: 'lucide:compass' },
-    { label: 'QA Smoke',    path: '/qa/smoke',    icon: 'lucide:flask-conical' },
+  { title: 'QA & Dev Tools', devOnly: true, items: [
+    { label: 'QA Launcher', path: '/qa-launcher', icon: 'lucide:flask-conical' },
+    { label: 'Ops Console', path: '/ops/console', icon: 'lucide:terminal' },
+    { label: 'Deletion Logs', path: '/deletion-logs', icon: 'lucide:trash-2' },
   ]},
 ];
 

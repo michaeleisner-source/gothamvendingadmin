@@ -54,159 +54,88 @@ type NavGroup = { key: string; label: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
   {
-    key: "dashboards",
+    key: "dashboards", 
     label: "Dashboards",
     items: [
       { label: "Business Overview", to: "/", icon: Home },
       { label: "Mission Control", to: "/enhanced-dashboard", icon: Activity },
-      { label: "Sales Dashboard", to: "/sales/dashboard", icon: TrendingUp },
-      { label: "Driver Dashboard", to: "/driver", icon: Truck },
+      { label: "Sales Dashboard", to: "/sales-dashboard", icon: TrendingUp },
       { label: "Low Stock Alerts", to: "/alerts/low-stock", icon: AlertTriangle },
     ],
   },
   {
     key: "sales",
-    label: "Sales & Prospects",
+    label: "Sales & Prospects", 
     items: [
       { label: "Prospects", to: "/prospects", icon: Users },
-      { label: "Prospect Dashboard", to: "/prospect-dashboard", icon: BarChart3 },
-      { label: "New Prospect", to: "/prospects/new", icon: UserCheck },
+      { label: "Leads (Legacy)", to: "/leads", icon: UserCheck },
       { label: "Sales Entry", to: "/sales", icon: DollarSign },
-    ],
-  },
-  {
-    key: "locations",
-    label: "Locations & Performance", 
-    items: [
-      { label: "Locations", to: "/locations", icon: MapPin },
-      { label: "New Location", to: "/locations/new", icon: Building2 },
-      { label: "Locations Enhanced", to: "/locations-enhanced", icon: Building2 },
-      { label: "Location Performance", to: "/location-performance", icon: TrendingUp },
-      { label: "Cash Flow Reports", to: "/finance/cash-flow", icon: DollarSign },
+      { label: "Pipeline Analytics", to: "/pipeline-analytics", icon: BarChart3 },
     ],
   },
   {
     key: "ops",
     label: "Operations",
     items: [
+      { label: "Locations", to: "/locations", icon: MapPin },
       { label: "Machines", to: "/machines", icon: Cog },
-      { label: "Machines Enhanced", to: "/machines-enhanced", icon: Cog },
-      { label: "Machine Setup", to: "/machine-setup", icon: Settings },
-      { label: "Route Planning", to: "/routes", icon: MapPin },
-      { label: "Delivery Routes", to: "/delivery-routes", icon: Truck },
-      { label: "Daily Ops", to: "/daily-ops", icon: ClipboardList },
-      { label: "Business Flow", to: "/business-flow", icon: Activity },
-      { label: "Cash Collection", to: "/cash-collection", icon: DollarSign },
-    ],
-  },
-  {
-    key: "maintenance",
-    label: "Maintenance",
-    items: [
-      { label: "Maintenance Scheduler", to: "/maintenance", icon: Calendar },
-      { label: "Machine Maintenance", to: "/machine-maintenance", icon: Wrench },
-      { label: "Maintenance Backlog", to: "/maintenance-backlog", icon: ClipboardList },
-      { label: "Machine Health", to: "/machine-health", icon: Activity },
-    ],
-  },
-  {
-    key: "inventory",
-    label: "Inventory",
-    items: [
-      { label: "Inventory", to: "/inventory", icon: Package },
-      { label: "Predictive Inventory", to: "/predictive-inventory", icon: TrendingUp },
-      { label: "Restock Entry", to: "/restock-entry", icon: ClipboardList },
-      { label: "Inventory Reports", to: "/reports/inventory", icon: FileBarChart },
-    ],
-  },
-  {
-    key: "catalog",
-    label: "Catalog",
-    items: [
       { label: "Products", to: "/products", icon: Package },
-      { label: "Products Enhanced", to: "/products-enhanced", icon: Package },
-      { label: "Suppliers", to: "/suppliers", icon: Store },
-      { label: "Suppliers Enhanced", to: "/suppliers-enhanced", icon: Store },
-      { label: "Supplier Management", to: "/supplier-management", icon: Building2 },
+      { label: "Inventory", to: "/inventory", icon: Package },
+      { label: "Routes & Delivery", to: "/routes", icon: Truck },
+      { label: "Maintenance", to: "/maintenance", icon: Wrench },
+      { label: "Daily Ops", to: "/daily-ops", icon: ClipboardList },
     ],
   },
   {
-    key: "purchasing",
-    label: "Purchasing",
-    items: [
-      { label: "Purchase Orders", to: "/purchase-orders", icon: ShoppingCart },
-      { label: "New Purchase Order", to: "/purchase-orders/new", icon: ShoppingCart },
-    ],
-  },
-  {
-    key: "financial",
-    label: "Financial",
+    key: "finance",
+    label: "Finance & Purchasing",
     items: [
       { label: "Finance Management", to: "/finance", icon: DollarSign },
+      { label: "Purchase Orders", to: "/purchase-orders", icon: ShoppingCart },
       { label: "Commission Dashboard", to: "/commissions", icon: PieChart },
-      { label: "Commission Statements", to: "/commission-statements", icon: FileIcon },
       { label: "Cost Analysis", to: "/cost-analysis", icon: BarChart3 },
-      { label: "Product Margins", to: "/product-margins", icon: TrendingUp },
-      { label: "Profit Reports", to: "/profit-reports", icon: FileBarChart },
-      { label: "Machine Finance", to: "/machine-finance", icon: CreditCard },
-      { label: "Machine ROI", to: "/machine-roi", icon: TrendingUp },
-      { label: "Payment Processors", to: "/payment-processors", icon: CreditCard },
-      { label: "Cash Flow Report", to: "/finance/cash-flow", icon: DollarSign },
+      { label: "Cash Collection", to: "/cash-collection", icon: CreditCard },
     ],
   },
   {
-    key: "contracts",
-    label: "Contracts",
+    key: "reports",
+    label: "Reports & Analytics",
     items: [
-      { label: "Contract Management", to: "/contracts", icon: FileIcon },
-      { label: "Insurance", to: "/insurance", icon: Shield },
-    ],
-  },
-  {
-    key: "analytics",
-    label: "Analytics",
-    items: [
-      { label: "Reports", to: "/reports", icon: FileBarChart },
-      { label: "Enhanced Reports", to: "/enhanced-reports", icon: BarChart3 },
+      { label: "Reports Hub", to: "/reports", icon: BarChart3 },
+      { label: "Enhanced Analytics", to: "/enhanced-reports", icon: TrendingUp },
       { label: "Customer Analytics", to: "/customer-analytics", icon: Users },
-      { label: "Pipeline Analytics", to: "/pipeline-analytics", icon: TrendingUp },
-      { label: "Staff Performance", to: "/analytics/staff", icon: Users },
+      { label: "Data Exports", to: "/exports", icon: Download },
+    ],
+  },
+  {
+    key: "management",
+    label: "Management",
+    items: [
+      { label: "Suppliers", to: "/suppliers", icon: Store },
+      { label: "Staff", to: "/staff", icon: Users },
+      { label: "Contracts & Insurance", to: "/contracts", icon: FileText },
+      { label: "Business Flow", to: "/business-flow", icon: Activity },
     ],
   },
   {
     key: "admin",
     label: "Admin",
     items: [
-      { label: "Billing", to: "/admin/billing", icon: CreditCard },
       { label: "Settings", to: "/admin/settings", icon: Settings },
-      { label: "Users", to: "/admin/users", icon: Users },
-      { label: "Staff", to: "/staff", icon: Users },
-      { label: "Staff Enhanced", to: "/staff-enhanced", icon: Users },
+      { label: "Users & Roles", to: "/admin/users", icon: Users },
+      { label: "Billing", to: "/admin/billing", icon: CreditCard },
+      { label: "Health & Audit", to: "/health", icon: Activity },
     ],
   },
   {
-    key: "tools",
-    label: "Tools",
+    key: "help",
+    label: "Help & Tools",
     items: [
-      { label: "Exports", to: "/exports", icon: Download },
-      { label: "Audit", to: "/audit", icon: Search },
-      { label: "Deletion Logs", to: "/deletion-logs", icon: FileIcon },
-      { label: "Health", to: "/health", icon: Activity },
       { label: "Help Center", to: "/help", icon: HelpCircle },
-      { label: "Glossary", to: "/help/glossary", icon: FileIcon },
-      { label: "Changelog", to: "/changelog", icon: FileIcon },
+      { label: "Glossary", to: "/help/glossary", icon: FileText },
+      { label: "What's New", to: "/changelog", icon: FileText },
+      { label: "Document Processing", to: "/document-processing", icon: FileText },
       { label: "QA Launcher", to: "/qa-launcher", icon: Settings },
-      { label: "Picklists", to: "/picklists", icon: ClipboardList },
-      { label: "Ops Console", to: "/ops/console", icon: Settings },
-    ],
-  },
-  {
-    key: "account",
-    label: "Account & Legacy",
-    items: [
-      { label: "Account", to: "/account", icon: User },
-      { label: "Auth", to: "/auth", icon: Lock },
-      { label: "Leads (Legacy)", to: "/leads", icon: Users },
     ],
   },
 ];
@@ -217,7 +146,8 @@ export function AppSidebar() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     dashboards: true,
     sales: true,
-    ops: true
+    ops: true,
+    reports: true
   });
   const [email, setEmail] = useState<string | null>(null);
 
@@ -270,32 +200,29 @@ export function AppSidebar() {
                     <span className="text-xs">{expanded[group.key] ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}</span>
                   )}
                 </button>
-                {expanded[group.key] && (
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.to}>
-                          <SidebarMenuButton asChild>
-                            <NavLink 
-                              to={item.to} 
-                              className={getNavCls(isActive(item.to))}
-                            >
-                              {state !== "collapsed" && (
-                                <div className="flex items-center gap-3">
-                                  <item.icon className="h-4 w-4" />
-                                  <span>{item.label}</span>
-                                </div>
-                              )}
-                              {state === "collapsed" && (
-                                <item.icon className="h-4 w-4" />
-                              )}
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                )}
+      {expanded[group.key] && (
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {group.items.map((item) => (
+              <SidebarMenuItem key={item.to}>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to={item.to} 
+                    className={({ isActive }) => getNavCls(isActive)}
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {state !== "collapsed" && (
+                        <span className="truncate">{item.label}</span>
+                      )}
+                    </div>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      )}
               </SidebarGroup>
             );
           })}
