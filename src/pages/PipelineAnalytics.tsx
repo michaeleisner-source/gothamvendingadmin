@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart3, Users, CheckCircle2, XCircle } from "lucide-react";
 import { HelpTooltip, HelpTooltipProvider } from "@/components/ui/HelpTooltip";
+import ScopeBar from "@/components/ScopeBar";
+import { useScope } from "@/context/Scope";
 
 type Prospect = {
   id: string;
@@ -68,6 +70,7 @@ function SimpleList({ data }: { data: Record<string, number> }) {
 }
 
 export default function PipelineAnalytics() {
+  const scope = useScope();
   const [rows, setRows] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -76,16 +79,37 @@ export default function PipelineAnalytics() {
     (async () => {
       setLoading(true); 
       setErr(null);
-      const { data, error } = await supabase.from("prospects").select("*").order("created_at", { ascending: false }).limit(2000);
+      
+      // Query leads table with date filtering
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .gte("created_at", scope.startISO)
+        .lte("created_at", scope.endISO)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      
       if (error) { 
         setErr(error.message); 
         setLoading(false); 
         return; 
       }
-      setRows((data || []) as Prospect[]);
+      
+      // Map leads data to prospect format
+      const mapped = (data || []).map(lead => ({
+        id: lead.id,
+        name: lead.name,
+        company: lead.company,
+        source: 'leads', // Default source for leads
+        stage: lead.status,
+        status: lead.status,
+        created_at: lead.created_at
+      }));
+      
+      setRows(mapped);
       setLoading(false);
     })();
-  }, []);
+  }, [scope.startISO, scope.endISO]);
 
   const stageCounts = useMemo(() => {
     const acc: Record<string, number> = {};
@@ -123,6 +147,7 @@ export default function PipelineAnalytics() {
 
   return (
     <HelpTooltipProvider>
+      <ScopeBar />
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold flex items-center gap-2">
