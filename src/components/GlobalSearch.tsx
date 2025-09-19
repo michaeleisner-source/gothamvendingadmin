@@ -186,7 +186,7 @@ function EntityIcon({ entity }: { entity: string }) {
     staff: <User className="size-4 text-cyan-500" />,
     route: <Truck className="size-4 text-yellow-500" />,
     sale: <Box className="size-4 text-emerald-600" />,
-    purchase_order: <Search className="size-4 text-indigo-500" />,
+    purchase_order: <Box className="size-4 text-indigo-500" />,
     prospect: <User className="size-4 text-pink-500" />,
   };
   return <>{iconMap[entity] ?? <Box className="size-4 text-muted-foreground" />}</>;
