@@ -314,6 +314,20 @@ export type Database = {
             referencedRelation: "prospects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_contracts_location_id"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_contracts_machine_id"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
         ]
       }
       customer_interactions: {
