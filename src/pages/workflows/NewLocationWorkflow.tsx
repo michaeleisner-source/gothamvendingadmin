@@ -254,11 +254,16 @@ export default function NewLocationWorkflow() {
     if (!leadId) return
     setLoading(true)
     try {
-      // Create contract with required fields
+      // Get current user to set org_id
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      // Create contract with all required fields 
       const contractData = {
-        body_html: '<p>Standard vending services agreement</p>',
         title: 'Vending Services Agreement',
-        location_id: locationId || null,
+        body_html: '<p>Standard vending services agreement</p>',
+        location_id: locationId,
+        org_id: null, // Will be set by trigger
         revenue_share_pct: contract.commission_rate || 10,
         term_months: contract.term_months || 12,
         status: contract.status || 'draft'
@@ -385,12 +390,12 @@ export default function NewLocationWorkflow() {
       if (e1) throw e1
       setMachineId(m.id)
 
-      // assignment/activation
+      // assignment/activation - using correct field names for machine_assignments table  
       const { error: e2 } = await supabase.from('machine_assignments').insert({
         machine_id: m.id,
         location_id: locationId,
-        installed_at: install.installed_at ? new Date(install.installed_at) : new Date(),
-        activated_at: install.activated_at ? new Date(install.activated_at) : new Date(),
+        installed_at: install.installed_at ? install.installed_at : new Date().toISOString(),
+        activated_at: install.activated_at ? install.activated_at : new Date().toISOString(),
         initial_fill_qty: install.initial_fill_qty || 0,
         cash_float: install.cash_float || 0
       })
