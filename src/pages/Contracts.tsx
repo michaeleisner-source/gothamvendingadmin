@@ -1,8 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Contracts() {
+  const navigate = useNavigate();
+
+  const handleNewContract = () => {
+    // For now, navigate to a contracts form or show a toast
+    // You can customize this based on your needs
+    navigate("/contracts/new");
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -11,7 +20,7 @@ export default function Contracts() {
           <h1 className="text-3xl font-bold">Contract Management</h1>
           <p className="text-muted-foreground">Manage location contracts and agreements</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={handleNewContract}>
           <Plus className="h-4 w-4" />
           New Contract
         </Button>

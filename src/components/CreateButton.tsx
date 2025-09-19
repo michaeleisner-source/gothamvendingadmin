@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Users, MapPin, Cog, Package, Truck, ShoppingCart } from "lucide-react";
+import { Plus, Users, MapPin, Cog, Package, Truck, ShoppingCart, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const createItems = [
@@ -16,6 +16,7 @@ const createItems = [
   { title: "New Product", url: "/products/new", icon: Package },
   { title: "New Supplier", url: "/suppliers/new", icon: Truck },
   { title: "New Purchase Order", url: "/purchase-orders/new", icon: ShoppingCart },
+  { title: "New Contract", url: "/contracts/new", icon: FileText },
 ];
 
 export function CreateButton() {
