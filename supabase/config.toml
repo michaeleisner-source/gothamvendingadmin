@@ -23,3 +23,15 @@ verify_jwt = false
 
 [functions.daily-backup]
 verify_jwt = false
+
+[functions.machine-telemetry]
+verify_jwt = false
+
+[functions.machine-sales]
+verify_jwt = false
+
+[functions.machine-inventory-sync]
+verify_jwt = false
+
+[functions.machine-status]
+verify_jwt = false
