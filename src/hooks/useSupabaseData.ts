@@ -2,15 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Product hooks
+// Product hooks with optimized caching
 export const useProducts = (search?: string) => {
   return useQuery({
     queryKey: ['products', search],
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, name, sku, category, price_cents, cost_cents, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(search ? 50 : 100); // Limit results for performance
 
       if (search) {
         query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,category.ilike.%${search}%`);
@@ -20,6 +21,8 @@ export const useProducts = (search?: string) => {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 1000 * 60 * 15, // 15 minutes for products
+    enabled: true, // Always enabled for products
   });
 };
 
