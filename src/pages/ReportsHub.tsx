@@ -365,82 +365,225 @@ export default function ReportsHub() {
 
       {/* Main Reports Interface */}
       <Tabs defaultValue="analytics" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 h-auto p-1">
-          <TabsTrigger value="analytics" className="flex items-center gap-2 text-xs lg:text-sm">
-            <TrendingUp className="h-4 w-4" />
-            Enhanced Analytics
-          </TabsTrigger>
-          <TabsTrigger value="sales" className="flex items-center gap-2 text-xs lg:text-sm">
-            <DollarSign className="h-4 w-4" />
-            Sales
-          </TabsTrigger>
-          <TabsTrigger value="machines" className="flex items-center gap-2 text-xs lg:text-sm">
-            <Zap className="h-4 w-4" />
-            Machines
-          </TabsTrigger>
-          <TabsTrigger value="locations" className="flex items-center gap-2 text-xs lg:text-sm">
-            <MapPin className="h-4 w-4" />
-            Locations
-          </TabsTrigger>
-          <TabsTrigger value="products" className="flex items-center gap-2 text-xs lg:text-sm">
-            <Package className="h-4 w-4" />
-            Products
-          </TabsTrigger>
-          <TabsTrigger value="inventory" className="flex items-center gap-2 text-xs lg:text-sm">
-            <Activity className="h-4 w-4" />
-            Inventory
-          </TabsTrigger>
-          <TabsTrigger value="legacy" className="flex items-center gap-2 text-xs lg:text-sm">
-            <FileBarChart className="h-4 w-4" />
-            Financial Data
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="grid w-full min-w-fit grid-cols-2 lg:grid-cols-7 h-auto p-1 bg-muted/50">
+            <TabsTrigger value="analytics" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Enhanced Analytics</span>
+              <span className="sm:hidden">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <DollarSign className="h-4 w-4" />
+              Sales
+            </TabsTrigger>
+            <TabsTrigger value="machines" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Zap className="h-4 w-4" />
+              Machines
+            </TabsTrigger>
+            <TabsTrigger value="locations" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <MapPin className="h-4 w-4" />
+              Locations
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Package className="h-4 w-4" />
+              Products
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Activity className="h-4 w-4" />
+              Inventory
+            </TabsTrigger>
+            <TabsTrigger value="legacy" className="flex items-center gap-2 text-xs lg:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <FileBarChart className="h-4 w-4" />
+              <span className="hidden lg:inline">Financial Data</span>
+              <span className="lg:hidden">Legacy</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="analytics" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChart className="h-5 w-5" />
-                Enhanced Analytics Dashboard
-              </CardTitle>
-              <CardDescription>
-                Advanced business intelligence with predictive insights and trends
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <SalesAnalytics />
-                <RevenueTrends />
-                {/* Additional enhanced analytics components would go here */}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <LineChart className="h-5 w-5 text-primary" />
+                  Enhanced Analytics Dashboard
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Advanced business intelligence with predictive insights and trends
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <SalesAnalytics />
+                  </div>
+                  <div className="space-y-4">
+                    <RevenueTrends />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="sales" className="space-y-6">
-          <SalesAnalytics />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <DollarSign className="h-5 w-5 text-success" />
+                  Sales Performance Analytics
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Comprehensive sales data, trends, and performance metrics
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <SalesAnalytics />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="machines" className="space-y-6">
-          <MachinePerformance />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Zap className="h-5 w-5 text-warning" />
+                  Machine Performance Reports
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Operational efficiency, uptime, and maintenance analytics
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <MachinePerformance />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="locations" className="space-y-6">
-          <LocationAnalytics />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <MapPin className="h-5 w-5 text-info" />
+                  Location Analytics & Insights
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Geographic performance, regional trends, and site-specific data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <LocationAnalytics />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="products" className="space-y-6">
-          <ProductProfitability />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Package className="h-5 w-5 text-revenue" />
+                  Product Profitability Analysis
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Product performance, margins, and profitability insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ProductProfitability />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="inventory" className="space-y-6">
-          <InventoryInsights />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Activity className="h-5 w-5 text-expense" />
+                  Inventory Intelligence
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Stock levels, turnover rates, and inventory optimization data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <InventoryInsights />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="legacy" className="space-y-6">
-          <LegacyReports />
+          <div className="grid gap-6">
+            <Card className="card-hover">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileBarChart className="h-5 w-5 text-primary" />
+                  Legacy Financial Data
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Historical financial KPIs and operational data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <LegacyReports />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
+
+      {/* Footer Section */}
+      <div className="border-t border-border/50 pt-8 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Quick Actions</h4>
+            <div className="space-y-1">
+              <Button variant="ghost" size="sm" className="justify-start text-xs h-8">
+                <Download className="h-3 w-3 mr-2" />
+                Export Current View
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start text-xs h-8">
+                <Calendar className="h-3 w-3 mr-2" />
+                Schedule Report
+              </Button>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Data Sources</h4>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>• Sales transactions and revenue data</p>
+              <p>• Machine performance metrics</p>
+              <p>• Inventory and stock analytics</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Last Updated</h4>
+            <p className="text-xs text-muted-foreground">
+              Data refreshed {new Date().toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+            <Badge variant="outline" className="text-xs">
+              Real-time sync active
+            </Badge>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
