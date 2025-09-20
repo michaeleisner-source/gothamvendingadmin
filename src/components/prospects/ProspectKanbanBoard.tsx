@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { ClipboardList, Users, Phone, Mail, Tags, Clock, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { ClipboardList, Users, Phone, Mail, Tags, Clock, AlertTriangle, Plus, Minus } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Prospect = {
   id: string;
@@ -107,7 +109,13 @@ function StageColumn({
           <div className="text-xs text-muted-foreground px-2 py-3">{emptyHint}</div>
         )}
         {items.map((p) => (
-          <ProspectCard key={p.id} prospect={p} isOverdue={isOverdue(p)} title={title} />
+          <ProspectCard 
+            key={p.id} 
+            prospect={p} 
+            isOverdue={isOverdue(p)} 
+            title={title}
+            isNewStage={columnTitle === "New"}
+          />
         ))}
       </div>
     </div>
@@ -117,12 +125,80 @@ function StageColumn({
 function ProspectCard({ 
   prospect, 
   isOverdue: overdue,
-  title
+  title,
+  isNewStage = false
 }: { 
   prospect: Prospect; 
   isOverdue: boolean;
   title: (s: string) => string;
+  isNewStage?: boolean;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (isNewStage) {
+    return (
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <div className="rounded-lg border border-border bg-background">
+          <CollapsibleTrigger className="w-full p-3 text-left hover:bg-muted flex items-center justify-between group">
+            <div className="font-medium flex items-center gap-2">
+              {prospect.name || prospect.company || "Untitled lead"}
+              {overdue && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+            </div>
+            {isExpanded ? (
+              <Minus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+            ) : (
+              <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+            )}
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="px-3 pb-3 border-t border-border/50">
+              <div className="mt-2 text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
+                {prospect.contact_name && (
+                  <span className="inline-flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" /> {prospect.contact_name}
+                  </span>
+                )}
+                {prospect.phone && (
+                  <span className="inline-flex items-center gap-1">
+                    <Phone className="h-3.5 w-3.5" /> {prospect.phone}
+                  </span>
+                )}
+                {prospect.email && (
+                  <span className="inline-flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5" /> {prospect.email}
+                  </span>
+                )}
+                {prospect.source && (
+                  <span className="inline-flex items-center gap-1">
+                    <Tags className="h-3.5 w-3.5" /> {title(prospect.source)}
+                  </span>
+                )}
+                {prospect.next_follow_up_at && (
+                  <span className={`inline-flex items-center gap-1 ${overdue ? 'text-amber-600 font-medium' : ''}`}>
+                    <Clock className="h-3.5 w-3.5" /> 
+                    {new Date(prospect.next_follow_up_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              {(prospect.city || prospect.state) && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  📍 {[prospect.city, prospect.state].filter(Boolean).join(", ")}
+                </div>
+              )}
+              <Link 
+                to={`/prospects/${prospect.id}`}
+                className="inline-block mt-2 text-xs text-primary hover:underline"
+              >
+                View Details →
+              </Link>
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+    );
+  }
+
   return (
     <Link 
       to={`/prospects/${prospect.id}`} 
