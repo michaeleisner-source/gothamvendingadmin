@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Bell, 
   X, 
@@ -13,7 +14,9 @@ import {
   Info, 
   CheckCircle2,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Plus,
+  Minus
 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -35,6 +38,19 @@ export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (notificationId: string) => {
+    setExpandedNotifications(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(notificationId)) {
+        newSet.delete(notificationId);
+      } else {
+        newSet.add(notificationId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     loadNotifications();
@@ -200,40 +216,82 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map(notification => (
-                <Card 
-                  key={notification.id} 
-                  className={`border-0 border-l-4 rounded-none ${getPriorityColor(notification.priority)} ${
-                    !notification.read_at ? 'bg-muted/30' : ''
-                  }`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 flex-1">
-                        {getNotificationIcon(notification.notification_type)}
-                        <div className="flex-1 min-w-0">
-                          <h4 className={`text-sm font-medium ${!notification.read_at ? 'font-semibold' : ''}`}>
-                            {notification.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {notifications.map(notification => {
+                const isExpanded = expandedNotifications.has(notification.id);
+                return (
+                  <Collapsible key={notification.id} open={isExpanded} onOpenChange={() => toggleExpanded(notification.id)}>
+                    <Card 
+                      className={`border-0 border-l-4 rounded-none ${getPriorityColor(notification.priority)} ${
+                        !notification.read_at ? 'bg-muted/30' : ''
+                      }`}
+                    >
+                      <CollapsibleTrigger className="w-full text-left">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3 flex-1">
+                              {getNotificationIcon(notification.notification_type)}
+                              <div className="flex-1 min-w-0">
+                                <h4 className={`text-sm font-medium ${!notification.read_at ? 'font-semibold' : ''}`}>
+                                  {notification.title}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {new Date(notification.created_at).toLocaleString()}
+                                  </span>
+                                  {notification.priority === 'urgent' && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      Urgent
+                                    </Badge>
+                                  )}
+                                  {notification.priority === 'high' && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      High
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {!notification.read_at && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsRead(notification.id);
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(notification.id);
+                                }}
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                              {isExpanded ? (
+                                <Minus className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Plus className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent>
+                        <CardContent className="px-4 pb-4 pt-0 border-t border-border/50">
+                          <p className="text-sm text-muted-foreground mt-2">
                             {notification.message}
                           </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {new Date(notification.created_at).toLocaleString()}
-                            </span>
-                            {notification.priority === 'urgent' && (
-                              <Badge variant="destructive" className="text-xs">
-                                Urgent
-                              </Badge>
-                            )}
-                            {notification.priority === 'high' && (
-                              <Badge variant="secondary" className="text-xs">
-                                High
-                              </Badge>
-                            )}
-                          </div>
                           {notification.action_url && notification.action_label && (
                             <div className="mt-2">
                               <Link
@@ -249,32 +307,12 @@ export function NotificationCenter() {
                               </Link>
                             </div>
                           )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {!notification.read_at && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => markAsRead(notification.id)}
-                            className="h-6 w-6 p-0"
-                          >
-                            <CheckCircle className="h-3 w-3" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteNotification(notification.id)}
-                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })}
             </div>
           )}
         </ScrollArea>

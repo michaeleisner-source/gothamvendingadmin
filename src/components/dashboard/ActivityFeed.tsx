@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   DollarSign, 
   Users, 
@@ -10,7 +11,9 @@ import {
   Activity,
   ArrowRight,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  Minus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -38,6 +41,19 @@ export function ActivityFeed({
   title = "Recent Activity",
   maxItems = 8 
 }: ActivityFeedProps) {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
   const getActivityIcon = (type: string, status?: string) => {
     const baseClasses = "h-4 w-4";
     
@@ -138,44 +154,61 @@ export function ActivityFeed({
           </div>
         ) : (
           <div className="space-y-4">
-            {displayedActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3">
-                <div className="flex-shrink-0 mt-1">
-                  {getActivityIcon(activity.type, activity.status)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-foreground">
-                      {activity.title}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {activity.amount && (
-                        <span className="text-sm font-medium text-green-600">
-                          {formatCurrency(activity.amount)}
-                        </span>
+            {displayedActivities.map((activity) => {
+              const isExpanded = expandedItems.has(activity.id);
+              return (
+                <Collapsible key={activity.id} open={isExpanded} onOpenChange={() => toggleExpanded(activity.id)}>
+                  <div className="border border-border/50 rounded-lg bg-background">
+                    <CollapsibleTrigger className="w-full p-3 text-left hover:bg-muted/50 flex items-center justify-between group">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          {getActivityIcon(activity.type, activity.status)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground">
+                            {activity.title}
+                          </p>
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {formatTime(activity.timestamp)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {activity.amount && (
+                            <span className="text-sm font-medium text-green-600">
+                              {formatCurrency(activity.amount)}
+                            </span>
+                          )}
+                          {getStatusBadge(activity.status)}
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <Minus className="h-4 w-4 text-muted-foreground group-hover:text-foreground ml-2" />
+                      ) : (
+                        <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground ml-2" />
                       )}
-                      {getStatusBadge(activity.status)}
-                    </div>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <div className="px-3 pb-3 border-t border-border/50">
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground">
+                            {activity.description}
+                          </p>
+                          {activity.actionUrl && (
+                            <Button variant="ghost" size="sm" asChild className="mt-2 h-8">
+                              <Link to={activity.actionUrl} className="text-xs">
+                                View Details →
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {activity.description}
-                  </p>
-                  <div className="flex items-center justify-between mt-1">
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {formatTime(activity.timestamp)}
-                    </div>
-                    {activity.actionUrl && (
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={activity.actionUrl} className="text-xs">
-                          View
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                </Collapsible>
+              );
+            })}
           </div>
         )}
       </CardContent>
