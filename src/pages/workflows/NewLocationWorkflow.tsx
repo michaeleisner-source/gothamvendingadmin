@@ -365,15 +365,160 @@ export default function NewLocationWorkflow() {
     )
   }
 
+  function StepContracted() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">Contract Signed ✓</div>
+          <div className="text-green-600 mb-3">Contract has been signed! Location record will be created automatically.</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 bg-accent/20 rounded-xl">
+              <div className="text-xs text-muted-foreground">Commission Rate</div>
+              <div className="font-semibold">{contract.commission_rate}%</div>
+            </div>
+            <div className="p-3 bg-accent/20 rounded-xl">
+              <div className="text-xs text-muted-foreground">Term</div>
+              <div className="font-semibold">{contract.term_months} months</div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <button className="btn-secondary" onClick={()=>setStage('proposed')}>Back</button>
+          <button className="btn-primary" onClick={()=>setStage('ordered')}>Proceed to Order</button>
+        </div>
+      </div>
+    )
+  }
+
+  function StepOrdered() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">Machine Order</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <select className="input"><option>Select Machine Type</option><option>Snack Machine</option><option>Beverage Machine</option><option>Combo Machine</option></select>
+            <input className="input" placeholder="Machine Model" />
+            <input className="input" placeholder="Vendor/Supplier" />
+            <input className="input" type="date" placeholder="Expected Delivery" />
+            <input className="input" type="number" placeholder="Purchase Price" />
+            <textarea className="input" placeholder="Order Notes"></textarea>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <button className="btn-secondary" onClick={()=>setStage('contracted')}>Back</button>
+          <button className="btn-primary" onClick={()=>setStage('planogram')}>Save & Continue</button>
+        </div>
+      </div>
+    )
+  }
+
+  function StepPlanogram() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">Product Mix Configuration</div>
+          <div className="text-sm text-muted-foreground mb-3">Configure the initial product mix based on location demographics and foot traffic.</div>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="p-3 bg-accent/20 rounded-xl">
+              <div className="text-xs text-muted-foreground">Recommended Mix</div>
+              <div>60% Beverages, 25% Snacks, 15% Healthy Options</div>
+            </div>
+            <select className="input"><option>Load Standard Mix</option><option>Office Mix</option><option>School Mix</option><option>Hospital Mix</option><option>Custom Mix</option></select>
+            <textarea className="input" placeholder="Planogram Notes"></textarea>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <button className="btn-secondary" onClick={()=>setStage('ordered')}>Back</button>
+          <button className="btn-primary" onClick={()=>setStage('scheduled')}>Save & Continue</button>
+        </div>
+      </div>
+    )
+  }
+
+  function StepScheduled() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">Installation Scheduling</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input className="input" type="datetime-local" placeholder="Install Date & Time" />
+            <select className="input"><option>Select Technician</option><option>John Smith</option><option>Sarah Johnson</option></select>
+            <select className="input"><option>Delivery Route</option><option>Route A</option><option>Route B</option></select>
+            <input className="input" placeholder="Special Instructions" />
+            <div className="col-span-1 sm:col-span-2">
+              <textarea className="input" placeholder="Installation Notes"></textarea>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <button className="btn-secondary" onClick={()=>setStage('planogram')}>Back</button>
+          <button className="btn-primary" onClick={()=>setStage('installed')}>Save & Continue</button>
+        </div>
+      </div>
+    )
+  }
+
+  function StepInstalled() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">Installation Complete</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 bg-green-100 border border-green-200 rounded-xl">
+              <div className="text-xs text-green-600">Status</div>
+              <div className="font-semibold text-green-800">Machine Installed ✓</div>
+            </div>
+            <input className="input" type="datetime-local" placeholder="Installation Completed" />
+            <input className="input" placeholder="Machine Serial Number" />
+            <input className="input" placeholder="Telemetry ID" />
+            <div className="col-span-1 sm:col-span-2">
+              <textarea className="input" placeholder="Installation Report"></textarea>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <button className="btn-secondary" onClick={()=>setStage('scheduled')}>Back</button>
+          <button className="btn-primary" onClick={()=>setStage('live')}>Go Live</button>
+        </div>
+      </div>
+    )
+  }
+
+  function StepLive() {
+    return (
+      <div className="space-y-4">
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="text-sm font-semibold mb-3">🎉 Location is Live!</div>
+          <div className="text-green-600 mb-4">Congratulations! The location is now operational and generating revenue.</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 bg-green-100 border border-green-200 rounded-xl">
+              <div className="text-xs text-green-600">Machine Status</div>
+              <div className="font-semibold text-green-800">Active & Monitored</div>
+            </div>
+            <div className="p-3 bg-blue-100 border border-blue-200 rounded-xl">
+              <div className="text-xs text-blue-600">Next Actions</div>
+              <div className="font-semibold text-blue-800">Schedule First Restock</div>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <a href="/machines" className="btn-primary">View Machine</a>
+            <a href="/locations" className="btn-secondary">View Location</a>
+            <a href="/prospects" className="btn-secondary">Back to Pipeline</a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-3 py-6 text-foreground">
-      <nav className="text-xs text-muted-foreground mb-3"><a className="underline" href="#/dashboard">Dashboard</a> <span className="mx-1">/</span> Workflows <span className="mx-1">/</span> New Location</nav>
+      <nav className="text-xs text-muted-foreground mb-3"><a className="underline" href="/">Dashboard</a> <span className="mx-1">/</span> Workflows <span className="mx-1">/</span> New Location</nav>
       <header className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">New Location Workflow</h1>
           <div className="text-sm text-muted-foreground">Guide a prospect from initial lead to live machines. Progress is saved automatically. Resume via <code>?leadId=...</code>.</div>
         </div>
-        <a href="#/workflows/pipeline" className="px-3 py-2 rounded-xl border border-border hover:bg-accent text-sm">Open Pipeline Kanban</a>
+        <a href="/prospect-dashboard" className="px-3 py-2 rounded-xl border border-border hover:bg-accent text-sm">Open Pipeline Dashboard</a>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_300px] gap-5">
@@ -383,12 +528,12 @@ export default function NewLocationWorkflow() {
           {stage==='lead' && <StepLead />}
           {stage==='surveyed' && <StepSurvey />}
           {stage==='proposed' && <StepProposal />}
-          {stage!=='lead' && stage!=='surveyed' && stage!=='proposed' && (
-            <div className="bg-card border rounded-2xl p-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Workflow Step: {stage}</h2>
-              <p className="text-muted-foreground">Additional steps are being built...</p>
-            </div>
-          )}
+          {stage==='contracted' && <StepContracted />}
+          {stage==='ordered' && <StepOrdered />}
+          {stage==='planogram' && <StepPlanogram />}
+          {stage==='scheduled' && <StepScheduled />}
+          {stage==='installed' && <StepInstalled />}
+          {stage==='live' && <StepLive />}
         </main>
 
         <AiCoach />
