@@ -60,6 +60,7 @@ import MachineHealthMonitor from "@/pages/MachineHealthMonitor";
 import DailyOps from "@/pages/DailyOps";
 import BusinessFlow from "@/pages/BusinessFlow";
 import CashCollectionManager from "@/pages/CashCollectionManager";
+import CashCollectionPage from "@/pages/finance/CashCollectionPage";
 
 // Enhanced Entity Pages
 import LocationsEnhanced from "@/pages/LocationsEnhanced";
@@ -277,8 +278,9 @@ const MainAppLayout = () => {
               <Route path="/purchase-orders" element={<PurchaseOrders />} />
               <Route path="/purchase-orders/new" element={<NewPurchaseOrder />} />
               
-              {/* Finance & Cash Flow */}
-              <Route path="/finance/cash-flow" element={<CashFlow />} />
+               {/* Finance & Cash Flow */}
+               <Route path="/finance/cash-flow" element={<CashFlow />} />
+               <Route path="/finance/cash-collection" element={<CashCollectionPage />} />
               
               {/* Analytics & Staff */}
               <Route path="/analytics/staff" element={<StaffPerformance />} />
