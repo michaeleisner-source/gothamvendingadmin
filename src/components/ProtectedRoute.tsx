@@ -3,10 +3,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // In demo mode, always allow access
-  if (true) { // Always true for demo mode
-    return <>{children}</>;
-  }
+  // Development mode - no authentication required
+  return <>{children}</>;
   
   const [loading, setLoading] = useState(true);
   const [authed, setAuthed] = useState(false);

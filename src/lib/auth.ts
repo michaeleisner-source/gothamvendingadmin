@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 /** Check if the app is running in demo mode (no auth required) */
 export function isDemoMode(): boolean {
-  // Enable demo mode to bypass authentication during development
+  // Fully disable authentication during development
   return true;
 }
 

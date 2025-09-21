@@ -204,8 +204,8 @@ const MainAppLayout = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               
-              {/* Auth route - standalone */}
-              <Route path="/auth" element={<Auth />} />
+              {/* Auth disabled during development */}
+              {/* <Route path="/auth" element={<Auth />} /> */}
               
               {/* Dashboards */}
               <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
