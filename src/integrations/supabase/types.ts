@@ -3792,6 +3792,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      current_org_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       dashboard_metrics: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -3848,6 +3852,10 @@ export type Database = {
           | { p_date?: string; p_machine_id: string; p_product_id: string }
           | { p_machine_id: string; p_product_id: string }
         Returns: number
+      }
+      is_org_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_org_member: {
         Args: { row_org: string }
