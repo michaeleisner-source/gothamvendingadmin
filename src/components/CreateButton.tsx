@@ -14,7 +14,7 @@ const createItems = [
   { title: "New Location", url: "/locations/new", icon: MapPin },
   { title: "New Machine", url: "/machines/new", icon: Cog },
   { title: "New Product", url: "/products/new", icon: Package },
-  { title: "New Supplier", url: "/suppliers/new", icon: Truck },
+  { title: "New Supplier", url: "/suppliers", icon: Truck },
   { title: "New Purchase Order", url: "/purchase-orders/new", icon: ShoppingCart },
   { title: "New Contract", url: "/contracts/new", icon: FileText },
 ];

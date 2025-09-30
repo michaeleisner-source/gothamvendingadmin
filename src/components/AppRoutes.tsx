@@ -128,7 +128,23 @@ import PricingManagement from "@/pages/PricingManagement";
 import ProductCatalog from "@/pages/ProductCatalog";
 import CashFlow from "@/pages/CashFlow";
 import StaffPerformance from "@/pages/StaffPerformance";
-import InventoryHealth from "@/pages/InventoryHealth";
+
+// Report Pages
+import InventoryHealth from "@/pages/reports/InventoryHealth";
+import InventoryReportsPage from "@/pages/reports/InventoryReportsPage";
+import LocationCommission from "@/pages/reports/LocationCommission";
+import MachineROI from "@/pages/reports/MachineROI";
+import MachineReports from "@/pages/reports/MachineReports";
+import ProcessorReconciliation from "@/pages/reports/ProcessorReconciliation";
+import ProductProfitabilityNet from "@/pages/reports/ProductProfitabilityNet";
+import ProductReports from "@/pages/reports/ProductReports";
+import ProspectFunnel from "@/pages/reports/ProspectFunnel";
+import RouteEfficiency from "@/pages/reports/RouteEfficiency";
+import SalesDetailPage from "@/pages/reports/SalesDetailPage";
+import SalesSummary from "@/pages/reports/SalesSummary";
+import SilentMachines from "@/pages/reports/SilentMachines";
+import Stockouts from "@/pages/reports/Stockouts";
+import Trends from "@/pages/reports/Trends";
 
 // Simple redirect component for auth page in demo mode
 const AuthRedirect = () => {
@@ -285,8 +301,22 @@ const MainAppLayout = () => {
               {/* Analytics & Staff */}
               <Route path="/analytics/staff" element={<StaffPerformance />} />
               
-              {/* Reports & Inventory */}
+              {/* Report Sub-Pages */}
               <Route path="/reports/inventory" element={<InventoryHealth />} />
+              <Route path="/reports/inventory-detail" element={<InventoryReportsPage />} />
+              <Route path="/reports/location-commission" element={<LocationCommission />} />
+              <Route path="/reports/machine-roi" element={<MachineROI />} />
+              <Route path="/reports/machines" element={<MachineReports />} />
+              <Route path="/reports/processor-reconciliation" element={<ProcessorReconciliation />} />
+              <Route path="/reports/product-profitability" element={<ProductProfitabilityNet />} />
+              <Route path="/reports/products" element={<ProductReports />} />
+              <Route path="/reports/prospect-funnel" element={<ProspectFunnel />} />
+              <Route path="/reports/route-efficiency" element={<RouteEfficiency />} />
+              <Route path="/reports/sales-detail" element={<SalesDetailPage />} />
+              <Route path="/reports/sales-summary" element={<SalesSummary />} />
+              <Route path="/reports/silent-machines" element={<SilentMachines />} />
+              <Route path="/reports/stockouts" element={<Stockouts />} />
+              <Route path="/reports/trends" element={<Trends />} />
               
               {/* Financial & Business */}
               <Route path="/finance" element={<FinanceManagement />} />
